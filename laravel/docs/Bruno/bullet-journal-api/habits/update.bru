@@ -1,0 +1,23 @@
+meta {
+  name: update
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://localhost:8000/api/habits/1
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer 1|5LqvZbwOiwslAipqscESgLPrK5BvzEFbPHqapUJic0263974
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "title": "Meditate and Breath work"
+  }
+}

@@ -6,21 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+
     public function up()
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->foreignId('user_id')->contrained('users')->onDelete('cascade'); // delets all categories when user is deleted
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // delets all categories when user is deleted
+            $table->timestamps(); // not relevant but for consistency
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('categories');

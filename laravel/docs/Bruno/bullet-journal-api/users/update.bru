@@ -1,10 +1,10 @@
 meta {
-  name: index
+  name: update
   type: http
-  seq: 1
+  seq: 2
 }
 
-get {
+put {
   url: http://localhost:8000/api/users
   body: json
   auth: none
@@ -14,4 +14,10 @@ headers {
   Authorization: Bearer {{token}}
   Accept: application/json
   Content-Type: application/json
+}
+
+body:json {
+  {
+    "language": "de" 
+  }
 }

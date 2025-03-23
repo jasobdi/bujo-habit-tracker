@@ -6,6 +6,17 @@ meta {
 
 post {
   url: http://localhost:8000/api/login
-  body: none
+  body: json
   auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+   {"email": "testuserone@example.com",
+    "password": "Test@1234"}
+  
 }
