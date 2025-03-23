@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "bullet-journal-api",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
