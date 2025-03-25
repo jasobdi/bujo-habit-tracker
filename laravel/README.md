@@ -1,9 +1,12 @@
 # laravel
 
+## API Path
+http://localhost:8000/api/
+
 ## Test Login Data
 
 ### Test User 1
-  "email": "testuser1@example.com",
+  "email": "testuserone@example.com",
   "username": "testuser1",
   "password": "Test@1234"
 
