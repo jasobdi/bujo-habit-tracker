@@ -16,30 +16,34 @@ Route::prefix('api')->group(function () {
 
     // user endpoints 
     Route::middleware('auth:sanctum')->group(function () {
+
+        // LOGOUT
+        Route::post('/logout', [AuthController::class, 'logout']);
     
         // USERS
         Route::get('/users', [UserController::class, 'index']);
         // 'create' is 'register' in AuthController
-        Route::put('/users', [UserController::class, 'update']);
-        Route::delete('/users', [UserController::class, 'destroy']);
+        Route::patch('/users', [UserController::class, 'update']);
+        Route::delete('/users', [UserController::class, 'delete']);
 
         // CATEGORIES
         Route::get('/categories', [CategoryController::class, 'index']);
         Route::post('/categories', [CategoryController::class, 'create']);
-        Route::put('/categories', [CategoryController::class, 'update']);
-        Route::delete('/categories', [CategoryController::class, 'destroy']);
+        Route::patch('/categories', [CategoryController::class, 'update']);
+        Route::delete('/categories', [CategoryController::class, 'delete']);
 
         // HABITS
         Route::get('/habits', [HabitController::class, 'index']);
+        Route::get('/habits/{id}', [HabitController::class, 'show']);
         Route::post('/habits', [HabitController::class, 'create']);
-        Route::put('/habits/{id}', [HabitController::class, 'update']);
-        Route::delete('/habits/{id}', [HabitController::class, 'destroy']);
+        Route::patch('/habits/{id}', [HabitController::class, 'update']);
+        Route::delete('/habits/{id}', [HabitController::class, 'delete']);
 
         // JOURNALS
         Route::get('/journals', [JournalController::class, 'index']);
         Route::post('/journals', [JournalController::class, 'create']); 
-        Route::put('/journals', [JournalController::class, 'update']);
-        Route::delete('/journals', [JournalController::class, 'destroy']);
+        Route::patch('/journals', [JournalController::class, 'update']);
+        Route::delete('/journals', [JournalController::class, 'delete']);
 
 
     });

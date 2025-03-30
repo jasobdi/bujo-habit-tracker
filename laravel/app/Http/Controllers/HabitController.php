@@ -15,17 +15,34 @@ class HabitController extends Controller
     return response()->json($habits);
 }
 
+    public function show($id) {
+        $habit = Habit::where('id', $id)->where('user_id', Auth::id())->first();
+        if(!$habit) {
+            // if the habit does not belong to the user, return 404 not found
+            return response()->json(['message' => 'Habit not found'], 404);
+        }
+        return response()->json($habit);
+    }
+
     public function create(Request $request) {
         $validated = $request->validate([
-            'title' => 'required|string',
+            'title' => 'required|string|max:50',
             'category_id' => 'required|exists:categories,id',
             'frequency' => 'required|in:daily,weekly,monthly,custom',
-            'custom_days' => 'nullable|array',
-            'custom_days.*' => 'string',
+
+            // custom_days only IF frequency is 'custom'
+            'custom_days' => 'required_if:frequency,custom|array|min:1',
+            'custom_days.*' => 'in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
+
             'start_date' => 'required|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'repeat_interval' => 'required|integer|min:1',
-        ]);
+            'end_date' => 'nullable|date|after_or_equal:start_date', // optional
+
+            // repeat_interval is only required IF frequency is daily, weekly or monthly
+            'repeat_interval' => 'required_if:frequency,daily,weekly,monthly|integer|min:1',
+        ]
+        // ,[custom error messages]
+    ); 
+        
         $habit = Habit::create([
             'title' => $validated['title'],
             'category_id' => $validated['category_id'],
@@ -68,7 +85,7 @@ class HabitController extends Controller
     ]);
 }
 
-    public function destroy($id)
+    public function delete($id)
     {
         $habit = Habit::where('id', $id)->where('user_id', Auth::id())->first(); // get habit by id and user_id
         if (!$habit) {

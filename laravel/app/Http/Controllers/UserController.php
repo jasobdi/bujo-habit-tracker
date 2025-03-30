@@ -21,8 +21,8 @@ class UserController extends Controller
     $validated = $request->validate([
         'email' => 'sometimes|email|unique:users,email,' . $user->id,
         'username' => 'sometimes|string',
-        'language' => 'sometimes|in:en,de,fr,it',
         'time_format' => 'sometimes|in:12h,24h',
+        'date_format' => 'sometimes|in:dd/mm/yyyy,mm/dd/yyyy,yyyy-mm-dd'
     ]);
 
     $user->update($validated);
@@ -33,7 +33,7 @@ class UserController extends Controller
     ]);
 }
 
-    public function destroy()
+    public function delete()
     {
         $user = Auth::user();
         $user->delete();

@@ -18,8 +18,8 @@ class User extends Authenticatable // now inherits from Authenticatable instead 
         'email',
         'username',
         'password',
-        'language',
         'time_format',
+        'date_format'
     ];
 
     protected $hidden = [
