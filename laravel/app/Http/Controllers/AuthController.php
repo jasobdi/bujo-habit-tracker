@@ -10,6 +10,7 @@ use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
+    // REGISTER (CREATE USER)
     public function register(Request $request)
     {
         $validated = $request->validate([
@@ -42,6 +43,7 @@ class AuthController extends Controller
         return response()->json(['message' => 'User registered successfully'], 201);
     }
 
+    // LOGIN
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -66,10 +68,19 @@ class AuthController extends Controller
         ]);
     }
 
+    // LOGOUT
     public function logout(Request $request) {
-            $user = Auth::user();
-            $user->currentAccessToken()->delete(); // deletes current token only
-            return response()->json(['message' => 'Logged out successfully']);
+
+        $user = Auth::user();
+
+        /** @var \Laravel\Sanctum\PersonalAccessToken|null $token */
+        $token = $user->currentAccessToken();
+
+        if ($token) {
+            $token->delete(); // delete current token
         }
+
+        return response()->json(['message' => 'Logged out successfully']);
+}
 
 }

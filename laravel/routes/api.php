@@ -28,9 +28,10 @@ Route::prefix('api')->group(function () {
 
         // CATEGORIES
         Route::get('/categories', [CategoryController::class, 'index']);
+        Route::get('/categories/{id}', [CategoryController::class, 'show']);
         Route::post('/categories', [CategoryController::class, 'create']);
-        Route::patch('/categories', [CategoryController::class, 'update']);
-        Route::delete('/categories', [CategoryController::class, 'delete']);
+        Route::patch('/categories/{id}', [CategoryController::class, 'update']);
+        Route::delete('/categories/{id}', [CategoryController::class, 'delete']);
 
         // HABITS
         Route::get('/habits', [HabitController::class, 'index']);
@@ -41,9 +42,10 @@ Route::prefix('api')->group(function () {
 
         // JOURNALS
         Route::get('/journals', [JournalController::class, 'index']);
+        Route::get('/journals/{id}', [JournalController::class, 'show']);
         Route::post('/journals', [JournalController::class, 'create']); 
-        Route::patch('/journals', [JournalController::class, 'update']);
-        Route::delete('/journals', [JournalController::class, 'delete']);
+        Route::patch('/journals/{id}', [JournalController::class, 'update']);
+        Route::delete('/journals/{id}', [JournalController::class, 'delete']);
 
 
     });

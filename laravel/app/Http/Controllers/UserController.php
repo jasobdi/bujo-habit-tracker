@@ -8,31 +8,35 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    function index() {
+    // READ
+    function index()
+    {
         return Auth::user();
     }
 
-    // no create method - is very similar to register in AuthController
+    // no create method -> is very similar to register in AuthController
 
+    // UPDATE
     public function update(Request $request)
-{
-    $user = Auth::user(); // get logged in user
+    {
+        $user = Auth::user(); // get logged in user
 
-    $validated = $request->validate([
-        'email' => 'sometimes|email|unique:users,email,' . $user->id,
-        'username' => 'sometimes|string',
-        'time_format' => 'sometimes|in:12h,24h',
-        'date_format' => 'sometimes|in:dd/mm/yyyy,mm/dd/yyyy,yyyy-mm-dd'
-    ]);
+        $validated = $request->validate([
+            'email' => 'sometimes|email|unique:users,email,' . $user->id,
+            'username' => 'sometimes|string',
+            'time_format' => 'sometimes|in:12h,24h',
+            'date_format' => 'sometimes|in:dd/mm/yyyy,mm/dd/yyyy,yyyy/mm/dd'
+        ]);
 
-    $user->update($validated);
+        $user->update($validated);
 
-    return response()->json([
-        'message' => 'User updated successfully',
-        'user' => $user
-    ]);
-}
+        return response()->json([
+            'message' => 'User updated successfully',
+            'user' => $user
+        ]);
+    }
 
+    // DELETE
     public function delete()
     {
         $user = Auth::user();
@@ -42,6 +46,4 @@ class UserController extends Controller
             'message' => 'User deleted successfully'
         ]);
     }
-
 }
-

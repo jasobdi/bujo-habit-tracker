@@ -1,0 +1,26 @@
+meta {
+  name: create
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8000/api/journals
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Baerer 2|AVHE8vWVnCBy9ERCndg7jK7wejHx7Jrx6DTpIpgr5e409edc
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "title": "My day at the lake",
+    "entry": "It was relaxing and sunny.",
+    "category_id": 1
+  }
+  
+}

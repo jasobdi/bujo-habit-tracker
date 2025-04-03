@@ -4,21 +4,21 @@
 
 Diese REST API ermöglicht registrierten Benutzern die Verwaltung von:
 - **Journaleinträgen** (Tagebuch)
-- **Gewohnheiten** mit flexiblen Wiederholungsregeln
+- **Gewohnheiten** (Habits) mit flexiblen Wiederholungsregeln
 - **Kategorien** zur besseren Organisation
-- **Benutzerkonten** (Registrierung, Login, Spracheinstellungen etc.)
+- **Benutzerkonten und -daten** (Registrierung, Login, etc.)
 
 ### Authentifizierung
 Alle Endpoints ausser `register` und `login` erfordern einen gültigen **Bearer Token** im Header.
 
 ### Hauptfunktionen
 - **Journals**: Erstellen, Anzeigen, Bearbeiten und Löschen von Einträgen
-- **Habits**: Wiederkehrende Gewohnheiten erstellen und verwalten (täglich, wöchentlich, monatlich oder benutzerdefiniert)
-- **Categories**: Benutzerdefinierte Kategorien zur Strukturierung
-- **User**: Registrierung, Login, Sprache & Zeitformat
+- **Habits**: Erstellen, Anzeigen, Bearbeiten und Löschen von iederkehrenden Gewohnheiten (täglich, wöchentlich, monatlich oder benutzerdefiniert)
+- **Categories**: Erstellen, Anzeigen, Bearbeiten und Löschen von benutzerdefinierten Kategorien
+- **User**: Registrierung, Login, Logout & Personalisierung 
 
 ### Antwortformat (Response)
-Alle Responses sind im JSON-Format. Bei Fehlern wird eine strukturierte Fehlermeldung zurückgegeben.
+Alle Responses sind im JSON-Format. Bei Fehlern wird eine Fehlermeldung zurückgegeben.
 
 ### Beispiel für eine Erfolgsmeldung:
 ```json
@@ -37,21 +37,16 @@ Alle Responses sind im JSON-Format. Bei Fehlern wird eine strukturierte Fehlerme
 ---
 ## Auth
 ---
-### Register User
+## Register User
 Registriert einen neuen Benutzer in der API.
 
 ### Endpoint
 POST /api/register
 
-### Header
-- Content-Type: application/json
-
 ### Body (JSON)
 - `username` (string, required): Benutzername
 - `email` (string, required): Gültige E-Mail-Adresse
 - `password` (string, required): Passwort (wird gehasht)
-- `language` (string, optional): z. B. "de", "en"
-- `time_format` (string, optional): "12h" oder "24h"
 
 ### Beispiel-Request
 ```json
@@ -59,8 +54,6 @@ POST /api/register
   "username": "test123",
   "email": "test@example.com",
   "password": "securePassword123",
-  "language": "de",
-  "time_format": "24h"
 }
 ```
 ### Beispiel-Response
@@ -70,9 +63,7 @@ POST /api/register
   "user": {
     "id": 5,
     "username": "test123",
-    "email": "test@example.com",
-    "language": "de",
-    "time_format": "24h"
+    "email": "test@example.com"
   },
   "token": "eyJ0eXAiOiJKV1QiLCJhbGciOi..."
 }
@@ -83,9 +74,6 @@ Logt einen neuen Benutzer in der API ein.
 
 ### Endpoint
 POST /api/login
-
-### Header
-- Content-Type: application/json
 
 ### Body (JSON)
 - `email` (string, required): Gültige E-Mail-Adresse
@@ -106,8 +94,7 @@ POST /api/login
     "id": 5,
     "username": "test123",
     "email": "test@example.com",
-    "language": "de",
-    "time_format": "24h"
+    "date_format": "dd/mm/yyyy",
     "created_at": "2025-03-23T16:33:28.000000Z",
     "updated_at": "2025-03-23T16:33:28.000000Z"
   },
@@ -115,14 +102,30 @@ POST /api/login
 }
 ```
 ---
+## Logout User
+Logt einen eingeloggten Nutzer wieder aus.
+
+### Endpoint
+POST /api/logout
+
+### Header
+- Authorization: Bearer Token
+
+### Beispiel-Response
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+---
 
 ## Users
 ---
-### Get Current User (Index)
+## Get Current User (Index)
 Gibt die Informationen des aktuell eingeloggten Benutzers zurück.
 
 ### Endpoint
-GET /api/user
+GET /api/users
 
 ### Header
 - Authorization: Bearer Token
@@ -133,35 +136,31 @@ GET /api/user
   "id": 5,
   "username": "test123",
   "email": "test@example.com",
-  "language": "de",
-  "time_format": "24h"
+  "date_format": "dd/mm/yyyy"
 }
 ```
 ---
-### Update User 
+## Update User 
 Aktualisiert die Benutzerinformationen des aktuell eingeloggten Benutzers.
 
 ### Endpoint
-GET /api/user/update
+PATCH /api/users
 
 ### Header
 - Authorization: Bearer Token
-- Content-Type: application/json
 
 ### Body (JSON)
 Mindestens eines der folgenden Felder:
 - `username` (string, optional): Neuer Benutzername
 - `email` (string, optional): Neue E-Mail-Adresse
 - `password` (string, optional): Neues Passwort (wird gehasht)
-- `language` (string, optional): z. B. "de", "en"
-- `time_format` (string, optional): "12h" oder "24h"
+- `date_format` (string, optional): "dd/mm/yyyy", "mm/dd/yyyy" oder "yyyy/mm/dd"
 
 ### Beispiel-Request
 ```json
 {
   "username": "neuerName",
-  "language": "en",
-  "time_format": "12h"
+  "date_format": "mm/dd/yyyy"
 } 
 ```
 ### Beispiel-Response
@@ -172,17 +171,16 @@ Mindestens eines der folgenden Felder:
     "id": 5,
     "username": "neuerName",
     "email": "test@example.com",
-    "language": "en",
-    "time_format": "12h"
+    "date_format": "mm/dd/yyyy"
   }
 } 
 ```
 ---
-### Destroy User
+## Delete User
 Löscht das aktuell eingeloggte Benutzerkonto unwiderruflich.
 
 ### Endpoint
-DELETE /api/user/destroy
+DELETE /api/users/delete
 
 ### Header
 Authorization: Bearer Token
@@ -197,7 +195,7 @@ Authorization: Bearer Token
 
 ## Categories
 ---
-### Get All Categories (Index)
+## Get All Categories (Index)
 Gibt alle Kategorien des aktuell eingeloggten Benutzers zurück.
 
 ### Endpoint
@@ -222,11 +220,29 @@ GET /api/categories
 ]
 ```
 ---
-### Create Category
+## Show Category (Index)
+Gibt eine ausgewählte Kategorie des aktuell eingeloggten Benutzers zurück.
+
+### Endpoint
+GET /api/categories/{id}
+
+### Header
+- Authorization: Bearer Token
+
+### Beispiel-Response
+```json
+{
+  "id": 1,
+  "title": "Fitness",
+  "user_id": 5
+}
+```
+---
+## Create Category
 Erstellt eine neue Kategorie.
 
 ### Endpoint
-POST /api/categories/create
+POST /api/categories
 
 ### Header
 - Authorization: Bearer Token
@@ -254,11 +270,11 @@ POST /api/categories/create
 }
 ```
 ---
-### Update Category
+## Update Category
 Aktualisiert eine vorhandene Kategorie.
 
 ### Endpoint
-PUT /api/categories/{id}
+PATCH /api/categories/{id}
 
 ### Header
 - Authorization: Bearer Token
@@ -286,7 +302,7 @@ PUT /api/categories/{id}
 }
 ```
 ---
-### Destroy Category
+## Delete Category
 Löscht eine Kategorie.
 
 ### Endpoint
@@ -305,7 +321,7 @@ DELETE /api/categories/{id}
 
 ## Habits
 ---
-### Get All Habits (Index)
+## Get All Habits (Index)
 Gibt alle Gewohnheiten des aktuell eingeloggten Benutzers zurück.
 
 ### Endpoint
@@ -328,14 +344,52 @@ GET /api/habits
     "end_date": null,
     "repeat_interval": 1
   }
+], [
+  {
+    "id": 4,
+    "title": "Meditieren",
+    "category_id": 1,
+    "user_id": 5,
+    "frequency": "daily",
+    "custom_days": null,
+    "start_date": "2025-03-31",
+    "end_date": null,
+    "repeat_interval": 1
+  }
+] 
+```
+---
+## Show Habit (Index)
+Gibt eine ausgewählte Gewohnheit des aktuell eingeloggten Benutzers zurück.
+
+### Endpoint
+GET /api/habits/{id}
+
+### Header
+- Authorization: Bearer Token
+
+### Beispiel-Response
+```json
+[
+  {
+    "id": 7,
+    "title": "Joggen",
+    "category_id": 1,
+    "user_id": 5,
+    "frequency": "weekly",
+    "custom_days": ["Monday", "Thursday"],
+    "start_date": "2025-03-01",
+    "end_date": null,
+    "repeat_interval": 1
+  }
 ]
 ```
 ---
-### Create Habit
+## Create Habit
 Erstellt eine neue Gewohnheit.
 
 ### Endpoint
-POST /api/habits/create
+POST /api/habits
 
 ### Header
 - Authorization: Bearer Token
@@ -381,11 +435,11 @@ POST /api/habits/create
 }
 ```
 ---
-### Update Habit
+## Update Habit
 Aktualisiert eine bestehende Gewohnheit.
 
 ### Endpoint
-PUT /api/habits/{id}
+PATCH /api/habits/{id}
 
 ### Header
 - Authorization: Bearer Token
@@ -417,7 +471,7 @@ Mindestens eines dieser Felder:
 }
 ```
 ---
-### Destroy Habit
+## Delete Habit
 Löscht eine Gewohnheit.
 
 ### Endpoint
@@ -436,7 +490,7 @@ DELETE /api/habits/{id}
 
 ## Journals
 ---
-### Get All Journals (Index)
+## Get All Journals (Index)
 Gibt alle Journaleinträge des aktuell eingeloggten Benutzers zurück.
 
 ### Endpoint
@@ -454,15 +508,44 @@ GET /api/journals
     "entry": "Heute war ein produktiver Tag.",
     "category_id": 2,
     "user_id": 5
+  },
+  {
+    "id": 2,
+    "title": "Vorfreude",
+    "entry": "Morgen fliege ich in die Ferien.",
+    "category_id": 5,
+    "user_id": 5
   }
 ]
 ```
 ---
-### Create Journal
+## Show Journal (Index)
+Gibt ein ausgewähltes Journal des aktuell eingeloggten Benutzers zurück.
+
+### Endpoint
+GET /api/journals/{id}
+
+### Header
+- Authorization: Bearer Token
+
+### Beispiel-Response
+```json
+[
+  {
+    "id": 1,
+    "title": "Tagesrückblick",
+    "entry": "Heute war ein produktiver Tag.",
+    "category_id": 2,
+    "user_id": 5
+  }
+]
+```
+---
+## Create Journal
 Erstellt einen neuen Journaleintrag.
 
 ### Endpoint
-POST /api/journals/create
+POST /api/journals
 
 ### Header
 - Authorization: Bearer Token
@@ -490,11 +573,11 @@ POST /api/journals/create
 }
 ```
 ---
-### Update Journal
+## Update Journal
 Aktualisiert einen Journaleintrag.
 
 ### Endpoint
-PUT /api/journals/{id}
+PATCH /api/journals/{id}
 
 ### Header
 - Authorization: Bearer Token
@@ -521,7 +604,7 @@ Mindestens eines dieser Felder:
 }
 ```
 ---
-### Destroy Journal
+## Delete Journal
 Löscht einen Journaleintrag.
 
 ### Endpoint
