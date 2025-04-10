@@ -13,7 +13,6 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('username');
             $table->string('password');
-            $table->string ('time_format')->default('24h');
             $table->string('date_format')->default('dd/mm/yyyy');
             $table->timestamps();
         });

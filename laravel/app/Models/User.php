@@ -18,7 +18,6 @@ class User extends Authenticatable // now inherits from Authenticatable instead 
         'email',
         'username',
         'password',
-        'time_format',
         'date_format'
     ];
 

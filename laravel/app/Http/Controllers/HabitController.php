@@ -42,6 +42,7 @@ class HabitController extends Controller
                 'custom_days' => 'required_if:frequency,custom|array|min:1',
                 'custom_days.*' => 'in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
 
+                'start_date' => 'required|date',
                 
                 'end_type' => 'required|in:none,date,count',
                 // end_date only IF end_type is 'date'

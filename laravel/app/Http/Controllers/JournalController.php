@@ -5,15 +5,55 @@ namespace App\Http\Controllers;
 use App\Models\Journal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class JournalController extends Controller
 {
     // READ ALL
-    public function index()
+    public function index(Request $request)
     {
-        $journals = Journal::where('user_id', Auth::id())->get(); // get all journals from logged in ser
+        
+        $user = Auth::user(); // get logged in user
+        $query = Journal::where('user_id', $user->id); // query for filtering
+
+        // filter by month & default to current month
+        $monthInput = $request->input('month', Carbon::now()->format('Y-m'));
+
+        try {
+            $month = Carbon::parse($monthInput . '-01');
+            $query->whereMonth('created_at', $month->month)
+                ->whereYear('created_at', $month->year);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Invalid month format. Use YYYY-MM.'], 400);
+        }
+
+        // filter by title
+        if ($request->filled('title')) {
+            $query->where('title', 'like', '%' . $request->input('title') . '%');
+        }
+
+        // filter by category
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->input('category_id'));
+        }
+
+        // sort by date (created_at)
+        $allowedOrderBy = ['created_at'];
+        $allowedOrderDir = ['asc', 'desc'];
+
+        $orderBy = $request->input('order_by', 'created_at');
+        $orderDir = $request->input('order_dir', 'desc'); // fallback to 'descending' if not provided
+
+        if (!in_array($orderBy, $allowedOrderBy) || !in_array($orderDir, $allowedOrderDir)) {
+            return response()->json(['message' => 'Invalid sort parameter'], 400); // 400 = Bad Request
+        }
+
+        $query->orderBy($orderBy, $orderDir);
+
+        $journals = $query->get();
+    
         return response()->json($journals);
-    }
+}
 
     // READ BY ID
     public function show($id)
@@ -44,7 +84,7 @@ class JournalController extends Controller
         $journal = Journal::create([
             'title' => $validated['title'],
             'entry' => $validated['entry'],
-            'category_id' => $validated['category_id'] ?? null,
+            'category_id' => $validated['category_id'],
             'user_id' => Auth::id(),
         ]);
 
@@ -66,7 +106,7 @@ class JournalController extends Controller
         $validated = $request->validate([
             'title' => 'sometimes|string|max:100',
             'entry' => 'sometimes|string',
-            'category_id' => 'nullable|exists:categories,id',
+            'category_id' => 'sometimes|exists:categories,id',
         ]);
 
         $journal->update($validated);

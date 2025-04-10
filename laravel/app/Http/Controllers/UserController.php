@@ -24,7 +24,6 @@ class UserController extends Controller
         $validated = $request->validate([
             'email' => 'sometimes|email|unique:users,email,' . $user->id,
             'username' => 'sometimes|string',
-            'time_format' => 'sometimes|in:12h,24h',
             'date_format' => 'sometimes|in:dd/mm/yyyy,mm/dd/yyyy,yyyy/mm/dd'
         ]);
 
