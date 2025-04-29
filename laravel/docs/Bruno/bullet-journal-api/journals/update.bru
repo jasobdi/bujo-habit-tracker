@@ -5,7 +5,18 @@ meta {
 }
 
 patch {
-  url: http://localhost:8000/api/journals
-  body: none
+  url: http://localhost:8000/api/journals/1
+  body: json
   auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "title": "My day at the sea"
+  }
+  
 }

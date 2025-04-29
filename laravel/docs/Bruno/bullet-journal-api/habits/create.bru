@@ -11,7 +11,7 @@ post {
 }
 
 headers {
-  Authorization: Bearer 1|5LqvZbwOiwslAipqscESgLPrK5BvzEFbPHqapUJic0263974
+  Authorization: Bearer {{token}}
   Content-Type: application/json
   Accept: application/json
 }
@@ -19,10 +19,11 @@ headers {
 body:json {
   {
     "title": "Meditate",
-    "category_id": 2,
+    "category_id": 1,
     "frequency": "custom",
     "custom_days": ["Monday", "Wednesday", "Friday"],
     "start_date": "2025-03-01",
+    "end_type": "date",
     "end_date": "2025-04-01",
     "repeat_interval": 1
   }

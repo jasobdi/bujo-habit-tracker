@@ -18,9 +18,7 @@ return new class extends Migration
             $table->integer('repeat_interval')->default(1); // every X days, weeks, months, etc.
             $table->json('custom_days')->nullable(); // optional
             $table->date('start_date');
-            $table->string('end_type')->default('none'); // 'none', 'date', or 'count'
             $table->date('end_date')->nullable(); // optional 
-            $table->integer('end_count')->nullabele(); // optional
             $table->timestamps(); // not relevant but for consistency
         });
     }

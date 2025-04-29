@@ -5,11 +5,15 @@ meta {
 }
 
 get {
-  url: http://localhost:8000/api/journals
+  url: http://localhost:8000/api/journals?month=2025-04
   body: none
   auth: none
 }
 
+params:query {
+  month: 2025-04
+}
+
 headers {
-  Authorization: Bearer 1|x9eWlp01lGQL9S7ZHCwvrquzzV0nADLyJhvT4F6eddb7ef04
+  Authorization: Bearer {{token}}
 }

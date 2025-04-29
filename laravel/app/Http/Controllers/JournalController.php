@@ -12,7 +12,7 @@ class JournalController extends Controller
     // READ ALL
     public function index(Request $request)
     {
-        
+
         $user = Auth::user(); // get logged in user
         $query = Journal::where('user_id', $user->id); // query for filtering
 
@@ -51,9 +51,9 @@ class JournalController extends Controller
         $query->orderBy($orderBy, $orderDir);
 
         $journals = $query->get();
-    
+
         return response()->json($journals);
-}
+    }
 
     // READ BY ID
     public function show($id)
