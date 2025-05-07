@@ -13,9 +13,9 @@ Alle Endpoints ausser `register` und `login` erfordern einen gültigen **Bearer 
 
 ### Hauptfunktionen
 - **Journals**: Erstellen, Anzeigen, Bearbeiten und Löschen von Einträgen
-- **Habits**: Erstellen, Anzeigen, Bearbeiten und Löschen von iederkehrenden Gewohnheiten (täglich, wöchentlich, monatlich oder benutzerdefiniert)
+- **Habits**: Erstellen, Anzeigen, Bearbeiten und Löschen von wiederkehrenden Gewohnheiten (täglich, wöchentlich, monatlich oder benutzerdefiniert)
 - **Categories**: Erstellen, Anzeigen, Bearbeiten und Löschen von benutzerdefinierten Kategorien
-- **User**: Registrierung, Login, Logout & Personalisierung 
+- **User**: Registrierung, Login, Logout & Personalisierung
 
 ### Antwortformat (Response)
 Alle Responses sind im JSON-Format. Bei Fehlern wird eine Fehlermeldung zurückgegeben.
@@ -246,7 +246,6 @@ POST /api/categories
 
 ### Header
 - Authorization: Bearer Token
-- Content-Type: application/json
 
 ### Body (JSON)
 - `title` (string, required): Titel der neuen Kategorie (z. B. "Gesundheit")
@@ -278,7 +277,6 @@ PATCH /api/categories/{id}
 
 ### Header
 - Authorization: Bearer Token
-- Content-Type: application/json
 
 ### Body (JSON)
 - `title` (string, required): Neuer Titel der Kategorie
@@ -286,7 +284,7 @@ PATCH /api/categories/{id}
 ### Beispiel-Request
 ```json
 {
-  "title": "Gesundheit & Fitness"
+  "title": "Gesundheit & Sport"
 }
 ```
 
@@ -296,7 +294,7 @@ PATCH /api/categories/{id}
   "message": "Category updated successfully.",
   "category": {
     "id": 3,
-    "title": "Gesundheit & Fitness",
+    "title": "Gesundheit & Sport",
     "user_id": 5
   }
 }
@@ -304,6 +302,8 @@ PATCH /api/categories/{id}
 ---
 ## Delete Category
 Löscht eine Kategorie.
+
+**Hinweis:** Eine Kategorie kann nur gelöscht werden wenn sie keinem Habit oder Journal mehr zugewiesen ist. Andernfalls wird eine Fehlermeldung zurückgegeben.
 
 ### Endpoint
 DELETE /api/categories/{id}
@@ -317,12 +317,18 @@ DELETE /api/categories/{id}
   "message": "Category deleted successfully."
 }
 ```
+### Beispiel-Fehlermeldung
+```json
+{
+  "message": "Category is still in use and cannot be deleted."
+}
+```
 ---
 
 ## Habits
 ---
 ## Get All Habits (Index)
-Gibt alle Gewohnheiten des aktuell eingeloggten Benutzers zurück.
+Gibt alle Habits des aktuell eingeloggten Benutzers zurück.
 
 ### Endpoint
 GET /api/habits
@@ -333,29 +339,38 @@ GET /api/habits
 ### Beispiel-Response
 ```json
 [
-  {
-    "id": 7,
+{
+    "id": 1,
     "title": "Joggen",
-    "category_id": 1,
-    "user_id": 5,
-    "frequency": "weekly",
-    "custom_days": ["Monday", "Thursday"],
-    "start_date": "2025-03-01",
-    "end_date": null,
-    "repeat_interval": 1
-  }
-], [
+    "category_id": 3,
+    "user_id": 1,
+    "frequency": "custom",
+    "repeat_interval": 2,
+    "custom_days": [
+      "Monday",
+      "Friday"
+    ],
+    "start_date": "2025-05-01T00:00:00.000000Z",
+    "end_date": "2025-08-01T00:00:00.000000Z",
+    "created_at": "2025-04-26T09:31:32.000000Z",
+    "updated_at": "2025-04-26T10:07:18.000000Z"
+  },
   {
-    "id": 4,
+    "id": 2,
     "title": "Meditieren",
-    "category_id": 1,
-    "user_id": 5,
-    "frequency": "daily",
-    "custom_days": null,
-    "start_date": "2025-03-31",
-    "end_date": null,
-    "repeat_interval": 1
-  }
+    "category_id": 3,
+    "user_id": 1,
+    "frequency": "custom",
+    "repeat_interval": 2,
+    "custom_days": [
+      "Monday",
+      "Friday"
+    ],
+    "start_date": "2025-05-01T00:00:00.000000Z",
+    "end_date": "2025-08-01T00:00:00.000000Z",
+    "created_at": "2025-04-26T09:47:12.000000Z",
+    "updated_at": "2025-04-26T09:47:12.000000Z"
+  },
 ] 
 ```
 ---
@@ -372,15 +387,20 @@ GET /api/habits/{id}
 ```json
 [
   {
-    "id": 7,
+    "id": 1,
     "title": "Joggen",
-    "category_id": 1,
-    "user_id": 5,
-    "frequency": "weekly",
-    "custom_days": ["Monday", "Thursday"],
-    "start_date": "2025-03-01",
-    "end_date": null,
-    "repeat_interval": 1
+    "category_id": 3,
+    "user_id": 1,
+    "frequency": "custom",
+    "repeat_interval": 2,
+    "custom_days": [
+      "Monday",
+      "Friday"
+    ],
+    "start_date": "2025-05-01T00:00:00.000000Z",
+    "end_date": "2025-08-01T00:00:00.000000Z",
+    "created_at": "2025-04-26T09:31:32.000000Z",
+    "updated_at": "2025-04-26T10:07:18.000000Z"
   }
 ]
 ```
@@ -393,44 +413,48 @@ POST /api/habits
 
 ### Header
 - Authorization: Bearer Token
-- Content-Type: application/json
 
 ### Body (JSON)
 - `title` (string, required): Titel der Gewohnheit
 - `category_id` (integer, required): ID der zugeordneten Kategorie
+- `user_id`
 - `frequency` (string, required): "daily", "weekly", "monthly", "custom"
+- `repeat_interval` (integer, required): Wiederholungsintervall
 - `custom_days` (array of strings, optional): Nur bei "custom", z. B. ["Monday", "Thursday"]
 - `start_date` (string, required): Startdatum im Format YYYY-MM-DD
 - `end_date` (string, optional): Enddatum im Format YYYY-MM-DD
-- `repeat_interval` (integer, required): Wiederholungsintervall
+
+**Hinweis:** Jedem Habit muss mindestens eine Kategorie zugewiesen werden. 
+
 
 ### Beispiel-Request
 ```json
 {
-  "title": "Meditation",
-  "category_id": 1,
-  "frequency": "daily",
-  "custom_days": [],
-  "start_date": "2025-03-24",
-  "end_date": null,
-  "repeat_interval": 1
+  "title": "Take Vitamins",
+  "category_id": 3,
+  "frequency": "custom",
+  "custom_type": "daily",
+  "start_date": "2025-05-01",
+  "end_date": "2025-06-01",
+  "repeat_interval": 3
 }
 ```
 
 ### Beispiel-Response
 ```json
 {
-  "message": "Habit created successfully.",
+  "message": "Habit created successfully",
   "habit": {
-    "id": 10,
-    "title": "Meditation",
-    "category_id": 1,
-    "user_id": 5,
-    "frequency": "daily",
-    "custom_days": [],
-    "start_date": "2025-03-24",
-    "end_date": null,
-    "repeat_interval": 1
+    "title": "Take Vitamins",
+    "category_id": 3,
+    "user_id": 1,
+    "frequency": "custom",
+    "start_date": "2025-05-01T00:00:00.000000Z",
+    "end_date": "2025-06-01T00:00:00.000000Z",
+    "repeat_interval": 3,
+    "updated_at": "2025-04-26T10:05:51.000000Z",
+    "created_at": "2025-04-26T10:05:51.000000Z",
+    "id": 3
   }
 }
 ```
@@ -443,7 +467,6 @@ PATCH /api/habits/{id}
 
 ### Header
 - Authorization: Bearer Token
-- Content-Type: application/json
 
 ### Body (JSON)
 Mindestens eines dieser Felder:
@@ -458,8 +481,12 @@ Mindestens eines dieser Felder:
 ### Beispiel-Request
 ```json
 {
-  "title": "Abendmeditation",
-  "frequency": "weekly"
+  "frequency": "custom",
+  "custom_type": "weekly",
+  "repeat_interval": 2,
+  "custom_days": ["Monday", "Friday"],
+  "start_date": "2025-05-01",
+  "end_date": "2025-08-01"
 }
 ```
 
@@ -506,14 +533,14 @@ GET /api/journals
     "id": 1,
     "title": "Tagesrückblick",
     "entry": "Heute war ein produktiver Tag.",
-    "category_id": 2,
+    "category_id": 4,
     "user_id": 5
   },
   {
     "id": 2,
     "title": "Vorfreude",
     "entry": "Morgen fliege ich in die Ferien.",
-    "category_id": 5,
+    "category_id": 4,
     "user_id": 5
   }
 ]
@@ -535,7 +562,7 @@ GET /api/journals/{id}
     "id": 1,
     "title": "Tagesrückblick",
     "entry": "Heute war ein produktiver Tag.",
-    "category_id": 2,
+    "category_id": 4,
     "user_id": 5
   }
 ]
@@ -549,12 +576,13 @@ POST /api/journals
 
 ### Header
 - Authorization: Bearer Token
-- Content-Type: application/json
 
 ### Body (JSON)
 - `title` (string, required): Titel des Journals
 - `entry` (string, required): Textinhalt des Eintrags
 - `category_id` (integer, required): Zugeordnete Kategorie
+
+**Hinweis:** Jedem Journal muss mindestens eine Kategorie zugewiesen werden.
 
 ### Beispiel-Request
 ```json
@@ -581,7 +609,6 @@ PATCH /api/journals/{id}
 
 ### Header
 - Authorization: Bearer Token
-- Content-Type: application/json
 
 ### Body (JSON)
 Mindestens eines dieser Felder:
