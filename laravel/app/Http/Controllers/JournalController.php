@@ -81,6 +81,18 @@ class JournalController extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
+        // check if journal already exists for today
+        $alreadyExists = Journal::where('user_id', $user->id)
+        ->whereDate('created_at', now()->toDateString()) // if created_at is today -> a journal already exists
+        ->exists();
+
+        if ($alreadyExists) { // if a journal already exists for today -> message
+            return response()->json([
+                'message' => 'You have already created a journal for today.'
+            ], 409); // 409 = Conflict
+        }
+
+        // create journal
         $journal = Journal::create([
             'title' => $validated['title'],
             'entry' => $validated['entry'],

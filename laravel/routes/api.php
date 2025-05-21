@@ -36,6 +36,7 @@ Route::prefix('api')->group(function () {
         // HABITS
         Route::get('/habits', [HabitController::class, 'index']);
         Route::get('/habits/{id}', [HabitController::class, 'show']);
+        Route::get('/habits/monthly', [HabitController::class, 'getHabitsByMonth']);
         Route::post('/habits', [HabitController::class, 'create']);
         Route::patch('/habits/{id}', [HabitController::class, 'update']);
         Route::delete('/habits/{id}', [HabitController::class, 'delete']);

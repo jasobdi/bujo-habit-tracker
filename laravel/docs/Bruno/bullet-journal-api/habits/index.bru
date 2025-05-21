@@ -5,9 +5,14 @@ meta {
 }
 
 get {
-  url: http://localhost:8000/api/habits/1
+  url: http://localhost:8000/api/habits/monthly?year=202&month=5
   body: json
   auth: none
+}
+
+params:query {
+  year: 202
+  month: 5
 }
 
 headers {

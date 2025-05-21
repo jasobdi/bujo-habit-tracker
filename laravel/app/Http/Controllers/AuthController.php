@@ -34,12 +34,15 @@ class AuthController extends Controller
         ]
         ]);
 
+        // fallback: use default if none provided
+        $dateFormat = $request->input('date_format', 'dd/mm/yyyy');
+
         $user = User::create([
             'email' => $validated['email'],
             'username' => $validated['username'],
             'password' => Hash::make($validated['password']),
-        ]);
-
+            'date_format' => $dateFormat,
+    ]);
         return response()->json(['message' => 'User registered successfully'], 201);
     }
 
