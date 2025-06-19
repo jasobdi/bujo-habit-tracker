@@ -1,112 +1,68 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { registerSchema, RegisterFormData } from '@/lib/validation/registerSchema'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { registerAction } from "@/actions/register/register-action"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+
+const schema = z.object({
+    username: z
+        .string()
+        .min(1, 'Name is required')
+        .regex(/^[A-Za-zÄÖÜäöüß\s]+$/, 'No special characters allowed'),
+    email: z.string().email('Email is invalid'),
+    password: z
+        .string()
+        .min(8, 'Password must contain min. 8 characters')
+        .max(16, 'Password can contain max. 16 characters')
+        .regex(/[A-Z]/, 'Password must contain one capital letter')
+        .regex(/[0-9]/, 'Password must contain one number')
+        .regex(/[^A-Za-z0-9]/, 'Password must contain one special character'),
+})
+
+type FormData = z.infer<typeof schema>
 
 export default function RegisterPage() {
     const {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm<RegisterFormData>({
-        resolver: zodResolver(registerSchema),
+        reset,
+    } = useForm<FormData>({
+        resolver: zodResolver(schema),
     })
-
     const router = useRouter()
     const [error, setError] = useState<string | null>(null)
-    const [loading, setLoading] = useState(false)
 
-    const onSubmit = async (data: RegisterFormData) => {
-        setError(null)
-        setLoading(true)
-
-        try {
-            const res = await fetch('http://localhost:8000/api/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                },
-                body: JSON.stringify(data),
-            })
-
-            if (!res.ok) {
-                const result = await res.json()
-                throw new Error(result.message || 'Registration failed')
-            }
-
-            router.push('/public/login') // oder: /protected/dashboard
-        } catch (err: any) {
-            setError(err.message || 'Something went wrong')
-        } finally {
-            setLoading(false)
+    const onSubmit = async (data: FormData) => {
+        const result = await registerAction(data)
+        if (!result.success) {
+            setError(result.error)
+            return
         }
+        reset()
+        router.push("/public/login")
     }
 
     return (
-        <main className="max-w-sm mx-auto px-4 py-8">
-            <h1 className="text-xl font-bold text-center mb-6 font-sans text-foreground">
-                Register
-            </h1>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Username */}
+            <input {...register('username')} placeholder="Jane Doe" />
+            {errors.username && <p>{errors.username.message}</p>}
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                {/* Username */}
-                <div className="flex flex-col">
-                    <label className="text-sm font-sans mb-1 text-foreground">Name</label>
-                    <input
-                        type="text"
-                        {...register('username')}
-                        placeholder="Your name"
-                        className="p-2 border border-border rounded-[var(--radius)] bg-input text-sm text-foreground"
-                    />
-                    {errors.username && (
-                        <span className="text-sm text-tertiary mt-1">{errors.username.message}</span>
-                    )}
-                </div>
+            {/* Email */}
+            <input {...register('email')} placeholder="you@example.com" />
+            {errors.email && <p>{errors.email.message}</p>}
 
-                {/* Email */}
-                <div className="flex flex-col">
-                    <label className="text-sm font-sans mb-1 text-foreground">Email</label>
-                    <input
-                        type="email"
-                        {...register('email')}
-                        placeholder="you@example.com"
-                        className="p-2 border border-border rounded-[var(--radius)] bg-input text-sm text-foreground"
-                    />
-                    {errors.email && (
-                        <span className="text-sm text-tertiary mt-1">{errors.email.message}</span>
-                    )}
-                </div>
+            {/* Password */}
+            <input type="password" {...register('password')} placeholder="Password" />
+            {errors.password && <p>{errors.password.message}</p>}
 
-                {/* Password */}
-                <div className="flex flex-col">
-                    <label className="text-sm font-sans mb-1 text-foreground">Password</label>
-                    <input
-                        type="password"
-                        {...register('password')}
-                        placeholder="••••••••"
-                        className="p-2 border border-border rounded-[var(--radius)] bg-input text-sm text-foreground"
-                    />
-                    {errors.password && (
-                        <span className="text-sm text-tertiary mt-1">{errors.password.message}</span>
-                    )}
-                </div>
-
-                {/* Submit Button */}
-                <button
-                    type="submit"
-                    className="w-full bg-primary text-foreground py-2 rounded-[var(--radius)] font-sans text-sm hover:opacity-90 transition"
-                >
-                    Register
-                </button>
-
-                {/* Feedback */}
-                {error && <p className="text-sm text-tertiary text-center mt-2">{error}</p>}
-                {loading && <p className="text-sm text-secondary text-center mt-2">Registering...</p>}
-            </form>
-        </main>
+            {/* Submit Button */}
+            <button type="submit">Register</button>
+            {error && <p>{error}</p>}
+        </form>
     )
 }
