@@ -40,17 +40,16 @@ export default function LoginPage() {
 
     return (
 
-        <section className="max-w-sm mx-3 my-4 border-[2px] border-border rounded-[15px] p-6">
+        <section className="max-w-sm mx-3 my-4 border-[2px] border-border rounded-[15px] p-6 font-sans">
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                 {/* Email */}
                 <div className="flex flex-col">
                     <label className="text-sm text-center mb-2">Email</label>
                     <input
                         type="email"
                         {...register('email')}
-                        placeholder="you@example.com"
-                        className="p-2 border border-border rounded-radius bg-input text-sm text-center"
+                        className="p-2 border-[2px] border-border rounded-radius bg-input text-sm text-center"
                     />
                     {errors.email && (
                         <p className="text-sm mt-1">{errors.email.message}</p>
@@ -63,8 +62,7 @@ export default function LoginPage() {
                     <input
                         type="password"
                         {...register('password')}
-                        placeholder="••••••••"
-                        className="p-2 border border-border rounded-radius bg-input text-sm text-center"
+                        className="p-2 border-[2px] border-border rounded-radius bg-input text-sm text-center"
                     />
                     {errors.password && (
                         <p className="text-sm text-tertiary mt-1">{errors.password.message}</p>
@@ -74,12 +72,12 @@ export default function LoginPage() {
                 {/* Submit Button */}
                 <BaseButton
                     variant="text"
-                    className={cn("h-[35px] px-[12px] py-[5px] text-lg rounded-radius-btn border-[2px] border-border font-montserrat mt-5")}>
-                        Login
+                    className={cn("h-9 px-3 py-1 text-lg rounded-radius-btn border-[2px] border-border font-sans mt-5 mb-5")}>
+                    Login
                 </BaseButton>
 
                 {/* Feedback */}
-                {error && <p className="text-sm text-tertiary text-center mt-2">{error}</p>}
+                {error && <p className="text-sm text-error text-center mt-2">{error}</p>}
             </form>
 
             {/* Link to Register */}

@@ -4,9 +4,6 @@
 
 :root {
 
-  --font-sans: var(--font-montserrat);
-  --font-hand: var(--font-patrick-hand);
-
   /* layout-base colors */
   --background: #ffffff;
   --foreground: #000000; /* font */
@@ -17,18 +14,21 @@
   --tertiary: #F1A8A8;        /* attention */
   --black: #000000;          /* black */
   --white: #ffffff;          /* white */
-  --inactive: #D9D9D9; /* inactive buttons */
+  --inactive: #D9D9D9;       /* inactive buttons */
+
 
   /* text-color */
   --text: #000000;
+  --error: #FF0000;
 
   /* tag-color */
   --tags: #C5F8BE; 
 
   /* borders & input-fields colors */
   --border: #000000;
-  --input: #ffffff;
   --ring: #000000; /* focus: accessibility */
+  --input: #ffffff;
+
 
   /* border-radius */
   --radius-btn: 10px;
