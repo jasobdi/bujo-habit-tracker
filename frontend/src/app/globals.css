@@ -1,42 +1,48 @@
-@import "tailwindcss/preflight";
-@import "tailwindcss/utilities";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  :root {
+:root {
 
-    --font-sans: var(--font-montserrat);
-    --font-hand: var(--font-patrick-hand);
+  --font-sans: var(--font-montserrat);
+  --font-hand: var(--font-patrick-hand);
 
-    /* layout-base colors */
-    --background: #ffffff;
-    --foreground: #000000; /* font */
+  /* layout-base colors */
+  --background: #ffffff;
+  --foreground: #000000; /* font */
+
+  /* button-colors */
+  --primary: #BEECF8;         /* default - information */
+  --secondary: #F5C272;       /* actions */
+  --tertiary: #F1A8A8;        /* attention */
+  --black: #000000;          /* black */
+  --white: #ffffff;          /* white */
+  --inactive: #D9D9D9; /* inactive buttons */
+
+  /* text-color */
+  --text: #000000;
+
+  /* tag-color */
+  --tags: #C5F8BE; 
+
+  /* borders & input-fields colors */
+  --border: #000000;
+  --input: #ffffff;
+  --ring: #000000; /* focus: accessibility */
+
+  /* border-radius */
+  --radius-btn: 10px;
+  --radius: 15px;
+
+  /* Popovers */
+  --popover: var(--background);
+  --popover-foreground: var(--foreground);
+
   
-    /* button-colors */
-    --primary: #BEECF8;         /* default - information */
-    --secondary: #F5C272;       /* actions */
-    --tertiary: #F1A8A8;        /* attention */
-    --button-inactive: #D9D9D9; /* inactive buttons */
-  
-    /* text */
-    --text: #000000;
+}
 
-    /* tags */
-    --tags: #C5F8BE; 
-  
-    /* borders & input-fields */
-    --border: #000000;
-    --input: #ffffff;
-    --ring: #000000; /* focus: accessibility */
-  
-    /* border-radius */
-    --radius: 10px;
-
-    /* Popovers */
-    --popover: var(--background);
-    --popover-foreground: var(--foreground);
-  }
-
-  body {
-    background: var(--background);
-    color: var(--foreground);
-  }
-  
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
