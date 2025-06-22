@@ -26,7 +26,7 @@ export default function RootLayout({ children }: Readonly<{
     <html lang="en">
       <body
         className={`${montserrat.variable} ${patrickHand.variable}`}
-      >
+        >
         {children}
       </body>
     </html>
