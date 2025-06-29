@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Montserrat, Patrick_Hand } from "next/font/google";
+import { Providers } from "./providers";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -19,15 +20,11 @@ export const metadata: Metadata = {
   description: "Track your habits and save your daily journals",
 };
 
-export default function RootLayout({ children }: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body
-        className={`${montserrat.variable} ${patrickHand.variable}`}
-        >
-        {children}
+      <body className={`${montserrat.variable} ${patrickHand.variable} font-sans`}>
+        <Providers>{children}</Providers> 
       </body>
     </html>
   );

@@ -35,7 +35,7 @@ function BaseButton({ className, variant, asChild = false, ...props }: BaseButto
     <Comp
     {...props}
       data-slot="button"
-      className={cn(buttonVariants({ variant, className }))}
+      className={cn(buttonVariants({ variant}), className )}
     />
   )
 }

@@ -1,18 +1,10 @@
 'use client'
 
-import { logoutAction } from '@/actions/logout/logout-action'
-import { useRouter } from 'next/navigation'
+import { signOut } from 'next-auth/react'
 
 export function LogoutButton() {
-    const router = useRouter()
-
     const handleLogout = async () => {
-        const result = await logoutAction()
-        if (result.success) {
-            router.push('/public/login')
-        } else {
-            console.error(result.error)
-        }
+        await signOut({ callbackUrl: '/public/login' })
     }
 
     return <button onClick={handleLogout}>Logout</button>

@@ -24,15 +24,16 @@ export default function LandingPage() {
       </div>
 
       {/* Footer */}
-      <footer className="w-full text-xs font-sans flex flex-col items-center gap-1 pt-4 pb-2
-        md:flex-row md:justify-evenly md:gap-0">
-        <div className="flex flex-col items-center md:flex-row md:gap-8">
-          <Link href="/impressum">Impressum</Link>
-          <Link href="/privacy">Privacy policy</Link>
-        </div>
-          <p className="mt-1 md:mt-0">&copy; 2025 Bullet Journal</p>
-        
-      </footer>
+      <footer className="sm:h-[12.5vh] py-2 flex flex-col items-center justify-center text-center font-sans text-xs">
+                <div className="flex flex-col items-center gap-8 md:flex-row md:justify-evenly md:w-full">
+                    <Link href="/public/legal" className="hover:underline">
+                        Legal notice & privacy policy
+                    </Link>
+                    <p>
+                        © {new Date().getFullYear()} Janice Bader
+                    </p>
+                </div>
+            </footer>
     </main>
   )
 }
