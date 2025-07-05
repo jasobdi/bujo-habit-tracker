@@ -14,7 +14,6 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         if (pathname.includes('/login')) return 'Login'
         if (pathname.includes('/register')) return 'Register'
         if (pathname.includes('/legal')) return 'Legal notice & Privacy policy'
-        // if (pathname === '/public') return 'Welcome'
         return ''
     }
 
@@ -29,7 +28,9 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             </header>
 
             {/* CONTENT */}
-            <main className="flex-grow px-4 py-6">{children}</main>
+            <main>
+                {children}
+            </main>
 
             {/* FOOTER */}
             <footer className="h-[12.5vh] py-2 flex flex-col items-center justify-center text-center font-sans text-xs">

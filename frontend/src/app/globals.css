@@ -9,25 +9,26 @@
   --foreground: #000000; /* font */
 
   /* button-colors */
-  --primary: #BEECF8;         /* default - information */
-  --secondary: #F5C272;       /* actions */
-  --tertiary: #F1A8A8;        /* attention */
+  --primary: #BEECF8;         /* default - information (blue) */
+  --secondary: #F5C272;       /* actions (orange) */
+  --tertiary: #F1A8A8;        /* attention (red) */
+  --completed: #BEF4E8;       /* completed (teal) */
   --black: #000000;          /* black */
   --white: #ffffff;          /* white */
-  --inactive: #D9D9D9;       /* inactive buttons */
+  --contrast: #D9D9D9;       /* inactive/contrast color (grey) */
 
 
   /* text-color */
-  --text: #000000;
-  --error: #FF0000;
+  --text: #000000;          /* black */
+  --error: #FF0000;         /* red */
 
   /* tag-color */
-  --tags: #C5F8BE; 
+  --tags: #C5F8BE;          /* green */
 
   /* borders & input-fields colors */
-  --border: #000000;
-  --ring: #000000; /* focus: accessibility */
-  --input: #ffffff;
+  --border: #000000;        /* black */
+  --ring: #000000;          /* focus: accessibility (black) */
+  --input: #ffffff;         /* white */
 
 
   /* border-radius */
@@ -36,7 +37,7 @@
 
   /* Popovers */
   --popover: var(--background);
-  --popover-foreground: var(--foreground);
+  --popover-foreground: var(--foreground); 
 
   
 }
@@ -44,5 +45,12 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans);
+  font-family: var(--font-sans); /* Montserrat */
+}
+
+ /* dashbaord calendar (day picker) */
+.rdp-root { 
+  --rdp-accent-color: var(--black);
+  --rdp-accent-background-color: var(--secondary);
+
 }

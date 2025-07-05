@@ -49,7 +49,7 @@ export default function LoginPage() {
     }
 
     return (
-        <main className="flex justify-center">
+        <div className="flex justify-center">
             <section className="max-w-sm mx-3 my-4 border-[2px] border-border rounded-radius p-6 font-sans">
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -81,7 +81,7 @@ export default function LoginPage() {
 
                     {/* Submit Button */}
                     <div className="flex justify-center">
-                        <BaseButton variant="text" className="mt-5 mb-5">
+                        <BaseButton type="submit" variant="text" className="mt-5 mb-5">
                             Login
                         </BaseButton>
                     </div>
@@ -91,14 +91,14 @@ export default function LoginPage() {
                 </form>
 
                 {/* Link to Register */}
-                <p className="text-center text-xs text-inactive mt-8 font-sans">
+                <p className="text-center text-xs text-contrast mt-8 font-sans">
                     Don’t have an account yet?{' '}
-                    <Link href="/public/register" className="underline text-inactive">
+                    <Link href="/public/register" className="underline text-contrast">
                         Register here
                     </Link>
                 </p>
             </section>
-        </main>
+        </div>
     )
 }
 

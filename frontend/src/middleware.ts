@@ -1,7 +1,9 @@
 // middleware.ts
-import { getToken } from 'next-auth/jwt'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { getToken } from "next-auth/jwt";
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import * as NextAuthJWT from "next-auth/jwt";
+console.log("NextAuthJWT exports:", NextAuthJWT);
 
 // define protected routes
 const protectedRoutes = ['/protected']

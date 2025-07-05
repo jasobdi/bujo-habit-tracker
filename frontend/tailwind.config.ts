@@ -31,7 +31,7 @@ const config: Config = {
                 white: 'var(--white)',
                 black: 'var(--black)',
                 tags: 'var(--tags)',
-                inactive: 'var(--inactive)',
+                contrast: 'var(--contrast)',
                 popover: 'var(--popover)',
                 'popover-foreground': 'var(--popover-foreground)',
             },

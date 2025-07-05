@@ -1,29 +1,20 @@
-import NextAuth, { DefaultSession } from "next-auth";
-import { JWT } from "next-auth/jwt";
+// import NextAuth, { DefaultSession } from "next-auth";
+// import { JWT } from "next-auth/jwt";
+
+import { DefaultSession, DefaultUser } from "next-auth";
 
 declare module "next-auth" {
-    interface Session {
+    interface Session extends DefaultSession {
         accessToken: string;
-        user: {
+        user: DefaultSession["user"] & {
             id: string;
             username: string;
-            email: string;
         };
     }
 
-    interface User {
+    interface User extends DefaultUser {
         id: string;
         username: string;
-        email: string;
-        accessToken: string; // Laravel's Bearer token
-    }
-}
-
-declare module "next-auth/jwt" {
-    interface JWT {
-        id: string;
-        username: string;
-        email: string;
         accessToken: string;
     }
 }

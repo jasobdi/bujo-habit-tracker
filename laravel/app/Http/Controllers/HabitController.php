@@ -47,6 +47,21 @@ class HabitController extends Controller
             });
         }
 
+        // filter by month & year
+        if ($request->has('year') && $request->has('month')) {
+            $year = $request->input('year');
+            $month = $request->input('month');
+    
+            $startOfMonth = \Carbon\Carbon::create($year, $month, 1)->startOfDay();
+            $endOfMonth = \Carbon\Carbon::create($year, $month, 1)->endOfMonth()->endOfDay();
+    
+            $query = $query->where('start_date', '<=', $endOfMonth)
+                ->where(function($q) use ($startOfMonth) {
+                    $q->whereNull('end_date')
+                        ->orWhere('end_date', '>=', $startOfMonth);
+                });
+        }
+
         $habits = $query->get();
 
         return response()->json($habits);
@@ -63,59 +78,6 @@ class HabitController extends Controller
             return response()->json(['message' => 'Habit not found'], 404);
         }
         return response()->json($habit);
-    }
-
-    // READ BY MONTH
-    public function getHabitsByMonth(Request $request)
-    {
-        $user = Auth::user();
-
-        // get year & month (default to current month)
-        $year = $request->input('year', now()->year);
-        $month = $request->input('month', now()->month);
-
-        // first & last day of the month
-        $startOfMonth = \Carbon\Carbon::create($year, $month, 1)->startOfDay();
-        $endOfMonth = \Carbon\Carbon::create($year, $month, 1)->endOfMonth()->endOfDay();
-
-        // get all habits from this user, that are active in the selected month
-        $allHabits = Habit::where('user_id', $user->id)
-            ->where('start_date', '<=', $endOfMonth)
-            ->where(function($query) use ($startOfMonth) {
-                $query->whereNull('end_date')
-                ->orWhere('end_date', '>=', $startOfMonth);
-            })
-            ->get();
-
-            // check if habits are active in the selected month
-            $filtered = $allHabits->filter(function ($habit) use ($startOfMonth, $endOfMonth) {
-                $frequency = $habit->frequency;
-        
-                if ($frequency === 'daily') {
-                    return true; // daily habits are always active
-                }
-        
-                if ($frequency === 'weekly' || ($frequency === 'custom' && $habit->repeat_interval > 0 && is_array($habit->custom_days))) {
-                    // Iterate through all days of the month
-                    $daysInMonth = [];
-                    $current = $startOfMonth->copy();
-                    while ($current->lte($endOfMonth)) {
-                        $daysInMonth[] = $current->format('l'); // z.B. "Monday"
-                        $current->addDay();
-                    }
-                    // at least 1 day has to be in the custom_days array
-                    return count(array_intersect($daysInMonth, $habit->custom_days ?? [])) > 0;
-                }
-        
-                if ($frequency === 'monthly' || ($frequency === 'custom' && $habit->repeat_interval > 0)) {
-                    $dayOfMonth = \Carbon\Carbon::parse($habit->start_date)->day;
-                    return $dayOfMonth <= $endOfMonth->day;
-                }
-        
-                return false;
-            });
-        
-            return response()->json(array_values($filtered->toArray()));
     }
 
     // CREATE

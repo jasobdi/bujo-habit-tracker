@@ -57,14 +57,14 @@ export default function RegisterPage() {
 
             reset()
             router.push('/public/login')
-        } catch (err) {
+        } catch {
             setError('An unexpected error occurred')
         }
     }
 
 
     return (
-        <main className="flex justify-center">
+        <div className="flex justify-center">
             <section className="max-w-sm mx-3 my-4 border-[2px] border-border rounded-[15px] p-6 font-sans">
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -121,14 +121,14 @@ export default function RegisterPage() {
                 </form>
 
                 {/* Link to Login */}
-                <p className="text-center text-xs text-inactive mt-6 font-sans">
+                <p className="text-center text-xs text-contrast mt-6 font-sans">
                     Already have an account?{' '}
-                    <Link href="/public/login" className="underline text-inactive">
+                    <Link href="/public/login" className="underline text-contrast">
                         Login
                     </Link>
                 </p>
             </section>
-        </main>
+        </div>
 
 
     )
