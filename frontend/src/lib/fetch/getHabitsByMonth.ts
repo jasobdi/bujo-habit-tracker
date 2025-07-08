@@ -20,6 +20,11 @@ export async function getHabitsByMonth({ year, month, token }: GetHabitsByMonthP
         cache: "no-store",
     });
 
+    if (!data) {
+        console.error("No data returned from getHabitsByMonth", { error, statusCode });
+        return { data: null, error, statusCode };
+    }
+
     if (error) {
         console.error("getHabitsByMonth error:", error);
     }

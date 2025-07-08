@@ -18,13 +18,15 @@ export function DashboardCalendar() {
     const { data: session } = useSession();
 
     const [selected, setSelected] = useState<Date>();
+
+    // state for habitsStatus
     const [habitsStatus, setHabitsStatus] = useState<{ [date: string]: string }>({});
 
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
 
 
-    // Fetch habits when component mounts
+    // Fetch habits by month & year
     useEffect(() => {
         async function fetchHabits() {
             if (!session?.accessToken) return;
@@ -42,17 +44,25 @@ export function DashboardCalendar() {
                 return;
             }
 
-            if (habits) {
+
+            // Mapping of active_dates into habitsStatus object
+            if (habits && Array.isArray(habits)) {
                 const statusObj: { [date: string]: string } = {};
-                habits.forEach(habit => {
-                    const dateKey = habit.start_date;
-                    statusObj[dateKey] = "completed"; // adjust your logic here
+
+                habits.forEach((habitObj: any) => {
+                    habitObj.active_dates.forEach((date: string) => {
+                        statusObj[date] = "not_completed"; // as default mark all habits as not completed
+                    });
                 });
+
                 setHabitsStatus(statusObj);
-                console.log("Fetched habits data:", habits);
+                console.log("habitsStatus object:", statusObj);
+            } else {
+                console.error("habits is not an array:", habits);
             }
         }
 
+        // Fetch habits when session is available
         fetchHabits();
     }, [session, currentYear, currentMonth]);
 
@@ -67,6 +77,18 @@ export function DashboardCalendar() {
         }
     };
 
+    // Mapped Date objects for modifiers
+    const completedDates = Object.keys(habitsStatus)
+        .filter(date => habitsStatus[date] === 'completed')
+        .map(date => new Date(date));
+
+    const notCompletedDates = Object.keys(habitsStatus)
+        .filter(date => habitsStatus[date] === 'not_completed')
+        .map(date => new Date(date));
+
+    console.log("Completed dates:", completedDates);
+    console.log("Not completed dates:", notCompletedDates);
+
     return (
         <div className="w-full flex justify-center">
             <DayPicker
@@ -80,16 +102,15 @@ export function DashboardCalendar() {
                 fromYear={2024}
                 toYear={2025}
                 modifiers={{
-                    completed: Object.keys(habitsStatus).filter(date => habitsStatus[date] === 'completed').map(date => new Date(date)),
-                    not_completed: Object.keys(habitsStatus).filter(date => habitsStatus[date] === 'not_completed').map(date => new Date(date)),
+                    completed: completedDates,
+                    not_completed: notCompletedDates,
                 }}
                 modifiersClassNames={{
-                    completed: "bg-completed rounded-full border-[2px] border-black border-rounded-full",
-                    not_completed: "bg-contrast rounded-full border-[2px] border-black border-rounded-full",
+                    completed: "bg-completed rounded-full",
+                    not_completed: "bg-contrast rounded-full",
                     future: "bg-white rounded-full",
                 }}
             />
         </div>
-
     );
 }

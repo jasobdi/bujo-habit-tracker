@@ -64,7 +64,41 @@ class HabitController extends Controller
 
         $habits = $query->get();
 
-        return response()->json($habits);
+        // CALCULATE ACTIVE DATES FOR EACH HABIT (Dashboard)
+        $habitsWithDates = $habits->map(function ($habit) {
+            $startDate = \Carbon\Carbon::parse($habit->start_date);
+            $endDate = $habit->end_date ? \Carbon\Carbon::parse($habit->end_date) : now();
+            $activeDates = [];
+    
+            if ($habit->frequency === "daily") {
+                for ($date = $startDate->copy(); $date->lte($endDate); $date->addDays($habit->repeat_interval)) {
+                    $activeDates[] = $date->toDateString();
+                }
+            }
+            elseif ($habit->frequency === "weekly" && is_array($habit->custom_days)) {
+                for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+                    if (in_array($date->format('l'), $habit->custom_days)) {
+                        $activeDates[] = $date->toDateString();
+                    }
+                }
+            }
+            elseif ($habit->frequency === "monthly") {
+                for ($date = $startDate->copy(); $date->lte($endDate); $date->addMonthsNoOverflow($habit->repeat_interval)) {
+                    $activeDates[] = $date->toDateString();
+                }
+            }
+            elseif ($habit->frequency === "custom") {
+                for ($date = $startDate->copy(); $date->lte($endDate); $date->addDays($habit->repeat_interval)) {
+                    $activeDates[] = $date->toDateString();
+                }
+            }
+    
+            // Add active_dates as extra field
+            $habit->active_dates = $activeDates;
+            return $habit;
+        });
+    
+        return response()->json($habitsWithDates->values());
     }
 
     // READ BY ID

@@ -32,7 +32,7 @@ export default async function DashboardPage() {
     return (
         <div className="flex flex-col items-center justify-center h-auto overflow-x-hidden px-4 py-8 font-sans">
             {error && <p>Error loading habits: {error}</p>}
-            {habits && habits.length > 0 ? (
+            {/* {habits && habits.length > 0 ? (
                 <ul>
                     {habits.map((habit) => (
                         <li key={habit.id}>{habit.title}</li>
@@ -40,7 +40,7 @@ export default async function DashboardPage() {
                 </ul>
             ) : (
                 <p>No habits found for this month.</p>
-            )}
+            )} */}
             <section className="w-full max-w-6xl flex flex-col md:flex-row md:gap-20">
 
                 <div className="flex flex-col">
