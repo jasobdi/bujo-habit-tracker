@@ -17,9 +17,10 @@ export async function fetchApi<T>(
     endpoint: string,
     options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
-    const url = `${baseUrl}/${endpoint}`;
+    const url = `${baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
+
 
     try {
         const response = await fetch(url, {

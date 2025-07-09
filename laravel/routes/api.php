@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\HabitController;
 use App\Http\Controllers\JournalController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HabitCompletionController;
 use App\Models\User;
 
 Route::prefix('api')->group(function () {
@@ -39,6 +40,12 @@ Route::prefix('api')->group(function () {
         Route::post('/habits', [HabitController::class, 'create']);
         Route::patch('/habits/{id}', [HabitController::class, 'update']);
         Route::delete('/habits/{id}', [HabitController::class, 'delete']);
+
+        // HABIT COMPLETIONS
+        Route::post('/habit-completions', [HabitCompletionController::class, 'store']);
+        Route::delete('/habit-completions', [HabitCompletionController::class, 'destroy']);
+        Route::get('/habit-completions/monthly', [HabitCompletionController::class, 'monthly']);
+
 
         // JOURNALS
         Route::get('/journals', [JournalController::class, 'index']);

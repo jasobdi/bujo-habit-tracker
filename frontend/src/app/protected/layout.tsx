@@ -11,8 +11,8 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
 
     // dynamic h1 based on current path
     const getTitle = () => {
+        if (pathname.includes('/dashboard/overview')) return 'Overview'
         if (pathname.includes('/dashboard')) return 'Dashboard'
-        if (pathname.includes('/overview')) return 'Overview'
         if (pathname.includes('/habits')) return 'Habits'
         if (pathname.includes('/journals')) return 'Journals'
         if (pathname.includes('/profile')) return 'Profile'
