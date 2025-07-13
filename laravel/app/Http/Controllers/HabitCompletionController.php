@@ -38,14 +38,14 @@ class HabitCompletionController extends Controller
             'habit_id' => 'required|exists:habits,id',
             'date' => 'required|date',
         ]);
-    
+
         $user = Auth::user();
-    
+
         $deleted = HabitCompletion::where('habit_id', $validated['habit_id'])
             ->where('date', $validated['date'])
             ->where('user_id', $user->id)
             ->delete();
-    
+
         if ($deleted) {
             return response()->json(['message' => 'Completion deleted.']);
         } else {
@@ -71,4 +71,18 @@ class HabitCompletionController extends Controller
         return response()->json($completions);
     }
 
+    public function date(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date',
+        ]);
+
+        $user = Auth::user();
+
+        $completions = HabitCompletion::where('user_id', $user->id)
+            ->whereDate('date', $request->input('date'))
+            ->get();
+
+        return response()->json($completions);
+    }
 }

@@ -39,12 +39,12 @@ export function DashboardCalendar() {
         }
     );
 
-    // Fetch habits by month & year
+    // Fetch habits and completions when session, currentYear, or currentMonth changes
     useEffect(() => {
         async function fetchHabitsAndCompletions() {
             if (!session?.accessToken) return;
 
-            // 1. Get habits
+            // 1. Get habits from the current month
             const { data: habits, error: habitsError } = await getHabitsByMonth({
                 year: currentYear,
                 month: currentMonth,
@@ -56,7 +56,7 @@ export function DashboardCalendar() {
                 return;
             }
 
-            // 2. Get completions
+            // 2. Get completed habits of this month (checkbox checked)
             const { data: completions, error: completionsError } = await getHabitCompletionsByMonth({
                 year: currentYear,
                 month: currentMonth,
@@ -71,20 +71,21 @@ export function DashboardCalendar() {
             console.log("Fetched habits:", habits);
             console.log("Fetched completions:", completions);
 
-            // 3. Map dates to habitsStatus
+            // 3. Map date to status (every date gets a status)
             const statusObj: { [date: string]: string } = {};
 
             if (habits) {
                 habits.forEach((habitObj: any) => {
                     habitObj.active_dates.forEach((date: string) => {
-                        statusObj[date] = "not_completed";
+                        statusObj[date] = "not_completed"; // default status for active dates = "not_completed"
                     });
                 });
             }
 
+            // every completed date gets the status "completed"
             if (completions) {
                 completions.forEach((completion: any) => {
-                    const dateKey = completion.toLocaleDateString('sv-SE');
+                    const dateKey = new Date (completion.date).toLocaleDateString('sv-SE'); // convert string to date object (YYYY-MM-DD format)
                     statusObj[dateKey] = "completed";
                 });
             }
@@ -97,7 +98,7 @@ export function DashboardCalendar() {
     }, [session, currentYear, currentMonth]);
 
 
-
+    // click on a day in the calendar -> redirect to that day's overview
     const handleSelect = (date: Date | undefined) => {
         setSelected(date);
         if (date) {
@@ -108,7 +109,7 @@ export function DashboardCalendar() {
         }
     };
 
-    // Mapped Date objects for modifiers
+    // Log completed and not completed dates for debugging
     const completedDates = Object.keys(habitsStatus)
         .filter(date => habitsStatus[date] === 'completed')
         .map(date => new Date(date));

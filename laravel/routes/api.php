@@ -45,7 +45,7 @@ Route::prefix('api')->group(function () {
         Route::post('/habit-completions', [HabitCompletionController::class, 'store']);
         Route::delete('/habit-completions', [HabitCompletionController::class, 'destroy']);
         Route::get('/habit-completions/monthly', [HabitCompletionController::class, 'monthly']);
-
+        Route::get('habit-completions/date', [HabitCompletionController::class, 'date']);
 
         // JOURNALS
         Route::get('/journals', [JournalController::class, 'index']);

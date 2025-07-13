@@ -9,4 +9,9 @@ class Category extends Model
 {
     use HasFactory; // for testing purposes
     protected $fillable = ['title', 'user_id'];
+
+    public function habits() {
+        return $this->belongsToMany(Habit::class, 'category_habit');
+    }
+
 }

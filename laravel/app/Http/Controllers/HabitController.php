@@ -14,8 +14,10 @@ class HabitController extends Controller
         // get logged in user
         $user = Auth::user();
 
-        // get all habits from this user
-        $query = Habit::where('user_id', $user->id);
+        // get all habits with categories from this user
+        $query = Habit::with('categories')
+        ->where('user_id', $user->id);
+    
 
         // filter by category 
         if ($request->has('category_id')) {
@@ -94,7 +96,7 @@ class HabitController extends Controller
             }
     
             // Add active_dates as extra field
-            $habit->active_dates = $activeDates;
+            $habit->setAttribute('active_dates', $activeDates);
             return $habit;
         });
     

@@ -25,4 +25,8 @@ class Habit extends Model
         'start_date' => 'date',
         'end_date' => 'date',
     ];
+
+    public function categories() {
+        return $this->belongsToMany(Category::class, 'category_habit');
+    }
 }
