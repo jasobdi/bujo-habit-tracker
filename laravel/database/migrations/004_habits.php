@@ -12,7 +12,6 @@ return new class extends Migration
         Schema::create('habits', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->foreignId('category_id')->constrained('categories')->restrictOnDelete(); // category can only be deleted if not linked to habit
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // deletes all habits when user is deleted
             $table->string('frequency'); // "daily", "weekly", "monthly", "custom"
             $table->integer('repeat_interval')->default(1); // every X days, weeks, months, etc.

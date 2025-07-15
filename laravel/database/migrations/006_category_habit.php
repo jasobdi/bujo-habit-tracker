@@ -15,5 +15,6 @@ return new class extends Migration
             $table->primary(['habit_id', 'category_id']);
         });
         
+        
     }
 };

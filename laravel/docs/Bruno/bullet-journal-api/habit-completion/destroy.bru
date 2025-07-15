@@ -5,7 +5,11 @@ meta {
 }
 
 delete {
-  url: http://localhost:8000/api/habit-completion
+  url: http://localhost:8000/api/habit-completions
   body: none
   auth: inherit
+}
+
+headers {
+  Authorization: Bearer{{token}}
 }

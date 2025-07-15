@@ -1,7 +1,5 @@
 'use client'
 
-import useSWR from "swr";
-import { fetcher } from "@/lib/api/fetcher";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -10,12 +8,14 @@ import { CalendarDropdown } from "./calendar-dropdown";
 import { getHabitsByMonth } from "../../../lib/fetch/getHabitsByMonth";
 import { getHabitCompletionsByMonth } from "@/lib/fetch/getHabitCompletionsByMonth";
 import "react-day-picker/style.css";
+import { HabitService } from "@/lib/HabitService";
 
 /**
  * DashboardCalendar
  * Displays the calendar with custom month/year dropdown.
  * On day selection, routes to overview page with selected date.
  */
+
 export function DashboardCalendar() {
     const router = useRouter();
     const { data: session } = useSession();
@@ -24,78 +24,57 @@ export function DashboardCalendar() {
 
     // state for habitsStatus
     const [habitsStatus, setHabitsStatus] = useState<{ [date: string]: string }>({});
-
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth() + 1;
-
-    const { data: habits, error } = useSWR(
-        session?.accessToken
-            ? [`habits?year=${currentYear}&month=${currentMonth}`, session.accessToken]
-            : null,
-        ([url, token]) => fetcher(url, token),
-        {
-            revalidateOnFocus: true, // re-fetch on tab focus
-            refreshInterval: 0, // no auto interval
-        }
-    );
+    const [currentMonth, setCurrentMonth] = useState<Date>(new Date()); // state to evaluate current month/year
 
     // Fetch habits and completions when session, currentYear, or currentMonth changes
     useEffect(() => {
         async function fetchHabitsAndCompletions() {
             if (!session?.accessToken) return;
 
-            // 1. Get habits from the current month
+            // 1. Get habits
             const { data: habits, error: habitsError } = await getHabitsByMonth({
-                year: currentYear,
-                month: currentMonth,
+                year: currentMonth.getFullYear(),
+                month: currentMonth.getMonth() + 1, // getMonth() is zero-based, so we add 1
                 token: session.accessToken,
             });
 
             if (habitsError) {
-                console.error("Error fetching habits:", habitsError);
+                console.error('Error fetching habits:', habitsError);
                 return;
             }
 
-            // 2. Get completed habits of this month (checkbox checked)
+            // 2. Get completions
             const { data: completions, error: completionsError } = await getHabitCompletionsByMonth({
-                year: currentYear,
-                month: currentMonth,
+                year: currentMonth.getFullYear(),
+                month: currentMonth.getMonth() + 1, // getMonth() is zero-based, so we add 1
                 token: session.accessToken,
             });
 
             if (completionsError) {
-                console.error("Error fetching completions:", completionsError);
+                console.error('Error fetching completions:', completionsError);
                 return;
             }
 
-            console.log("Fetched habits:", habits);
-            console.log("Fetched completions:", completions);
-
-            // 3. Map date to status (every date gets a status)
+            // 3. Map dates to habitsStatus (prepare status-object for every day of the month)
             const statusObj: { [date: string]: string } = {};
 
-            if (habits) {
-                habits.forEach((habitObj: any) => {
-                    habitObj.active_dates.forEach((date: string) => {
-                        statusObj[date] = "not_completed"; // default status for active dates = "not_completed"
-                    });
-                });
+            if (!habits || !completions) {
+                router.refresh();
+                return;
             }
 
-            // every completed date gets the status "completed"
-            if (completions) {
-                completions.forEach((completion: any) => {
-                    const dateKey = new Date (completion.date).toLocaleDateString('sv-SE'); // convert string to date object (YYYY-MM-DD format)
-                    statusObj[dateKey] = "completed";
-                });
-            }
+            completions.forEach((completion) => {
+                const completionDate = new Date(completion.date);
+                const dateKey = completionDate.toLocaleDateString('sv-SE');
+                if (statusObj[dateKey]) return; // Skip if already set
+                statusObj[dateKey] = HabitService.areAllHabitsOfDateCompleted(habits, completions, completionDate) ? 'completed' : 'not_completed';
+            });
 
-            console.log("Combined habitsStatus object:", statusObj);
             setHabitsStatus(statusObj);
         }
 
         fetchHabitsAndCompletions();
-    }, [session, currentYear, currentMonth]);
+    }, [session, currentMonth]);
 
 
     // click on a day in the calendar -> redirect to that day's overview
@@ -110,42 +89,55 @@ export function DashboardCalendar() {
     };
 
     // Log completed and not completed dates for debugging
-    const completedDates = Object.keys(habitsStatus)
-        .filter(date => habitsStatus[date] === 'completed')
-        .map(date => new Date(date));
+    // const completedDates = Object.keys(habitsStatus)
+    //     .filter(date => habitsStatus[date] === 'completed')
+    //     .map(date => new Date(date));
 
-    const notCompletedDates = Object.keys(habitsStatus)
-        .filter(date => habitsStatus[date] === 'not_completed')
-        .map(date => new Date(date));
+    // const notCompletedDates = Object.keys(habitsStatus)
+    //     .filter(date => habitsStatus[date] === 'not_completed')
+    //     .map(date => new Date(date));
 
-    console.log("Completed dates:", completedDates);
-    console.log("Not completed dates:", notCompletedDates);
+    // console.log("Completed dates:", completedDates);
+    // console.log("Not completed dates:", notCompletedDates);
 
     return (
         <div className="w-full flex justify-center">
             <DayPicker
-                className="mx-auto"
+                className='mx-auto'
                 animate
-                captionLayout="dropdown"
+                captionLayout='dropdown'
                 components={{ Dropdown: CalendarDropdown }}
-                mode="single"
+                mode='single'
                 selected={selected}
                 onSelect={handleSelect}
-                fromYear={2024}
-                toYear={2025}
+                weekStartsOn={1}
+                defaultMonth={currentMonth} // start from current month
+                fromYear={2024} // start year dropdown from 2024
+                toYear={2025} // end year dropdown at 2025
+                onMonthChange={setCurrentMonth}
                 modifiers={{
                     completed: Object.keys(habitsStatus)
-                        .filter((date) => habitsStatus[date] === 'completed')
-                        .map((date) => new Date(date)),
-                    not_completed: Object.keys(habitsStatus)
-                        .filter((date) => habitsStatus[date] === 'not_completed')
+                        .filter((date) => {
+                            const d = new Date(date);
+                            return d <= new Date() && habitsStatus[date] === 'completed';
+                        })
                         .map((date) => new Date(date)),
 
+                    not_completed: Object.keys(habitsStatus)
+                        .filter((date) => {
+                            const d = new Date(date);
+                            return d <= new Date() && (habitsStatus[date] === 'not_completed' || habitsStatus[date] === undefined);
+                        })
+                        .map((date) => new Date(date)),
+
+                    future: Object.keys(habitsStatus)
+                        .filter((date) => new Date(date) > new Date())
+                        .map((date) => new Date(date)),
                 }}
                 modifiersClassNames={{
-                    completed: "bg-completed rounded-full",
-                    not_completed: "bg-contrast rounded-full",
-                    future: "bg-white rounded-full",
+                    completed: 'bg-completed rounded-full',
+                    not_completed: 'bg-contrast rounded-full',
+                    future: 'bg-white rounded-full',
                 }}
             />
         </div>

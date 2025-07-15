@@ -5,7 +5,19 @@ meta {
 }
 
 post {
-  url: http://localhost:8000/api/habit-completion
-  body: none
+  url: http://localhost:8000/api/habit-completions
+  body: json
   auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{token}}
+  Accept: application/json
+}
+
+body:json {
+  {
+    "habit_id": "1",
+      "date": "2025-07-05"
+  }
 }

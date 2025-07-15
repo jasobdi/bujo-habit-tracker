@@ -5,7 +5,16 @@ meta {
 }
 
 get {
-  url: http://localhost:8000/api/habit-completions
+  url: http://localhost:8000/api/habit-completions/date?date=2025-07-01
   body: none
   auth: inherit
+}
+
+params:query {
+  date: 2025-07-01
+}
+
+headers {
+  Authorization: Bearer{{token}}
+  Accept: application/json
 }

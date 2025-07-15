@@ -49,8 +49,8 @@ export const authOptions: NextAuthOptions = {
     ],
     callbacks: {
         async jwt({ token, user }) {
-            console.log("JWT CALLBACK - token before:", token)
-            console.log("JWT CALLBACK - user:", user)
+            // console.log("JWT CALLBACK - token before:", token)
+            // console.log("JWT CALLBACK - user:", user)
         
             if (user) {
                 token.accessToken = user.accessToken
@@ -58,7 +58,7 @@ export const authOptions: NextAuthOptions = {
                 token.username = user.username
                 token.email = user.email
             }
-            console.log("JWT CALLBACK - token after:", token)
+            // console.log("JWT CALLBACK - token after:", token)
             return token
         },
         async session({ session, token }) {

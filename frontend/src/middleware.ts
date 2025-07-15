@@ -3,13 +3,13 @@ import { getToken } from "next-auth/jwt";
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import * as NextAuthJWT from "next-auth/jwt";
-console.log("NextAuthJWT exports:", NextAuthJWT);
+// console.log("NextAuthJWT exports:", NextAuthJWT);
 
 // define protected routes
 const protectedRoutes = ['/protected']
 
 export async function middleware(request: NextRequest) {
-    console.log('MIDDLEWARE HIT') // for testing purposes
+    // console.log('MIDDLEWARE HIT') // for testing purposes
 
     const { pathname } = request.nextUrl
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET }) 
@@ -20,13 +20,13 @@ export async function middleware(request: NextRequest) {
      * secret: process.env.NEXTAUTH_SECRET encodes the token 
     */ 
 
-    if (!token) {
-        console.warn("No session token found in middleware.")
-    } else {
-        console.log("Token payload in middleware:", token)
-    }
+    // if (!token) {
+    //     console.warn("No session token found in middleware.")
+    // } else {
+    //     console.log("Token payload in middleware:", token)
+    // }
 
-    console.log('TOKEN FOUND BY next-auth:', token) // for testing purposes
+    // console.log('TOKEN FOUND BY next-auth:', token) // for testing purposes
 
     const isProtected = protectedRoutes.some(route => pathname.startsWith(route))
 

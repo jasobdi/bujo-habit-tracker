@@ -13,7 +13,6 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('entry');
-            $table->foreignId('category_id')->constrained('categories')->restrictOnDelete(); // category can only be deleted if not linked to any journal
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // deletes all journals when user is deleted
             $table->timestamps();
         });

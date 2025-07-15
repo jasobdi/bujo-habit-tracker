@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class HabitController extends Controller
 {
-    // READ ALL
+    // READ ALL HABITS
     public function index(Request $request)
     {
         // get logged in user
@@ -16,15 +16,16 @@ class HabitController extends Controller
 
         // get all habits with categories from this user
         $query = Habit::with('categories')
-        ->where('user_id', $user->id);
-    
+            ->where('user_id', $user->id);
 
-        // filter by category 
+        // FILTER by category 
         if ($request->has('category_id')) {
-            $query->where('category_id', $request->input('category_id'));
+            $query->whereHas('categories', function ($q) use ($request) {
+                $q->where('categories.id', $request->input('category_id'));
+            });
         }
-
-        // filter by date
+        
+        // FILTER by date
         if ($request->has('date')) {
             $date = \Carbon\Carbon::parse($request->input('date'));
 
@@ -49,16 +50,16 @@ class HabitController extends Controller
             });
         }
 
-        // filter by month & year
+        // FILTER by year & month
         if ($request->has('year') && $request->has('month')) {
             $year = $request->input('year');
             $month = $request->input('month');
-    
+
             $startOfMonth = \Carbon\Carbon::create($year, $month, 1)->startOfDay();
             $endOfMonth = \Carbon\Carbon::create($year, $month, 1)->endOfMonth()->endOfDay();
-    
+
             $query = $query->where('start_date', '<=', $endOfMonth)
-                ->where(function($q) use ($startOfMonth) {
+                ->where(function ($q) use ($startOfMonth) {
                     $q->whereNull('end_date')
                         ->orWhere('end_date', '>=', $startOfMonth);
                 });
@@ -66,109 +67,110 @@ class HabitController extends Controller
 
         $habits = $query->get();
 
-        // CALCULATE ACTIVE DATES FOR EACH HABIT (Dashboard)
+        // CALLCULATE active_dates for each habit (Dashboard)
         $habitsWithDates = $habits->map(function ($habit) {
             $startDate = \Carbon\Carbon::parse($habit->start_date);
             $endDate = $habit->end_date ? \Carbon\Carbon::parse($habit->end_date) : now();
             $activeDates = [];
-    
+
             if ($habit->frequency === "daily") {
                 for ($date = $startDate->copy(); $date->lte($endDate); $date->addDays($habit->repeat_interval)) {
                     $activeDates[] = $date->toDateString();
                 }
-            }
-            elseif ($habit->frequency === "weekly" && is_array($habit->custom_days)) {
+            } elseif ($habit->frequency === "weekly" && is_array($habit->custom_days)) {
                 for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
                     if (in_array($date->format('l'), $habit->custom_days)) {
                         $activeDates[] = $date->toDateString();
                     }
                 }
-            }
-            elseif ($habit->frequency === "monthly") {
+            } elseif ($habit->frequency === "monthly") {
                 for ($date = $startDate->copy(); $date->lte($endDate); $date->addMonthsNoOverflow($habit->repeat_interval)) {
                     $activeDates[] = $date->toDateString();
                 }
-            }
-            elseif ($habit->frequency === "custom") {
+            } elseif ($habit->frequency === "custom") {
                 for ($date = $startDate->copy(); $date->lte($endDate); $date->addDays($habit->repeat_interval)) {
                     $activeDates[] = $date->toDateString();
                 }
             }
-    
+
             // Add active_dates as extra field
             $habit->setAttribute('active_dates', $activeDates);
             return $habit;
         });
-    
+
         return response()->json($habitsWithDates->values());
     }
 
     // READ BY ID
     public function show($id)
     {
-        // get habit by id and user_id
-        $habit = Habit::where('id', $id)->where('user_id', Auth::id())->first();
-        if (!$habit) {
+        // get habit with categories by id and user_id
+        $habit = Habit::with('categories')
+            ->where('id', $id)
+            ->where('user_id', Auth::id())
+            ->first();
 
+        if (!$habit) {
             // if the habit does not belong to the user, return 404 not found
             return response()->json(['message' => 'Habit not found'], 404);
         }
         return response()->json($habit);
     }
 
-    // CREATE
+    // CREATE A HABIT
     public function create(Request $request)
     {
-        // basic validation
-        $validated = $request->validate([
-            'title' => 'required|string|max:50',
-            'category_id' => 'required|exists:categories,id',
-            'frequency' => 'required|in:daily,weekly,monthly,custom',
-            'start_date' => 'required|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-        ]);
 
-        // handle custom frequency
-        if ($validated['frequency'] === 'custom') {
-            $customValidated = $request->validate([
-                'repeat_interval' => 'required|integer|min:1',
-            ]);
+    // validation
+    $validated = $request->validate([
+        'title' => 'required|string|max:50',
+        'frequency' => 'required|in:daily,weekly,monthly,custom',
+        'start_date' => 'required|date',
+        'end_date' => 'nullable|date|after_or_equal:start_date',
+        'repeat_interval' => 'nullable|integer|min:1',
+        'custom_days' => 'nullable|array',
+        'custom_days.*' => 'string',
+        'category_ids' => 'required|array|min:1',
+        'category_ids.*' => 'integer|exists:categories,id',
+    ]);
 
-            // if custom weekly -> validate days
-            if ($request->filled('custom_days')) {
-                $daysValidated = $request->validate([
-                    'custom_days' => 'required|array|min:1',
-                    'custom_days.*' => 'string',
-                ]);
-                $customValidated = array_merge($customValidated, $daysValidated);
-            }
+    // handle frequency and repeat_interval
+    $frequency = $validated['frequency'];
 
-            $validated = array_merge($validated, $customValidated);
-        } else {
-            $validated['repeat_interval'] = 1;
-            $validated['custom_days'] = null;
-        }
-
-        $habit = Habit::create([
-            'title' => $validated['title'],
-            'category_id' => $validated['category_id'],
-            'user_id' => Auth::id(),
-            'frequency' => $validated['frequency'],
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'] ?? null,
-            'repeat_interval' => $validated['repeat_interval'],
-            'custom_days' => $validated['custom_days'] ?? null,
-        ]);
-
-        return response()->json([
-            'message' => 'Habit created successfully',
-            'habit' => $habit
-        ], 201);
+    if ($frequency === 'custom' && !isset($validated['repeat_interval'])) {
+        return response()->json(['message' => 'Repeat interval is required for custom frequency'], 422);
     }
 
+    if ($frequency !== 'custom') {
+        $validated['repeat_interval'] = 1;
+    }
 
+    // Set custom_days only for weekly or custom
+    if (!in_array($validated['frequency'], ['weekly', 'custom'])) {
+        $validated['custom_days'] = null;
+    }
 
-    // UPDATE
+    // create habit
+    $habit = Habit::create([
+        'title' => $validated['title'],
+        'user_id' => Auth::id(),
+        'frequency' => $validated['frequency'],
+        'start_date' => $validated['start_date'],
+        'end_date' => $validated['end_date'] ?? null,
+        'repeat_interval' => $validated['repeat_interval'],
+        'custom_days' => $validated['custom_days'] ?? null,
+    ]);
+
+    // assign categories
+    $habit->categories()->attach($validated['category_ids']);
+
+    return response()->json([
+        'message' => 'Habit created successfully',
+        'habit' => $habit->load('categories')
+    ], 201);
+}
+
+    // UPDATE A HABIT
     public function update(Request $request, $id)
     {
         // get habit by id and user_id
@@ -182,38 +184,39 @@ class HabitController extends Controller
         // basic validation
         $validated = $request->validate([
             'title' => 'sometimes|string|max:50',
-            'category_id' => 'sometimes|exists:categories,id',
             'frequency' => 'sometimes|in:daily,weekly,monthly,custom',
             'start_date' => 'sometimes|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
-            'repeat_interval' => 'sometimes|integer|min:1',
+            'repeat_interval' => 'nullable|integer|min:1',
             'custom_days' => 'nullable|array',
-            'custom_days.*' => 'string'
+            'custom_days.*' => 'string',
+            'category_ids' => 'nullable|array',
+            'category_ids.*' => 'integer|exists:categories,id',
         ]);
 
-        // check & handle if frequency was set or already is 'custom'
-        $isCustom = ($validated['frequency'] ?? $habit->frequency) === 'custom';
+        // check & handle if frequency was set
+        $frequency = $validated['frequency'] ?? $habit->frequency;
 
-        if ($isCustom) {
-            if ($request->filled('repeat_interval')) {
-                $request->validate([
-                    'repeat_interval' => 'required|integer|min:1',
-                ]);
-            }
-
-            if ($request->filled('custom_days')) {
-                $request->validate([
-                    'custom_days' => 'required|array|min:1',
-                    'custom_days.*' => 'string',
-                ]);
-            }
-        } else {
+        // validate repeat_interval
+        if ($frequency === 'custom' && !isset($validated['repeat_interval'])) {
+            return response()->json(['message' => 'Repeat interval is required for custom frequency'], 422);
+        } elseif ($frequency !== 'custom') {
             $validated['repeat_interval'] = 1;
+        }
+
+        // validate custom_days (only in weekly or custom frequency)
+        if (!in_array($frequency, ['weekly', 'custom'])) {
             $validated['custom_days'] = null;
         }
 
+        // update habit
         $habit->update($validated);
 
+        // sync categories if category_ids are provided
+        if (isset($validated['category_ids'])) {
+            $habit->categories()->sync($validated['category_ids']);
+        }
+        
         return response()->json([
             'message' => 'Habit updated successfully',
             'habit' => $habit
@@ -221,7 +224,7 @@ class HabitController extends Controller
     }
 
 
-    // DELETE
+    // DELETE A HABIT
     public function delete($id)
     {
         // get habit by id and user_id
@@ -238,3 +241,4 @@ class HabitController extends Controller
         return response()->json(['message' => 'Habit deleted successfully']);
     }
 }
+

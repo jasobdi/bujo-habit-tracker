@@ -39,11 +39,8 @@ class HabitCompletionController extends Controller
             'date' => 'required|date',
         ]);
 
-        $user = Auth::user();
-
         $deleted = HabitCompletion::where('habit_id', $validated['habit_id'])
             ->where('date', $validated['date'])
-            ->where('user_id', $user->id)
             ->delete();
 
         if ($deleted) {
@@ -53,34 +50,33 @@ class HabitCompletionController extends Controller
         }
     }
 
-    // get completions for current month
+    // get completions for specific day
+    public function daily(Request $request)
+    {
+
+        $year = $request->input('year', now()->year);
+        $month = $request->input('month', now()->month);
+        $day = $request->input('day', now()->day);
+        
+        $startOfDay = \Carbon\Carbon::create($year, $month, $day);
+        $dateString = $startOfDay->format('Y-m-d');
+        
+        $completions = HabitCompletion::where('date', $dateString)
+            ->get();
+
+        return response()->json($completions);
+    }
+    
+    // get completions for specific month
     public function monthly(Request $request)
     {
-        $user = Auth::user();
-
         $year = $request->input('year', now()->year);
         $month = $request->input('month', now()->month);
 
         $startOfMonth = \Carbon\Carbon::create($year, $month, 1)->startOfDay();
         $endOfMonth = \Carbon\Carbon::create($year, $month, 1)->endOfMonth()->endOfDay();
 
-        $completions = HabitCompletion::where('user_id', $user->id)
-            ->whereBetween('date', [$startOfMonth, $endOfMonth])
-            ->get();
-
-        return response()->json($completions);
-    }
-
-    public function date(Request $request)
-    {
-        $request->validate([
-            'date' => 'required|date',
-        ]);
-
-        $user = Auth::user();
-
-        $completions = HabitCompletion::where('user_id', $user->id)
-            ->whereDate('date', $request->input('date'))
+        $completions = HabitCompletion::whereBetween('date', [$startOfMonth, $endOfMonth])
             ->get();
 
         return response()->json($completions);

@@ -1,10 +1,12 @@
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/app/api/auth/[...nextauth]/auth-options'
-import { LogoutButton } from '@/components/logout-button/logout-button'
+import { getHabitsByMonth } from '@/lib/fetch/getHabitsByMonth'
 import { DashboardCalendar } from '@/components/ui/calendar/dashboard-calendar'
 import { BaseButton } from '@/components/ui/button/base-button/base-button'
-import { getHabitsByMonth } from '@/lib/fetch/getHabitsByMonth'
+import { Overview } from '@/components/overview/overview'
+import { LogoutButton } from '@/components/logout-button/logout-button'
+import Link from 'next/link'
 
 export default async function DashboardPage() {
     const session = await getServerSession(authOptions) // protection on server side
@@ -13,26 +15,19 @@ export default async function DashboardPage() {
         redirect('/public/login')
     }
 
-    // Fetch habits for the current month
-    const year = 2025;
-    const month = 6;
+    const year = new Date().getFullYear()
+    const month = new Date().getMonth() + 1
 
-    const { data: habits, error, statusCode } = await getHabitsByMonth({
+    const { data: habits, error } = await getHabitsByMonth({
         year,
         month,
         token: session.accessToken,
-    });
-
-    if (error) {
-        console.error("Error fetching habits:", error);
-    }
-
-    console.log("Habits for Dashboard:", habits);
+    })
 
     return (
         <div className="flex flex-col items-center justify-center h-auto overflow-x-hidden px-4 py-8 font-sans">
-            {error && <p>Error loading habits: {error}</p>}
-            
+            {error && <p className="text-error mb-4">Error loading habits: {error}</p>}
+
             <section className="w-full max-w-6xl flex flex-col md:flex-row md:gap-20">
 
                 <div className="flex flex-col">
@@ -57,15 +52,16 @@ export default async function DashboardPage() {
                 </div>
 
                 <div className="flex flex-col">
-                    {/* RIGHT SIDE: Overview Placeholder */}
+                    {/* RIGHT SIDE: Overview Pannel (hidden on mobile) */}
                     <div className="hidden md:block flex-1 border-[2px] border-border rounded-radius p-4">
-                        <h2 className="text-lg font-semibold mb-4">Overview</h2>
-                        <p className="text-sm text-black">[Overview content coming soon]</p>
+                        <Overview token={session.accessToken} date={new Date()} />
                     </div>
 
                     {/* BaseButton under Overview on Desktop */}
                     <div className="hidden md:flex justify-center mt-4">
-                        <BaseButton variant="text">See all Habits</BaseButton>
+                        <Link href="/protected/habits">
+                            <BaseButton variant="text">See all Habits</BaseButton>
+                        </Link>
                     </div>
                 </div>
 
@@ -78,5 +74,6 @@ export default async function DashboardPage() {
             </div>
 
         </div>
-    )
+    );
+
 }

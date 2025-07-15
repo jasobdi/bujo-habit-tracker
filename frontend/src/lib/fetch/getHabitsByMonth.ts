@@ -10,7 +10,7 @@ interface GetHabitsByMonthParams {
 export async function getHabitsByMonth({ year, month, token }: GetHabitsByMonthParams) {
     const endpoint = `habits?year=${year}&month=${month}`;
 
-    console.log("token:", token)
+    // console.log("token:", token)
     const { data, error, statusCode } = await fetchApi<Habit[]>(endpoint, {
         method: "GET",
         headers: {

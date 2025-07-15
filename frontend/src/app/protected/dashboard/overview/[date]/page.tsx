@@ -11,16 +11,18 @@ import { Habit } from '@/types/habit';
 import { getHabitsByDate } from '@/lib/fetch/getHabitsByDate';
 import { createHabitCompletion } from "@/lib/fetch/createHabitCompletion";
 import { deleteHabitCompletion } from "@/lib/fetch/deleteHabitCompletion";
-import { getHabitCompletionsByDate } from '@/lib/fetch/getHabitCompletionsByDate';
 import Link from 'next/link';
+import { getHabitCompletionsByDay } from '@/lib/fetch/getHabitCompletionsByDay';
+import { HabitService } from '@/lib/HabitService';
 
 
 export default function HabitsOverviewByDate() {
     const { data: session, status } = useSession();
 
     const router = useRouter();
-    const params = useParams(); // get [date] from URL
+    const params = useParams<{ date: string }>(); // get [date] from URL
 
+    const [isLoading, setIsLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [habits, setHabits] = useState<(Habit & { completed: boolean })[]>([]);
 
@@ -32,37 +34,28 @@ export default function HabitsOverviewByDate() {
 
     // Fetch habits when date changes
     useEffect(() => {
-        if (params?.date) {
-            const dateObj = new Date(params.date as string);
-            setSelectedDate(dateObj);
-
-            // Fetch habits for this date
-            const fetchHabits = async () => {
-                if (!session?.accessToken) return;
-
-                const dateString = dateObj.toLocaleDateString("sv-SE");
-
-                // get all habits and their completions (checked checkboxes)
-                const [habitsData, completionsData] = await Promise.all([
-                    getHabitsByDate(dateString, session.accessToken),
-                    getHabitCompletionsByDate(dateString, session.accessToken)
-                ]);
-
-                // extract habit_ids from completions
-                const completedHabitIds = completionsData.map((comp: any) => comp.habit_id);
-
-                // combine IDs with habits and their completions in one array
-                const enrichedHabits = habitsData.map(habit => ({
-                    ...habit,
-                    completed: completedHabitIds.includes(habit.id)
-                }));
-
-                // set Habits with their status (completed or not)
-                setHabits(enrichedHabits);
-            };
-
-            fetchHabits();
-        }
+        const dateObj = new Date(params.date);
+        setSelectedDate(dateObj);
+        // Fetch habits for this date
+        const fetchHabits = async () => {
+            if (!session?.accessToken) return;
+            const habitsData = await getHabitsByDate(dateObj.toLocaleDateString('sv-SE'), session.accessToken);
+            const completions = (await getHabitCompletionsByDay({
+                year: dateObj.getFullYear(),
+                month: dateObj.getMonth() + 1,
+                day: dateObj.getDate(),
+                token: session.accessToken,
+            })).data;
+            // Add completed flag (default false)
+            // const completions = await getHabitCompletionsByMonth();
+            const enrichedHabits = habitsData.map((habit) => ({
+                ...habit,
+                completed: HabitService.isHabitCompleted(habit, completions, dateObj), // check if habit is completed on this date
+            }));
+            setHabits(enrichedHabits);
+            setIsLoading(false);
+        };
+        fetchHabits();
     }, [params, session]);
 
     // Go to previous day (<)
@@ -125,7 +118,6 @@ export default function HabitsOverviewByDate() {
 
     };
 
-
     return (
         <div className="flex flex-col items-center justify-center h-auto overflow-x-hidden px-4 py-8 font-sans">
             <div className="flex flex-row gap-20 mb-8">
@@ -160,7 +152,7 @@ export default function HabitsOverviewByDate() {
                 </div>
                 <div className=" border-[2px] border-black rounded-radius w-full max-w-md overflow-hidden">
                     {habits.length === 0 ? (
-                        <p className="text-center p-4">No habits for this day.</p>
+                        <p className='text-center p-4'>{isLoading ? 'Loading...' : 'No habits for this day.'}</p>
                     ) : (
                         <ul>
                             {habits.map((habit, index) => (

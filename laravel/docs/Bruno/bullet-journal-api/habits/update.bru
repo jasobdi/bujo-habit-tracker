@@ -5,8 +5,8 @@ meta {
 }
 
 patch {
-  url: http://localhost:8000/api/habits
-  body: none
+  url: http://localhost:8000/api/habits/9
+  body: json
   auth: none
 }
 
@@ -14,4 +14,11 @@ headers {
   Authorization: Bearer {{token}}
   Accept: application/json
   Content-Type: application/json
+}
+
+body:json {
+  {
+    "custom_days": ["Saturday", "Sunday"]
+  }
+  
 }
