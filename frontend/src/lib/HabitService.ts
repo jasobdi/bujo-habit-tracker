@@ -27,27 +27,44 @@ export class HabitService {
    * @returns boolean
    */
   static mustHabitBeDoneOnDate(habit: Habit, date: Date = new Date()): boolean {
-    if (!this.isHabitActiveOnDate(habit, date)) {
-      return false; // Habit is not active on this date
+    const dateKey = date.toLocaleDateString('sv-SE');
+
+    // check if date is before start_date
+    if (habit.start_date && new Date(habit.start_date) > date) return false;
+
+    // chef if date is after end_date (if set)
+    if (habit.end_date && new Date(habit.end_date) < date) return false;
+
+    // additionally: check active_dates
+    if (habit.active_dates && Array.isArray(habit.active_dates)) {
+      return habit.active_dates.includes(dateKey);
     }
 
+    // check daily habits
     if (habit.frequency === 'daily') {
       return true; // Daily habits must always be done
     }
-    if (habit.frequency === 'weekly') {
-      const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-      const habitsDayOfWeek = new Date(habit.start_date).getDay();
-      return habitsDayOfWeek === dayOfWeek; // Check if the habit's start day matches today's day
+
+    // check weekly habits (without custom_days)
+    if (habit.frequency === 'weekly' && (!habit.custom_days || habit.custom_days.length === 0)) {
+      const diffInDays = Math.floor(
+        (date.getTime() - new Date(habit.start_date).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      return diffInDays % (7 * habit.repeat_interval) === 0;
     }
+
+    // check monthly habits
     if (habit.frequency === 'monthly') {
-      const dayOfMonth = date.getDate(); // 1-31
-      const habitDayOfMonth = new Date(habit.start_date).getDate();
-      // if monthly is on eg. the 31st, then on months with less than 31 days, it should not be done
-      return habitDayOfMonth === dayOfMonth; // Check if the habit's start day matches today's day of month
+      const start = new Date(habit.start_date);
+      const monthsDiff = date.getMonth() - start.getMonth() + 12 * (date.getFullYear() - start.getFullYear());
+      return monthsDiff % habit.repeat_interval === 0 && date.getDate() === start.getDate();
     }
-    if (habit.frequency === 'custom') {
-      return this.mustCustomHabitBeDoneOnDateCheck(habit, date); // Custom logic for custom habits
-    }
+
+    // check custom_days habits as fallback (in case active_dates is not set)
+    // 7. Prüfe custom_days Habits als Fallback (wenn active_dates nicht vorhanden)
+  if (habit.custom_days && habit.custom_days.length > 0) {
+    return habit.custom_days.includes(this.mapDay(date.getDay()));
+  }
 
     return false; // If frequency is not recognized, assume it doesn't need to be done
   }
@@ -59,18 +76,16 @@ export class HabitService {
    * @returns
    */
   static isHabitCompleted(habit: Habit, completions: HabitCompletion[], dueDate: Date): boolean {
-    const matchingCompletions = completions.filter((completion) => completion.habit_id === habit.id);
-    if (matchingCompletions.length === 0) {
-      return false; // No completions found for this habit  
+    const isCompleted = completions.some(
+      (c) => c.habit_id === habit.id && this.isSameDay(new Date(c.date), dueDate)
+    );
+
+    if (isCompleted) {
+      console.log(`✅ Completed habit ${habit.title} on ${dueDate.toLocaleDateString('sv-SE')}`);
+    } else {
+      console.log(`❌ NOT completed habit ${habit.title} on ${dueDate.toLocaleDateString('sv-SE')}`);
     }
-    if (this.mustHabitBeDoneOnDate(habit, dueDate)) {
-      return matchingCompletions.some((completion) => {
-        if (this.isSameDay(new Date(completion.date), dueDate)) {
-          return true; // Habit is completed on this date
-        }
-      });
-    }
-    return false; // No matching completion found
+    return isCompleted;
   }
 
   /**
@@ -81,7 +96,8 @@ export class HabitService {
    * @returns
    */
   static areAllHabitsOfDateCompleted(habits: Habit[], completions: HabitCompletion[], date = new Date()): boolean {
-    return habits.filter(h => this.mustHabitBeDoneOnDate(h, date)).every((habit) => this.isHabitCompleted(habit, completions, date));
+    const dueHabits = habits.filter(h => this.mustHabitBeDoneOnDate(h, date));
+    return dueHabits.length > 0 && dueHabits.every(h => this.isHabitCompleted(h, completions, date));
   }
 
   private static mustCustomHabitBeDoneOnDateCheck(habit: Habit, date: Date): boolean {
@@ -91,9 +107,10 @@ export class HabitService {
 
     return habit.custom_days.some((day) => {
       const dayNumber = this.mapDay(day);
-      if (dayNumber === undefined) return false;
+      // if (dayNumber === undefined) return false;
 
       return (
+        dayNumber !== undefined &&
         date.getDay() === dayNumber &&
         this.getDifferenceOfDatesInDays(new Date(habit.start_date), date) % habit.repeat_interval === 0
       );
@@ -101,10 +118,11 @@ export class HabitService {
   }
 
   private static isSameDay(date1: Date, date2: Date): boolean {
-  return date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate();
+  return date1.toLocaleDateString('sv-SE') === date2.toLocaleDateString('sv-SE');
 }
+
+    // date1.getMonth() === date2.getMonth() &&
+    // date1.getDate() === date2.getDate();
   
   private static mapDay(day: HabitCustomDays): number;
   private static mapDay(day: number): HabitCustomDays;

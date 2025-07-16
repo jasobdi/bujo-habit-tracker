@@ -121,9 +121,9 @@ export default function RegisterPage() {
                 </form>
 
                 {/* Link to Login */}
-                <p className="text-center text-xs text-contrast mt-6 font-sans">
+                <p className="text-center text-xs mt-6 font-sans">
                     Already have an account?{' '}
-                    <Link href="/public/login" className="underline text-contrast">
+                    <Link href="/public/login" className="underline">
                         Login
                     </Link>
                 </p>

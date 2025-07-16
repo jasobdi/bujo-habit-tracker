@@ -12,6 +12,7 @@ export interface Habit {
     end_date: string | null;
     created_at: string;
     updated_at: string;
+    active_dates?: string[]; // Array of date strings in 'YYYY-MM-DD' format
 }
 
 export type HabitCustomDays = 'monday'| 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';

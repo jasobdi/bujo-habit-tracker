@@ -106,15 +106,17 @@ export default function HabitsOverviewByDate() {
 
         setHabits(updatedHabits);
 
+        router.refresh();
+
         // Check if all habits are now completed
-        const allCompleted = updatedHabits.every(habit => habit.completed);
+        /* const allCompleted = updatedHabits.every(habit => habit.completed);
 
         if (allCompleted) {
             // Only redirect if ALL are completed
             router.push('/protected/dashboard');
             // force re-fetch all server components incl. dashboard calendar -> new fetch of completions
             router.refresh();
-        }
+        } */
 
     };
 

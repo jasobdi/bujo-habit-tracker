@@ -91,9 +91,9 @@ export default function LoginPage() {
                 </form>
 
                 {/* Link to Register */}
-                <p className="text-center text-xs text-contrast mt-8 font-sans">
+                <p className="text-center text-xs mt-8 font-sans">
                     Don’t have an account yet?{' '}
-                    <Link href="/public/register" className="underline text-contrast">
+                    <Link href="/public/register" className="underline">
                         Register here
                     </Link>
                 </p>

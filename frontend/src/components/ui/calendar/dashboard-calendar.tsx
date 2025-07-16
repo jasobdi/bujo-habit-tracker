@@ -21,9 +21,7 @@ export function DashboardCalendar() {
     const { data: session } = useSession();
 
     const [selected, setSelected] = useState<Date>();
-
-    // state for habitsStatus
-    const [habitsStatus, setHabitsStatus] = useState<{ [date: string]: string }>({});
+    const [habitsStatus, setHabitsStatus] = useState<{ [date: string]: string }>({}); // state for habitsStatus
     const [currentMonth, setCurrentMonth] = useState<Date>(new Date()); // state to evaluate current month/year
 
     // Fetch habits and completions when session, currentYear, or currentMonth changes
@@ -55,20 +53,38 @@ export function DashboardCalendar() {
                 return;
             }
 
+            if (!habits || !completions) return; // if no habits or completions, skip the rest
+
             // 3. Map dates to habitsStatus (prepare status-object for every day of the month)
             const statusObj: { [date: string]: string } = {};
+            const year = currentMonth.getFullYear();
+            const month = currentMonth.getMonth(); // getMonth() is zero-based
+            const today = new Date();
 
-            if (!habits || !completions) {
-                router.refresh();
-                return;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Loop through each day of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dateKey = date.toLocaleDateString('sv-SE');
+
+                if (date > today) continue; // don't mark future dates
+
+                const isRequired = habits.some(h => HabitService.mustHabitBeDoneOnDate(h, date));
+                if (!isRequired) continue; // if there was not habit required on this date, skip it
+
+                const isCompleted = HabitService.areAllHabitsOfDateCompleted(habits, completions, date);
+                statusObj[dateKey] = isCompleted ? 'completed' : 'not_completed';
+
+                console.log(`${dateKey} — Required: ${isRequired} | Completed: ${isCompleted}`);
+                habits.forEach(habit => {
+                    const mustBeDone = HabitService.mustHabitBeDoneOnDate(habit, date);
+                    if (mustBeDone) {
+                        const isHabitCompleted = HabitService.isHabitCompleted(habit, completions, date);
+                        console.log(`→ ${isHabitCompleted ? '✅' : '❌'} ${habit.title} on ${dateKey}`);
+                    }
+                });
             }
-
-            completions.forEach((completion) => {
-                const completionDate = new Date(completion.date);
-                const dateKey = completionDate.toLocaleDateString('sv-SE');
-                if (statusObj[dateKey]) return; // Skip if already set
-                statusObj[dateKey] = HabitService.areAllHabitsOfDateCompleted(habits, completions, completionDate) ? 'completed' : 'not_completed';
-            });
 
             setHabitsStatus(statusObj);
         }
@@ -88,18 +104,6 @@ export function DashboardCalendar() {
         }
     };
 
-    // Log completed and not completed dates for debugging
-    // const completedDates = Object.keys(habitsStatus)
-    //     .filter(date => habitsStatus[date] === 'completed')
-    //     .map(date => new Date(date));
-
-    // const notCompletedDates = Object.keys(habitsStatus)
-    //     .filter(date => habitsStatus[date] === 'not_completed')
-    //     .map(date => new Date(date));
-
-    // console.log("Completed dates:", completedDates);
-    // console.log("Not completed dates:", notCompletedDates);
-
     return (
         <div className="w-full flex justify-center">
             <DayPicker
@@ -110,7 +114,7 @@ export function DashboardCalendar() {
                 mode='single'
                 selected={selected}
                 onSelect={handleSelect}
-                weekStartsOn={1}
+                weekStartsOn={1} // 0= Sunday, 1= Monday, etc.
                 defaultMonth={currentMonth} // start from current month
                 fromYear={2024} // start year dropdown from 2024
                 toYear={2025} // end year dropdown at 2025
