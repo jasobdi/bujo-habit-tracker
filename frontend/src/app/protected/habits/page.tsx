@@ -8,7 +8,7 @@ import { CategoryTag } from '@/components/category-tag/category-tag';
 import { Plus, Funnel } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { getAllHabits } from '@/lib/fetch/getAllHabits';
-import { HabitActionModal } from '@/components/modal/habit-action-modal';
+import { HabitActionModal } from '@/components/modals/habit-action-modal';
 
 export default function HabitsPage() {
 
@@ -63,7 +63,7 @@ export default function HabitsPage() {
                                 <li
                                     key={habit.id}
                                     className={`
-                                        flex items-center justify-start px-4 py-2 cursor-pointer
+                                        flex justify-between items center px-4 py-2
                                         ${index % 2 === 1 ? 'bg-contrast' : ''} // every 2nd line: bg gray
                                     `}
                                 >
@@ -75,11 +75,8 @@ export default function HabitsPage() {
                                                 <CategoryTag key={cat.id} category={cat} />
                                             ))}
                                         </div>
-                                        <div className="flex justify-end">
-                                            <HabitActionModal habit={habit} />
-                                        </div>
-                                        
                                     </div>
+                                    <HabitActionModal habit={habit} />
                                 </li>
                             ))}
                         </ul>

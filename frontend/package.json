@@ -6,9 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "lint": "next lint"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
@@ -35,11 +33,6 @@
   "devDependencies": {
     "@chromatic-com/storybook": "^4.0.0",
     "@eslint/eslintrc": "^3",
-    "@storybook/addon-a11y": "^9.0.3",
-    "@storybook/addon-docs": "^9.0.3",
-    "@storybook/addon-onboarding": "^9.0.3",
-    "@storybook/addon-vitest": "^9.0.3",
-    "@storybook/nextjs-vite": "^9.0.3",
     "@types/node": "^20",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19",
