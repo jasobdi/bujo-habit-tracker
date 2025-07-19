@@ -13,7 +13,7 @@ const buttonVariants = cva(
       variant: {
         text: "h-9 px-3 py-1 text-lg rounded-radius-btn border-[2px] border-border font-sans font-normal my-5 bg-primary",
         start: "h-15 w-[265px] py-4 border-[2px] border-border rounded-radius-btn text-xl font-normal bg-secondary",
-        icon: "h-15 w-15 p-4 border-[2px] border-border rounded-full bg-primary text-foreground flex items-center justify-center",
+        icon: "h-15 w-15 p-4 border-[2px] border-border rounded-full text-foreground flex items-center justify-center",
       },
     },
     defaultVariants: {

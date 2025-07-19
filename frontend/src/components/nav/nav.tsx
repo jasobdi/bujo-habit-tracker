@@ -8,12 +8,12 @@ export function Nav(){
     const navItems = [
         { label: 'Dashboard', href: '/protected/dashboard', icon: Calendar },
         { label: 'Habits', href: '/protected/habits', icon: SquareCheckBig },
-        { label: 'Journals', href: '/protected/journals', icon: BookOpen },
+        // { label: 'Journals', href: '/protected/journals', icon: BookOpen },
         { label: 'Profile', href: '/protected/profile', icon: User },
     ];
         return (
             <nav className="fixed bottom-0 left-0 w-full bg-white border-t-[2px] border-black rounded-t-[15px] z-50">
-                <div className="flex justify-around items-center py-2">
+                <div className="flex justify-evenly items-center py-2">
                     {navItems.map(({ label, href, icon: Icon }) => {
                         const isActive = pathname.startsWith(href);
                         return (
