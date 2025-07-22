@@ -2,6 +2,7 @@
 
 import { DayPicker } from "react-day-picker";
 import { BaseButton } from "@/components/ui/button/base-button/base-button";
+import { DatePickerDialog } from "@/components/ui/dialog/date-picker-dialog";
 
 type Frequency = 'daily' | 'weekly' | 'monthly' | 'custom';
 type EndType = 'never' | 'on' | 'after';
@@ -50,14 +51,18 @@ export function FrequencyFields({
     return (
         <div className="border-[2px] border-black rounded-radius p-4">
             {/* start date */}
-            <label htmlFor="start-date">Start date</label>
-            <DayPicker mode="single" selected={startDate} onSelect={setStartDate} id="start-date" />
+            <label htmlFor="start-date" className="font-semibold">Start date</label>
+            <DatePickerDialog
+                id="start-date"
+                selected={startDate}
+                onSelect={setStartDate}
+                label="Start date" />
 
             {/* custom type & repeat interval */}
             {frequency === 'custom' && (
                 <>
                     <div className="mt-4">
-                        <label>Custom type</label>
+                        <label className="font-semibold">Custom type</label>
                         <div className="flex gap-2 mt-2">
                             {['daily', 'weekly', 'monthly'].map((type) => (
                                 <BaseButton
@@ -75,7 +80,7 @@ export function FrequencyFields({
                     </div>
 
                     <div className="mt-4">
-                        <label htmlFor="repeat-interval">Repeat every</label>
+                        <label htmlFor="repeat-interval" className="font-semibold">Repeat every</label>
                         <input
                             type="number"
                             min={1}
@@ -84,7 +89,7 @@ export function FrequencyFields({
                                 const value = parseInt(e.target.value);
                                 setRepeatInterval(isNaN(value) ? 1 : value);
                             }}
-                            className="border border-black p-1 w-16"
+                            className="border border-black rounded ml-1 p-1 w-16"
                             id="repeat-interval"
                         />{' '}
                         {customFrequencyLabel()}
@@ -92,7 +97,7 @@ export function FrequencyFields({
 
                     {customType === 'weekly' && (
                         <div className="mt-4">
-                            <label>Repeats on</label>
+                            <label className="font-semibold">Repeats on</label>
                             <div className="flex gap-2">
                                 {['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'].map(day => (
                                     <BaseButton
@@ -110,7 +115,7 @@ export function FrequencyFields({
                     )}
 
                     <div className="mt-4">
-                        <label>Ends</label>
+                        <label className="font-semibold">Ends</label>
                         <div className="flex flex-col gap-2 mt-2">
                             <label htmlFor="end-never">
                                 <input
@@ -121,17 +126,29 @@ export function FrequencyFields({
                                     id="end-never"
                                 /> Never
                             </label>
-                            <label htmlFor="end-on" className="flex items-center gap-2">
+
+                            <label htmlFor="end-date" className="flex items-center gap-2">
                                 <input
                                     type="radio"
                                     name="end"
                                     checked={endType === 'on'}
                                     onChange={() => setEndType('on')}
-                                    id="end-on"
+                                    id="end-date"
                                 />
                                 On:
-                                {endType === 'on' && <DayPicker mode="single" selected={endDate} onSelect={setEndDate} />}
+                                <div
+                                    onClick={() => setEndType('on')}
+                                    className="ml-2"
+                                >
+                                    <DatePickerDialog
+                                        id="end-date"
+                                        selected={endDate}
+                                        onSelect={setEndDate}
+                                        label="End date"
+                                    />
+                                </div>
                             </label>
+
                             <label htmlFor="end-after" className="flex items-center gap-2">
                                 <input
                                     type="radio"
@@ -141,7 +158,6 @@ export function FrequencyFields({
                                     id="end-after"
                                 />
                                 After:
-                                {endType === 'after' && (
                                     <input
                                         type="number"
                                         min={1}
@@ -149,11 +165,12 @@ export function FrequencyFields({
                                         onChange={(e) => {
                                             const value = parseInt(e.target.value);
                                             setRepeatCount(isNaN(value) ? 1 : value);
+                                        
                                         }}
-                                        className="border border-black p-1 w-16"
+                                        onFocus={() => setEndType('after')} 
+                                        className="border border-black rounded p-1 w-16"
                                         id="end-after-count"
                                     />
-                                )}
                                 repetitions
                             </label>
                         </div>

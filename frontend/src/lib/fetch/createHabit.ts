@@ -4,6 +4,7 @@ export async function createHabit(data: any, token: string) {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
+            'Accept': 'application/json',
         },
         body: JSON.stringify(data),
     });

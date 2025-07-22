@@ -5,7 +5,7 @@ export interface Habit {
     title: string;
     categories: Category[];
     user_id: number;
-    frequency: "daily" | "weekly" | "monthly" | "custom";
+    frequency: "daily" | "weekly" | "monthly";
     repeat_interval: number;
     custom_days: HabitCustomDays[] | null;
     start_date: string; // ISO Date String, e.g. "2025-06-21"

@@ -37,7 +37,7 @@ class HabitController extends Controller
                 $q->whereNull('end_date')
                     ->orWhere('end_date', '>=', $date);
             });
-            // frequeny is daily, weekly or monthly
+            // frequency is daily, weekly or monthly
             $query->where(function ($q) use ($date) {
                 $q->where('frequency', 'daily')
                     ->orWhere(function ($q2) use ($date) {
@@ -66,11 +66,18 @@ class HabitController extends Controller
         }
 
         $habits = $query->get();
-
-        // CALLCULATE active_dates for each habit (Dashboard)
-        $habitsWithDates = $habits->map(function ($habit) {
+        
+        // CALCULATE active_dates for each habit (Dashboard)
+        $habitsWithDates = $habits->map(function ($habit) use ($request) {
             $startDate = \Carbon\Carbon::parse($habit->start_date);
-            $endDate = $habit->end_date ? \Carbon\Carbon::parse($habit->end_date) : now();
+            $endDate = now();
+            if ($request->has('date')) {
+                $startDate = \Carbon\Carbon::parse($request->input('date'));
+                $endDate = $startDate->copy()->endOfDay();
+            } else if ($request->has('year') && $request->has('month')) {
+                $startDate = \Carbon\Carbon::create($request->input('year'), $request->input('month'), 1);
+                $endDate = $startDate->copy()->endOfMonth()->endOfDay();
+            }
             $activeDates = [];
 
             if ($habit->frequency === "daily") {
