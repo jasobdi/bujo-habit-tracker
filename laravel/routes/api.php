@@ -41,7 +41,7 @@ Route::prefix('api')->group(function () {
         Route::patch('/habits/{id}', [HabitController::class, 'update']);
         Route::delete('/habits/{id}', [HabitController::class, 'delete']);
 
-        // HABIT COMPLETIONS
+        // HABIT COMPLETIONS (checkboxes)
         Route::post('/habit-completions', [HabitCompletionController::class, 'store']);
         Route::delete('/habit-completions', [HabitCompletionController::class, 'destroy']);
         Route::get('/habit-completions/daily', [HabitCompletionController::class, 'daily']);

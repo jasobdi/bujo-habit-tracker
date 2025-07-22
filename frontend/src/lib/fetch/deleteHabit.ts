@@ -2,30 +2,31 @@ import { fetchApi } from "../api/fetchApi";
 
 interface DeleteHabitParams {
     habit_id: number;
-    date: string; // yyyy-mm-dd
     token: string;
 }
 
 export async function deleteHabit({
     habit_id,
-    date,
     token,
 }: DeleteHabitParams) {
-    const { data, error, statusCode } = await fetchApi(`/habit/{id}`, {
-        method: "DELETE",
+    console.log(`Attempting to delete habit with ID: ${habit_id}`);
+    // Example fetch call (adjust URL and method as per your backend API)
+    const res = await fetch(`http://localhost:8000/api/habits/${habit_id}`, {
+        method: 'DELETE',
         headers: {
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
-            Accept: "application/json",
+            'Accept': 'application/json',
         },
-        body: JSON.stringify({
+        body: JSON.stringify({ 
             habit_id,
-            date,
         }),
     });
 
-    if (error) {
-        console.error("deleteHabit error:", error);
+    if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to delete habit');
     }
 
-    return { data, error, statusCode };
+    return res.json();
 }
