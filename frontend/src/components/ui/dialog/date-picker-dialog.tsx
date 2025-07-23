@@ -5,6 +5,8 @@ import { Dialog, DialogTrigger, DialogTitle, DialogContent } from "./dialog"
 import { DayPicker } from "react-day-picker"
 import { format, parse, isValid } from "date-fns"
 import { Calendar1 } from "lucide-react"
+import "react-day-picker/style.css";
+
 
 type Props = {
     selected?: Date
@@ -17,6 +19,9 @@ export function DatePickerDialog({ selected, onSelect, label = "Pick a date", id
     const [inputValue, setInputValue] = useState(
         selected ? format(selected, "dd/MM/yyyy") : ""
     )
+
+    // state to control the open/close state of the Dialog
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(e.target.value)
@@ -31,6 +36,7 @@ export function DatePickerDialog({ selected, onSelect, label = "Pick a date", id
         if (date) {
             setInputValue(format(date, "dd/MM/yyyy"))
             onSelect(date)
+            setIsDialogOpen(false); // Close dialog after a date is selected
         }
     }
 
@@ -49,22 +55,25 @@ export function DatePickerDialog({ selected, onSelect, label = "Pick a date", id
                 aria-label={label}
             />
 
-            <Dialog>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                     <button
                         type="button"
                         className="p-2 border border-black rounded bg-contrast"
                         aria-label={`Open calendar to select ${label.toLowerCase()}`}
+                        onClick={() => setIsDialogOpen(true)} // Open the dialog when button is clicked
                     >
                         <Calendar1 className="w-5 h-5" />
                     </button>
                 </DialogTrigger>
-                <DialogContent className="p-4">
+                <DialogContent className="pt-10 px-4 pb-4 md:">
                 <DialogTitle className="sr-only">{label}</DialogTitle>
                     <DayPicker
                         mode="single"
                         selected={selected}
                         onSelect={handleDaySelect}
+                        weekStartsOn={1} // 0= Sunday, 1= Monday, etc.
+                        navLayout="around"
                     />
                 </DialogContent>
             </Dialog>

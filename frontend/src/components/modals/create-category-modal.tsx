@@ -60,7 +60,7 @@ export function CreateCategoryModal({ onCreate }: CreateCategoryModalProps) {
                 onClick={() => setIsOpen(true)}
             >
                 <Plus className="w-4 h-4 mr-1" />
-                Add Category
+                add category
             </BaseButton>
 
             <Dialog open={isOpen} onOpenChange={setIsOpen}>

@@ -51,7 +51,7 @@ export function FrequencyFields({
     return (
         <div className="border-[2px] border-black rounded-radius p-4">
             {/* start date */}
-            <label htmlFor="start-date" className="font-semibold">Start date</label>
+            <label htmlFor="start-date" className="font-semibold md:text-md">Start date</label>
             <DatePickerDialog
                 id="start-date"
                 selected={startDate}
@@ -62,14 +62,15 @@ export function FrequencyFields({
             {frequency === 'custom' && (
                 <>
                     <div className="mt-4">
-                        <label className="font-semibold">Custom type</label>
-                        <div className="flex gap-2 mt-2">
+                        <label className="font-semibold md:text-md">Custom type</label>
+                        <div className="flex flex-col w-auto md:flex-row md:gap-1 mt-2 mb-3">
                             {['daily', 'weekly', 'monthly'].map((type) => (
                                 <BaseButton
                                     key={type}
                                     type="button"
                                     variant="text"
-                                    className={`bg-contrast ${customType === type ? 'ring-2 ring-black' : ''}`}
+                                    className={`text-sm md:text-lg px-4 py-2 m-2 border-[2px] border-black rounded-radius 
+                                        ${customType === type ? 'bg-primary' : 'bg-contrast text-black'}`}
                                     onClick={() => setCustomType(type as 'daily' | 'weekly' | 'monthly')}
                                     aria-label={`Set custom frequency to ${type}`}
                                 >
@@ -79,8 +80,8 @@ export function FrequencyFields({
                         </div>
                     </div>
 
-                    <div className="mt-4">
-                        <label htmlFor="repeat-interval" className="font-semibold">Repeat every</label>
+                    <div className="my-4">
+                        <label htmlFor="repeat-interval" className="font-semibold md:text-md">Repeat every</label>
                         <input
                             type="number"
                             min={1}
@@ -89,7 +90,7 @@ export function FrequencyFields({
                                 const value = parseInt(e.target.value);
                                 setRepeatInterval(isNaN(value) ? 1 : value);
                             }}
-                            className="border border-black rounded ml-1 p-1 w-16"
+                            className="border border-black rounded ml-2 p-1 w-16 md:text-md"
                             id="repeat-interval"
                         />{' '}
                         {customFrequencyLabel()}
@@ -97,14 +98,14 @@ export function FrequencyFields({
 
                     {customType === 'weekly' && (
                         <div className="mt-4">
-                            <label className="font-semibold">Repeats on</label>
-                            <div className="flex gap-2">
+                            <label className="font-semibold md:text-md">Repeats on</label>
+                            <div className="flex gap-1 mt-2">
                                 {['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'].map(day => (
                                     <BaseButton
                                         key={day}
                                         type="button"
                                         variant="icon"
-                                        className={`bg-contrast w-10 h-10 p-2 ${customDays.includes(day) ? 'ring-2 ring-black' : ''}`}
+                                        className={`bg-contrast w-8 h-8 md:w-10 md:h-10 p-2 text-xs md:text-sm ${customDays.includes(day) ? 'bg-primary' : 'bg-contrast text-black'}`}
                                         onClick={() => toggleCustomDay(day)}
                                     >
                                         {day}
@@ -115,7 +116,7 @@ export function FrequencyFields({
                     )}
 
                     <div className="mt-4">
-                        <label className="font-semibold">Ends</label>
+                        <label className="font-semibold md:text-md">Ends</label>
                         <div className="flex flex-col gap-2 mt-2">
                             <label htmlFor="end-never">
                                 <input
@@ -124,6 +125,7 @@ export function FrequencyFields({
                                     checked={endType === 'never'}
                                     onChange={() => setEndType('never')}
                                     id="end-never"
+                                    className="md:text-md"
                                 /> Never
                             </label>
 
@@ -134,11 +136,12 @@ export function FrequencyFields({
                                     checked={endType === 'on'}
                                     onChange={() => setEndType('on')}
                                     id="end-date"
+                                    className="md:text-md"
                                 />
                                 On:
                                 <div
                                     onClick={() => setEndType('on')}
-                                    className="ml-2"
+                                    className="ml-2 md:text-md"
                                 >
                                     <DatePickerDialog
                                         id="end-date"
@@ -149,13 +152,14 @@ export function FrequencyFields({
                                 </div>
                             </label>
 
-                            <label htmlFor="end-after" className="flex items-center gap-2">
+                            <label htmlFor="end-after" className="flex items-center gap-2 md:text-md">
                                 <input
                                     type="radio"
                                     name="end"
                                     checked={endType === 'after'}
                                     onChange={() => setEndType('after')}
                                     id="end-after"
+                                    className="md:text-md"
                                 />
                                 After:
                                     <input
@@ -168,7 +172,7 @@ export function FrequencyFields({
                                         
                                         }}
                                         onFocus={() => setEndType('after')} 
-                                        className="border border-black rounded p-1 w-16"
+                                        className="border border-black rounded p-1 w-16 md:text-md"
                                         id="end-after-count"
                                     />
                                 repetitions

@@ -52,5 +52,6 @@ body {
 .rdp-root { 
   --rdp-accent-color: var(--black);
   --rdp-accent-background-color: var(--secondary);
-
+  --rdp-day_button-border-radius: rounded-full;
+  --rdp-day_button-border: 2px solid var(--border);
 }

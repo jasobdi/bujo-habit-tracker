@@ -11,6 +11,7 @@ import { useSession } from 'next-auth/react';
 import { habitSchema } from "@/lib/validation/habitSchema";
 import { z } from "zod";
 import { format } from "date-fns";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger  } from "@/components/ui/alert-dialog/alert-dialog";
 import { Toaster } from "@/components/ui/sonner/sonner";
 
 export default function NewHabit() {
@@ -35,6 +36,9 @@ export default function NewHabit() {
     const [endDate, setEndDate] = useState<Date | undefined>();
     const [repeatCount, setRepeatCount] = useState<number>(1);
 
+    // state for confirmation dialog
+    const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
+
     /* Form handling */
     // handle frequency change
     function toggleCustomDay(day: string) {
@@ -46,11 +50,8 @@ export default function NewHabit() {
     // cancel-button handler
     function handleCancel(e: React.MouseEvent) {
         e.preventDefault();
-        const confirmed = window.confirm("Are you sure you want to discard this habit?");
-        if (confirmed) {
-            router.push('/protected/habits');
-        }
-    }
+        setIsCancelConfirmOpen(true); // Open the AlertDialog
+        };
 
     // save-button handler
     async function handleSave(e: React.MouseEvent) {
@@ -199,27 +200,27 @@ export default function NewHabit() {
 
     return (
         <div className="flex justify-center w-full">
-            <form className="flex flex-col gap-4 p-4 max-w-md md:w-auto mx-auto border-black border-[2px] rounded-radius">
+            <form className="flex flex-col p-4 max-w-xs md:max-w-md mx-auto border-black border-[2px] rounded-radius">
                 <label htmlFor="title" className="font-semibold"> Title
                     <input
                         id="title"
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        className="w-full border-[2px] border-black rounded-radius mt-4 p-2"
+                        className="w-full border-[2px] border-black rounded-radius mt-2 mb-4 p-2 font-normal"
                     />
                 </label>
 
                 <div>
-                    <label htmlFor="frequency" className="font-semibold">Frequency</label>
-                    <div className="flex gap-2" id="frequency">
+                    <label htmlFor="frequency" className="font-semibold mb-2">Frequency</label>
+                    <div className="flex flex-col w-auto mb-3" id="frequency">
                         {frequencies.map((f) => (
                             <BaseButton
                                 key={f}
                                 variant="text"
                                 type="button"
                                 aria-label={`Set frequency to ${f}`}
-                                className={`px-4 py-2 border-[2px] border-black rounded-radius
+                                className={`px-4 py-2 m-2 border-[2px] border-black rounded-radius
                                     ${frequency === f ? 'bg-primary' : 'bg-contrast text-black'}`}
                                 onClick={() => setFrequency(f)}
                             >
@@ -247,22 +248,19 @@ export default function NewHabit() {
                     setRepeatCount
                 })}
 
-                <div>
-                    <label className="font-semibold">Categories</label>
+                <div className="mt-4">
+                    <label className="font-semibold md:text-md">Categories</label>
                     <br />
                     <CreateCategoryModal onCreate={(newCat) => setAvailableCategories(prev => [...prev, newCat])} />
-                    <div className="flex flex-wrap gap-2 mt-2">
+                    <div className="flex flex-wrap gap-2 my-2">
                         {availableCategories.map((cat) => cat.id && cat.title ? (
                             <button
                                 key={cat.id}
                                 type="button"
                                 onClick={() => toggleCategory(cat.id)}
                                 className=
-                                {`border-[2px] border-black rounded-radius-btn px-2 py-1 
-                                ${selectedCategories.includes(cat.id)
-                                        ? 'bg-tags'
-                                        : 'bg-white'
-                                    }`}
+                                {`md:text-md border-[2px] border-black rounded-radius-btn px-2 py-1 
+                                ${selectedCategories.includes(cat.id)? 'bg-tags' : 'bg-white'}`}
                             >
                                 {cat.title}
                             </button>
@@ -272,6 +270,9 @@ export default function NewHabit() {
                 </div>
 
                 <div className="flex justify-around mt-6">
+                    {/* Cancel Button - triggers AlertDialog */}
+                    <AlertDialog open={isCancelConfirmOpen} onOpenChange={setIsCancelConfirmOpen}>
+                        <AlertDialogTrigger asChild>
                     <BaseButton
                         variant="icon"
                         type="button"
@@ -280,6 +281,30 @@ export default function NewHabit() {
                     >
                         <ChevronsLeft className="h-10 w-10" />
                     </BaseButton>
+                    </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure you want to discard this habit?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action will discard all unsaved changes for this habit.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={() => {
+                                        router.push('/protected/habits');
+                                    }}
+                                    className="text-black font-semibold bg-tertiary"
+                                >
+                                    Discard
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+
+
+
                     <BaseButton
                         type="submit"
                         variant="icon"
