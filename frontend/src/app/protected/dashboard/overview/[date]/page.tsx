@@ -124,13 +124,13 @@ export default function HabitsOverviewByDate() {
         <div className="flex flex-col items-center justify-center h-auto overflow-x-hidden px-4 py-8 font-sans">
             <div className="flex flex-row gap-20 mb-8">
                 <Link href="/protected/dashboard">
-                    <BaseButton variant="icon">
-                        <ChevronsLeft className="w-10 h-10"></ChevronsLeft>
+                    <BaseButton variant="icon" className="bg-primary">
+                        <ChevronsLeft className="w-10 h-10" strokeWidth={1.5}></ChevronsLeft>
                     </BaseButton>
                 </Link>
                 <Link href="/protected/habits/new">
                     <BaseButton variant="icon" className="bg-secondary">
-                        <Plus className="w-10 h-10"></Plus>
+                        <Plus className="w-10 h-10" strokeWidth={1.5}></Plus>
                     </BaseButton>
                 </Link>
 

@@ -2,16 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { BaseButton } from "@/components/ui/button/base-button/base-button";
-import { ChevronsLeft, Save } from "lucide-react";
+import { ChevronsLeft, Save, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { CreateCategoryModal } from "@/components/modals/create-category-modal";
+import { CategoryFormModal } from "@/components/modals/category-form-modal";
 import { FrequencyFields } from "@/components/forms/create-habit/frequency-fields";
 import { createHabit } from "@/lib/fetch/createHabit";
 import { useSession } from 'next-auth/react';
 import { habitSchema } from "@/lib/validation/habitSchema";
 import { z } from "zod";
 import { format } from "date-fns";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger  } from "@/components/ui/alert-dialog/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog/alert-dialog";
 import { Toaster } from "@/components/ui/sonner/sonner";
 
 export default function NewHabit() {
@@ -51,7 +51,7 @@ export default function NewHabit() {
     function handleCancel(e: React.MouseEvent) {
         e.preventDefault();
         setIsCancelConfirmOpen(true); // Open the AlertDialog
-        };
+    };
 
     // save-button handler
     async function handleSave(e: React.MouseEvent) {
@@ -96,7 +96,7 @@ export default function NewHabit() {
 
         // validation with Zod schema
         try {
-             // pass the raw date objects to the zod schema for validation
+            // pass the raw date objects to the zod schema for validation
             const validated = habitSchema.parse({
                 title,
                 frequency,
@@ -118,17 +118,17 @@ export default function NewHabit() {
             };
 
             // Handle end date based on endType
-        if (validated.endType === "on" && validated.endDate) {
-            apiData.end_date = format(validated.endDate, 'yyyy-MM-dd'); // Renamed to end_date
-        }
+            if (validated.endType === "on" && validated.endDate) {
+                apiData.end_date = format(validated.endDate, 'yyyy-MM-dd'); // Renamed to end_date
+            }
 
             // Handle repeat interval based on endType
-        if (validated.endType === "after" && validated.repeatCount !== undefined) {
-            apiData.repeat_interval = validated.repeatCount; // Renamed to repeat_interval
-        }
-        if (validated.frequency === 'custom' && apiData.repeat_interval === undefined) {
-            apiData.repeat_interval = 1; // Default to 1 if frequency is custom but endType not 'after'
-        }
+            if (validated.endType === "after" && validated.repeatCount !== undefined) {
+                apiData.repeat_interval = validated.repeatCount; // Renamed to repeat_interval
+            }
+            if (validated.frequency === 'custom' && apiData.repeat_interval === undefined) {
+                apiData.repeat_interval = 1; // Default to 1 if frequency is custom but endType not 'after'
+            }
 
             // API call to create the habit
             const response = await createHabit(apiData, session.accessToken);
@@ -136,7 +136,7 @@ export default function NewHabit() {
             console.log("Habit created:", response);
 
             // after successful creation, redirect to habits page
-            router.push('/protected/habits'); 
+            router.push('/protected/habits');
 
         } catch (error) {
             if (error instanceof z.ZodError) {
@@ -163,7 +163,7 @@ export default function NewHabit() {
     useEffect(() => {
         async function fetchCategories() {
             if (!session?.accessToken) return;
-            
+
             try {
                 const res = await fetch('http://localhost:8000/api/categories', {
                     headers: {
@@ -171,23 +171,54 @@ export default function NewHabit() {
                         Accept: 'application/json',
                     },
                 });
-    
+
                 if (!res.ok) {
                     const text = await res.text();
                     console.error('Failed to fetch categories:', res.status, text);
                     return;
                 }
-    
+
                 const data = await res.json();
                 setAvailableCategories(data);
             } catch (err) {
                 console.error("Error loading categories", err);
             }
         }
-    
+
         fetchCategories();
     }, [session?.accessToken]);
-    
+
+    // create a category through the modal
+    const handleCategorySubmit = async (categoryData: { id?: number, title: string }) => {
+        if (!session?.accessToken) {
+            console.error("Not authenticated.");
+            return;
+        }
+
+        try {
+            const res = await fetch("http://localhost:8000/api/categories", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${session.accessToken}`,
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({ title: categoryData.title })
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText);
+            }
+
+            const newCategory = await res.json();
+            setAvailableCategories(prev => [...prev, newCategory]); // add newly created category to the list
+
+        } catch (error) {
+            console.error("Failed to create category:", error);
+            // Hier könntest du eine Toast-Nachricht oder einen Alert anzeigen
+        }
+    };
 
     // toogle for category selection
     function toggleCategory(id: number) {
@@ -251,7 +282,18 @@ export default function NewHabit() {
                 <div className="mt-4">
                     <label className="font-semibold md:text-md">Categories</label>
                     <br />
-                    <CreateCategoryModal onCreate={(newCat) => setAvailableCategories(prev => [...prev, newCat])} />
+
+                    <CategoryFormModal initialData={null} onSubmit={handleCategorySubmit}>
+                    <BaseButton
+                        type="button"
+                        variant="text"
+                        className="bg-secondary"
+                    >
+                        <Plus className="w-4 h-4 mr-1" />
+                        add category
+                    </BaseButton>
+                    </CategoryFormModal>
+
                     <div className="flex flex-wrap gap-2 my-2">
                         {availableCategories.map((cat) => cat.id && cat.title ? (
                             <button
@@ -260,12 +302,12 @@ export default function NewHabit() {
                                 onClick={() => toggleCategory(cat.id)}
                                 className=
                                 {`md:text-md border-[2px] border-black rounded-radius-btn px-2 py-1 
-                                ${selectedCategories.includes(cat.id)? 'bg-tags' : 'bg-white'}`}
+                                ${selectedCategories.includes(cat.id) ? 'bg-tags' : 'bg-white'}`}
                             >
                                 {cat.title}
                             </button>
                         ) : null
-                    )}
+                        )}
                     </div>
                 </div>
 
@@ -273,15 +315,15 @@ export default function NewHabit() {
                     {/* Cancel Button - triggers AlertDialog */}
                     <AlertDialog open={isCancelConfirmOpen} onOpenChange={setIsCancelConfirmOpen}>
                         <AlertDialogTrigger asChild>
-                    <BaseButton
-                        variant="icon"
-                        type="button"
-                        className="bg-primary"
-                        onClick={handleCancel}
-                    >
-                        <ChevronsLeft className="h-10 w-10" />
-                    </BaseButton>
-                    </AlertDialogTrigger>
+                            <BaseButton
+                                variant="icon"
+                                type="button"
+                                className="bg-primary"
+                                onClick={handleCancel}
+                            >
+                                <ChevronsLeft className="h-10 w-10" strokeWidth={1.5} />
+                            </BaseButton>
+                        </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Are you sure you want to discard this habit?</AlertDialogTitle>
@@ -311,7 +353,7 @@ export default function NewHabit() {
                         className="bg-primary"
                         onClick={handleSave}
                     >
-                        <Save className="h-10 w-10" />
+                        <Save className="h-10 w-10" strokeWidth={1.5} />
                     </BaseButton>
                 </div>
             </form>

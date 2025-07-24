@@ -58,13 +58,13 @@ export function HabitActionModal({ habit, onHabitDeleted }: HabitActionModalProp
                     {/* Back Button */}
                     <div className="flex glex-row gap-4 mt-4">
                             <BaseButton variant="icon" className="bg-primary" onClick={() => setOpen(false)}>
-                                <ChevronsLeft className="w-10 h-10" />
+                                <ChevronsLeft className="w-10 h-10" strokeWidth={1.5} />
                             </BaseButton>
 
                         {/* Edit Button */}
                         <Link href={`/protected/habits/edit/${habit.id}`}>
                             <BaseButton variant="icon" className="bg-secondary">
-                                <SquarePen className="w-10 h-10" />
+                                <SquarePen className="w-10 h-10" strokeWidth={1.5} />
                             </BaseButton>
                         </Link>
                         
@@ -73,23 +73,24 @@ export function HabitActionModal({ habit, onHabitDeleted }: HabitActionModalProp
                             <AlertDialogTrigger asChild>
                                 {/* Button */}
                                 <BaseButton variant="icon" className="bg-tertiary">
-                                    <Trash2 className="w-10 h-10" />
+                                    <Trash2 className="w-10 h-10" strokeWidth={1.5} />
                                 </BaseButton>
                             </AlertDialogTrigger>
-                            <AlertDialogContent className="flex flex-col border-black border-[2px] rounded-radius z-[60]"> {/* Higher z-index than main modal */}
+                            <AlertDialogContent className="border-[2px] border-black rounded-radius backdrop-blur-sm max-w-sm mx-auto p-6"> 
                                 <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogTitle>Delete Habit</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        This action cannot be undone. This will permanently delete your
-                                        habit and remove its data from our servers.
+                                        Are you sure you want to delete tis habit? This action cannot be undone. 
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogCancel>
+                                        Cancel
+                                        </AlertDialogCancel>
                                     <AlertDialogAction
                                         onClick={handleDelete}
                                         disabled={isDeleting} // Disable button while deleting
-                                        className="text-error"
+                                        className="text-black bg-tertiary"
                                     >
                                         {isDeleting ? 'Deleting...' : 'Delete'}
                                     </AlertDialogAction>

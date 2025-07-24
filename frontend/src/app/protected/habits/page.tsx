@@ -78,28 +78,26 @@ export default function HabitsPage() {
         );
     }
 
-    return (
-        // Buttons 
+    return ( 
         <div className="flex flex-col items-center justify-center h-auto overflow-x-hidden px-4 py-8 font-sans">
             <div className="flex flex-row gap-20 mb-8">
                 <Link href="/protected/habits/new">
                     <BaseButton variant="icon" className="bg-secondary">
-                        <Plus className="w-10 h-10"></Plus>
+                        <Plus className="w-10 h-10" strokeWidth={1.5}></Plus>
                     </BaseButton>
                 </Link>
                 <Link href="/protected/habits/filter">
                     <BaseButton variant="icon" className="bg-primary">
-                        <Funnel className="w-10 h-10"></Funnel>
+                        <Funnel className="w-10 h-10" strokeWidth={1.5}></Funnel>
                     </BaseButton>
                 </Link>
             </div>
-            <p className="mb-4">Click on the Habit you would like to edit / delete.</p>
 
             {/* Habit Container */}
             <section className="w-full flex justify-center">
                 <div className="w-[90%] max-w-md md:w-[400px] border-[2px] mx-auto border-black rounded-radius overflow-hidden">
                     {habits.length === 0 ? (
-                        <p className="text-center p-4">No habits yet.</p>
+                        <p className="text-center p-4">No habits yet</p>
                     ) : (
                         <ul>
                             {habits.map((habit, index) => (

@@ -1,20 +1,45 @@
 'use client'
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog/dialog"
 import { BaseButton } from "@/components/ui/button/base-button/base-button"
-import { Plus, ChevronsLeft, Save } from "lucide-react"
+import { ChevronsLeft, Save } from "lucide-react"
 import { useSession } from 'next-auth/react'
+import { useEffect } from "react"
 
-type CreateCategoryModalProps = {
-    onCreate: (newCategory: { id: number, title: string }) => void;
+type CategoryData = {
+    id?: number; // optional
+    title: string;
 }
 
-export function CreateCategoryModal({ onCreate }: CreateCategoryModalProps) {
+type CategoryFormModalProps = {
+    initialData: CategoryData | null;
+    onSubmit: (category: CategoryData) => void; // callback when form submitted
+    onClose?: () => void; // optional callback when modal closes
+    children?: React.ReactNode; // trigger button
+}
+
+export function CategoryFormModal({ initialData, onSubmit, onClose, children }: CategoryFormModalProps) {
     const { data: session } = useSession();
-    const [title, setTitle] = useState("");
+    const [title, setTitle] = useState(initialData?.title || "");
     const [isOpen, setIsOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // set titel when initialData changes (update)
+    useEffect(() => {
+        setTitle(initialData?.title || "");
+        if (initialData && !children) { 
+            setIsOpen(true);
+        }
+    }, [initialData, children]);
+
+    // close modal, also calls onClose callback
+    const handleClose = (open: boolean) => {
+        setIsOpen(open);
+        if (!open && onClose) {
+            onClose();
+        }
+    };
 
     const handleSubmit = async () => {
         if (!title.trim()) return;
@@ -22,57 +47,40 @@ export function CreateCategoryModal({ onCreate }: CreateCategoryModalProps) {
         setIsSubmitting(true);
 
         try {
-            const res = await fetch("http://localhost:8000/api/categories", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${session?.accessToken}`,
-                    "Accept": "application/json"
-                },
-                body: JSON.stringify({ title })
-            });
+            // API call is being handeled in the parent component
+            onSubmit({ id: initialData?.id, title });
+            handleClose(false); // close modal
+            setTitle(''); // reset title
 
-            if (!res.ok) {
-                const errorText = await res.text();
-                throw new Error(errorText);
-            }
-
-            const newCategory = await res.json();
-
-            onCreate(newCategory);  // calls callback to update parent state
-            setIsOpen(false);       // close the dialog
-            setTitle('');
         } catch (err) {
-            console.error("Failed to create category", err);
+            console.error("Failed to submit category", err);
+            // Fehlerbehandlung
+
         } finally {
             setIsSubmitting(false);
         }
     };
 
+    const dialogTitle = initialData ? "Edit Category" : "Add New Category";
 
 
     return (
         <>
-            <BaseButton
-                type="button"
-                variant="text"
-                className="bg-secondary"
-                onClick={() => setIsOpen(true)}
-            >
-                <Plus className="w-4 h-4 mr-1" />
-                add category
-            </BaseButton>
+        <div onClick={() => handleClose(true)} className="inline-block cursor-pointer">
+            {children}
+        </div>
+            
 
-            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <Dialog open={isOpen} onOpenChange={handleClose}>
                 <DialogContent className="border-[2px] border-black rounded-radius backdrop-blur-sm max-w-md mx-auto">
                     <DialogHeader>
-                        <DialogTitle>Add New Category</DialogTitle>
+                        <DialogTitle>{dialogTitle}</DialogTitle>
                     </DialogHeader>
 
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
-                            handleSubmit(); // API call
+                            handleSubmit(); 
                         }}
                         className="flex flex-col gap-4 mt-4"
                     >
@@ -92,8 +100,8 @@ export function CreateCategoryModal({ onCreate }: CreateCategoryModalProps) {
                                 type="button"
                                 variant="icon"
                                 className="bg-primary"
-                                onClick={() => setIsOpen(false)}>
-                                <ChevronsLeft className="h-10 w-10" />
+                                onClick={() => handleClose(false)}>
+                                <ChevronsLeft className="h-10 w-10" strokeWidth={1.5}/>
                             </BaseButton>
 
                             <BaseButton 
@@ -102,7 +110,7 @@ export function CreateCategoryModal({ onCreate }: CreateCategoryModalProps) {
                                 className="bg-primary"
                                 disabled={isSubmitting}
                                 >
-                                <Save className="h-10 w-10" />
+                                <Save className="h-10 w-10" strokeWidth={1.5} />
                             </BaseButton>
                         </div>
                     </form>

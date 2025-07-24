@@ -17,7 +17,6 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
         if (pathname.includes('/habits/new')) return 'New Habit'
         if (pathname.includes('/habits/edit')) return 'Edit Habit'
         if (pathname.includes('/habits')) return 'Habits'
-        if (pathname.includes('/journals')) return 'Journals'
         if (pathname.includes('/profile')) return 'Profile'
         return ''
     }
@@ -33,13 +32,13 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
             </header>
 
             {/* CONTENT */}
-            <main className="pb-24">
+            <main className="pb-10">
                 {children}
                 <Nav />
             </main>
 
             {/* FOOTER */}
-            <footer className="h-[12.5vh] pb-20 py-2 flex flex-col items-center justify-center text-center font-sans text-xs">
+            <footer className="h-[12.5vh] pb-20 flex flex-col items-center justify-center text-center font-sans text-xs">
             <div className="mb-5 h-[2px] w-full bg-black" />
                 <div className="flex flex-col items-center gap-8 md:flex-row md:justify-evenly md:w-full">
                     <Link href="/public/legal" className="hover:underline">
