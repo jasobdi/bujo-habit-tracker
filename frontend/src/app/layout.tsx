@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   description: "Track your habits and save your daily journals",
 };
 
+<meta name="apple-mobile-web-app-title" content="HabitTracker" />
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">

@@ -25,9 +25,16 @@ export function CategoryFormModal({ initialData, onSubmit, onClose, children }: 
     const [isOpen, setIsOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    useEffect(() => {
+        if (initialData) {
+            setTitle(initialData.title);
+        } else {
+            setTitle(""); 
+        }
+    }, [initialData]);
+
     // set titel when initialData changes (update)
     useEffect(() => {
-        setTitle(initialData?.title || "");
         if (initialData && !children) { 
             setIsOpen(true);
         }
@@ -48,7 +55,7 @@ export function CategoryFormModal({ initialData, onSubmit, onClose, children }: 
 
         try {
             // API call is being handeled in the parent component
-            onSubmit({ id: initialData?.id, title });
+            await onSubmit({ id: initialData?.id, title });
             handleClose(false); // close modal
             setTitle(''); // reset title
 

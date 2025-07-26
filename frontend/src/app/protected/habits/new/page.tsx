@@ -12,7 +12,6 @@ import { habitSchema } from "@/lib/validation/habitSchema";
 import { z } from "zod";
 import { format } from "date-fns";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog/alert-dialog";
-import { Toaster } from "@/components/ui/sonner/sonner";
 
 export default function NewHabit() {
     const router = useRouter();
@@ -109,7 +108,7 @@ export default function NewHabit() {
             });
 
             // prepare data for API call, formatting dates and remaining fields here
-            const apiData: { [key: string]: any } = { // Use index signature for dynamic keys
+            const apiData: { [key: string]: any } = { 
                 title: validated.title,
                 frequency: validated.frequency,
                 start_date: format(validated.startDate, 'yyyy-MM-dd'), // Renamed to start_date
@@ -158,9 +157,9 @@ export default function NewHabit() {
     // state for Categories
     const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+    const [categoriesUpdated, setCategoriesUpdated] = useState(0);
 
     // load categories from API
-    useEffect(() => {
         async function fetchCategories() {
             if (!session?.accessToken) return;
 
@@ -185,8 +184,9 @@ export default function NewHabit() {
             }
         }
 
+    useEffect(() => {
         fetchCategories();
-    }, [session?.accessToken]);
+    }, [session?.accessToken, categoriesUpdated]);
 
     // create a category through the modal
     const handleCategorySubmit = async (categoryData: { id?: number, title: string }) => {
@@ -213,6 +213,7 @@ export default function NewHabit() {
 
             const newCategory = await res.json();
             setAvailableCategories(prev => [...prev, newCategory]); // add newly created category to the list
+            setCategoriesUpdated(prev => prev + 1); // trigger re-fetch of categories
 
         } catch (error) {
             console.error("Failed to create category:", error);

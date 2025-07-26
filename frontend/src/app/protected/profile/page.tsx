@@ -21,35 +21,36 @@ export default function ProfilePage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
 
-    useEffect(() => {
-        async function fetchCategories() {
-            if (!session?.accessToken) {
-                console.warn("No access token available for fetching categories.");
+
+    async function fetchCategories() {
+        if (!session?.accessToken) {
+            console.warn("No access token available for fetching categories.");
+            return;
+        }
+
+        try {
+            const res = await fetch('http://localhost:8000/api/categories', {
+                headers: {
+                    Authorization: `Bearer ${session.accessToken}`,
+                    Accept: 'application/json',
+                },
+            });
+
+            if (!res.ok) {
+                const text = await res.text();
+                console.error('Failed to fetch categories:', res.status, text);
+                // Handle API-Fehler (z.B. User benachrichtigen)
                 return;
             }
 
-            try {
-                const res = await fetch('http://localhost:8000/api/categories', {
-                    headers: {
-                        Authorization: `Bearer ${session.accessToken}`,
-                        Accept: 'application/json',
-                    },
-                });
-
-                if (!res.ok) {
-                    const text = await res.text();
-                    console.error('Failed to fetch categories:', res.status, text);
-                    // Handle API-Fehler (z.B. User benachrichtigen)
-                    return;
-                }
-
-                const data: Category[] = await res.json();
-                setAvailableCategories(data); // Die geladenen Daten im State speichern
-            } catch (err) {
-                console.error("Error loading categories:", err);
-            }
+            const data: Category[] = await res.json();
+            setAvailableCategories(data); // Die geladenen Daten im State speichern
+        } catch (err) {
+            console.error("Error loading categories:", err);
         }
+    }
 
+    useEffect(() => {
         fetchCategories();
     }, [session?.accessToken]);
 
@@ -90,17 +91,8 @@ export default function ProfilePage() {
                 throw new Error(errorText);
             }
 
-            const updatedOrNewCategory = await res.json();
+            await fetchCategories();
 
-            if (categoryData.id) {
-                // update logic
-                setAvailableCategories(prev => prev.map(cat =>
-                    cat.id === updatedOrNewCategory.id ? updatedOrNewCategory : cat
-                ));
-            } else {
-                // create logic
-                setAvailableCategories(prev => [...prev, updatedOrNewCategory]);
-            }
             setSelectedCategory(null); // reset selected category
             setIsEditModalOpen(false); // close modal
         } catch (error) {
@@ -126,7 +118,8 @@ export default function ProfilePage() {
                 throw new Error(errorText);
             }
 
-            setAvailableCategories(prev => prev.filter(cat => cat.id !== selectedCategory.id));
+            await fetchCategories();
+
             setSelectedCategory(null); // reset selected category
             setIsDeleteAlertOpen(false); // close alert
         } catch (error) {
