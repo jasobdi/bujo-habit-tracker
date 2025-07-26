@@ -50,7 +50,7 @@ export function HabitActionModal({ habit, onHabitDeleted }: HabitActionModalProp
             {/* Main Action Modal */}
             <Dialog open={open} onOpenChange={setOpen}>
             <DialogOverlay className="bg-black/50 backdrop-blur-sm fixed inset-0 z-50" />
-                <DialogContent className=" flex flex-col border-black border-[2px] rounded-radius md:flex md:items-center z-50">
+                <DialogContent className="flex flex-col items-center w-auto border-black border-[2px] rounded-radius z-50">
                     <DialogHeader>
                         <DialogTitle>{habit.title}</DialogTitle>
                     </DialogHeader>

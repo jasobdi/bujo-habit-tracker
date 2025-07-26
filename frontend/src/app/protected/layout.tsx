@@ -22,7 +22,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
     }
 
     return (
-        <div className="flex flex-col bg-background text-foreground">
+        <div className="flex flex-col bg-background text-foreground min-h-screen">
             {/* HEADER */}
             <header className="h-[12.5vh] flex flex-col justify-center items-center text-center">
                 <h1 className="text-xl font-semibold font-sans">
@@ -31,24 +31,30 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
                 <div className="mt-5 h-[2px] w-full bg-black" />
             </header>
 
-            {/* CONTENT */}
-            <main className="pb-10">
-                {children}
-                <Nav />
-            </main>
 
-            {/* FOOTER */}
-            <footer className="h-[12.5vh] pb-20 flex flex-col items-center justify-center text-center font-sans text-xs">
-            <div className="mb-5 h-[2px] w-full bg-black" />
-                <div className="flex flex-col items-center gap-8 md:flex-row md:justify-evenly md:w-full">
-                    <Link href="/public/legal" className="hover:underline">
-                        Legal notice & privacy policy
-                    </Link>
-                    <p>
-                        © {new Date().getFullYear()} Janice Bader
-                    </p>
-                </div>
-            </footer>
+            <div className="flex flex-col flex-1 pb-24">
+                {/* CONTENT */}
+                <main className="flex-1">
+                    {children}
+                </main>
+
+                {/* FOOTER */}
+                <footer className="h-[12.5vh] flex flex-col items-center justify-center text-center font-sans text-xs">
+                    <div className="mb-5 h-[2px] w-full bg-black" />
+                    <div className="flex flex-col items-center gap-4 md:flex-row md:justify-around md:w-full">
+                        <Link href="/public/legal" className="underline">
+                            Legal notice & privacy policy
+                        </Link>
+                        <p>
+                            © {new Date().getFullYear()} Janice Bader
+                        </p>
+                    </div>
+                </footer>
+
+            </div>
+
+            {/* NAVIGATION */}
+            <Nav />
 
         </div>
     )

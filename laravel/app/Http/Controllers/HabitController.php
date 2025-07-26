@@ -6,6 +6,7 @@ use App\Models\Habit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+
 class HabitController extends Controller
 {
     // READ ALL HABITS
@@ -46,7 +47,17 @@ class HabitController extends Controller
                     })->orWhere(function ($q3) use ($date) {
                         $q3->where('frequency', 'monthly')
                             ->whereDay('start_date', '=', $date->day); // compare day of month
-                    });
+                    })->orWhere(function ($q2) use ($date) {
+                        $q2->where('frequency', 'custom_daily')
+                            ->whereRaw('(julianday(?) - julianday(start_date)) % repeat_interval = 0', [$date->toDateString()]);
+                    })->orWhere(function ($q2) use ($date) {
+                        $q2->where('frequency', 'custom_weekly')
+                            ->whereJsonContains('custom_days', $date->format('l'));
+                    })->orWhere(function ($q3) use ($date) {
+                        $q3->where('frequency', 'custom_monthly')
+                            ->whereDay('start_date', '=', $date->day) // compare day of month
+                            ->whereRaw('((strftime("%Y", ?) - strftime("%Y", start_date)) * 12 + (strftime("%m", ?) - strftime("%m", start_date))) % repeat_interval = 0', [$date->toDateString(), $date->toDateString()]);
+                });
             });
         }
 
@@ -76,11 +87,12 @@ class HabitController extends Controller
                 $endDate = $startDate->copy()->endOfDay();
             } else if ($request->has('year') && $request->has('month')) {
                 $startDate = \Carbon\Carbon::create($request->input('year'), $request->input('month'), 1);
+                $startDate = $habit->start_date > $startDate ? $habit->start_date : $startDate;
                 $endDate = $startDate->copy()->endOfMonth()->endOfDay();
             }
             $activeDates = [];
 
-            if ($habit->frequency === "daily") {
+            if ($habit->frequency === "daily" || $habit->frequency === "custom_daily") {
                 for ($date = $startDate->copy(); $date->lte($endDate); $date->addDays($habit->repeat_interval)) {
                     $activeDates[] = $date->toDateString();
                 }
@@ -90,12 +102,25 @@ class HabitController extends Controller
                         $activeDates[] = $date->toDateString();
                     }
                 }
-            } elseif ($habit->frequency === "monthly") {
-                for ($date = $startDate->copy(); $date->lte($endDate); $date->addMonthsNoOverflow($habit->repeat_interval)) {
-                    $activeDates[] = $date->toDateString();
+            } elseif ($habit->frequency === "custom_weekly" && is_array($habit->custom_days)) {
+                for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+                    if (in_array($date->format('l'), $habit->custom_days)) {
+                        // find the first appearance of the weekday from $date starting from the start date
+                        $firstAppearance = $habit->start_date->copy();
+                        $targetDayOfWeek = $date->dayOfWeek; // 0=sunday, 1=monday, ..., 6=saturday
+                        $startDayOfWeek = $firstAppearance->dayOfWeek;
+
+                        // Calculate the days until the desired weekday
+                        $daysToAdd = ($targetDayOfWeek - $startDayOfWeek + 7) % 7;
+                        $firstAppearance->addDays($daysToAdd);
+
+                        if ($firstAppearance->diffInDays($date) % ($habit->repeat_interval * 7) === 0) {
+                            $activeDates[] = $date->toDateString();
+                        }
+                    }
                 }
-            } elseif ($habit->frequency === "custom") {
-                for ($date = $startDate->copy(); $date->lte($endDate); $date->addDays($habit->repeat_interval)) {
+            } elseif ($habit->frequency === "monthly" || $habit->frequency === "custom_monthly") {
+                for ($date = $startDate->copy(); $date->lte($endDate); $date->addMonthsNoOverflow($habit->repeat_interval)) {
                     $activeDates[] = $date->toDateString();
                 }
             }
@@ -103,6 +128,16 @@ class HabitController extends Controller
             // Add active_dates as extra field
             $habit->setAttribute('active_dates', $activeDates);
             return $habit;
+        });
+
+        // Filter out habits that do not have active dates for the requested date
+        $habitsWithDates = $habitsWithDates->filter(function ($habit) use ($request) {
+            if ($request->has('date')) {
+                return in_array($request->input('date'), $habit->active_dates);
+            } elseif ($request->has('year') && $request->has('month')) {
+                return !empty($habit->active_dates);
+            }
+            return true; // No specific date filter, return all habits
         });
 
         return response()->json($habitsWithDates->values());
@@ -131,7 +166,7 @@ class HabitController extends Controller
     // validation
     $validated = $request->validate([
         'title' => 'required|string|max:50',
-        'frequency' => 'required|in:daily,weekly,monthly,custom',
+        'frequency' => 'required|in:daily,custom_daily,weekly,custom_weekly,monthly,custom_monthly',
         'start_date' => 'required|date',
         'end_date' => 'nullable|date|after_or_equal:start_date',
         'repeat_interval' => 'nullable|integer|min:1',
@@ -144,16 +179,16 @@ class HabitController extends Controller
     // handle frequency and repeat_interval
     $frequency = $validated['frequency'];
 
-    if ($frequency === 'custom' && !isset($validated['repeat_interval'])) {
+    if (($frequency === 'daily_custom' || $frequency === 'custom_daily' || $frequency === 'custom_monthly') && !isset($validated['repeat_interval'])) {
         return response()->json(['message' => 'Repeat interval is required for custom frequency'], 422);
     }
 
-    if ($frequency !== 'custom') {
+    if ($frequency === 'daily' || $frequency === 'weekly' || $frequency === 'monthly') {
         $validated['repeat_interval'] = 1;
     }
 
     // Set custom_days only for weekly or custom
-    if (!in_array($validated['frequency'], ['weekly', 'custom'])) {
+    if (!in_array($validated['frequency'], ['weekly', 'custom_weekly'])) {
         $validated['custom_days'] = null;
     }
 
@@ -191,7 +226,7 @@ class HabitController extends Controller
         // basic validation
         $validated = $request->validate([
             'title' => 'sometimes|string|max:50',
-            'frequency' => 'sometimes|in:daily,weekly,monthly,custom',
+            'frequency' => 'required|in:daily,custom_daily,weekly,custom_weekly,monthly,custom_monthly',
             'start_date' => 'sometimes|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'repeat_interval' => 'nullable|integer|min:1',
@@ -205,14 +240,16 @@ class HabitController extends Controller
         $frequency = $validated['frequency'] ?? $habit->frequency;
 
         // validate repeat_interval
-        if ($frequency === 'custom' && !isset($validated['repeat_interval'])) {
+        if (($frequency === 'daily_custom' || $frequency === 'custom_daily' || $frequency === 'custom_monthly') && !isset($validated['repeat_interval'])) {
             return response()->json(['message' => 'Repeat interval is required for custom frequency'], 422);
-        } elseif ($frequency !== 'custom') {
+        }
+
+        if ($frequency === 'daily' || $frequency === 'weekly' || $frequency === 'monthly') {
             $validated['repeat_interval'] = 1;
         }
 
         // validate custom_days (only in weekly or custom frequency)
-        if (!in_array($frequency, ['weekly', 'custom'])) {
+        if (!in_array($frequency, ['weekly', 'custom_weekly'])) {
             $validated['custom_days'] = null;
         }
 

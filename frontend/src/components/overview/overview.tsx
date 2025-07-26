@@ -17,7 +17,7 @@ export function Overview({ token, date }: OverviewProps) {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await res.json();
-            setHabits(data);
+            setHabits(data ?? []);
         }
 
         fetchHabits();
@@ -34,3 +34,4 @@ export function Overview({ token, date }: OverviewProps) {
         </div>
     );
 }
+

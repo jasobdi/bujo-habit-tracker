@@ -33,10 +33,10 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             </main>
 
             {/* FOOTER */}
-            <footer className="h-[12.5vh] py-2 flex flex-col items-center justify-center text-center font-sans text-xs">
+            <footer className="fixed bottom-0 left-0 w-full h-[12.5vh] pb-6 flex flex-col items-center justify-center text-center font-sans text-xs">
             <div className="mb-5 h-[2px] w-full bg-black" />
-                <div className="flex flex-col items-center gap-8 md:flex-row md:justify-evenly md:w-full">
-                    <Link href="/public/legal" className="hover:underline">
+                <div className="flex flex-col items-center gap-4 md:flex-row md:justify-around md:w-full">
+                    <Link href="/public/legal" className="underline">
                         Legal notice & privacy policy
                     </Link>
                     <p>

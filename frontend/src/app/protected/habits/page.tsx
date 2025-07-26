@@ -197,7 +197,7 @@ export default function HabitsPage() {
 
             {/* Habit Container */}
             <section className="w-full flex justify-center">
-                <div className="w-[90%] max-w-md md:w-[400px] border-[2px] mx-auto border-black rounded-radius overflow-hidden">
+                <div className="w-[90%] max-w-md md:w-[444px] border-[2px] mx-auto border-black rounded-radius overflow-hidden">
                     {habitsToDisplay.length === 0 ? (
                         <p className="text-center p-4">
                             {selectedCategoryId !== null ? "No habits found for this category." : "No habits yet"}
@@ -208,7 +208,7 @@ export default function HabitsPage() {
                                 <li
                                     key={habit.id}
                                     className={`
-                                        flex justify-between items center px-4 py-2
+                                        flex justify-between items center px-4 py-2 relative
                                         ${index % 2 === 1 ? 'bg-contrast' : ''} // every 2nd line: bg gray
                                     `}
                                 >
@@ -221,7 +221,10 @@ export default function HabitsPage() {
                                             ))}
                                         </div>
                                     </div>
-                                    <HabitActionModal habit={habit} onHabitDeleted={handleHabitDeleted} />
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                        <HabitActionModal habit={habit} onHabitDeleted={handleHabitDeleted} />
+                                    </div>
+                                    
                                 </li>
                             ))}
                         </ul>

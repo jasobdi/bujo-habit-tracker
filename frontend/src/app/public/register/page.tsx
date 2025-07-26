@@ -65,7 +65,7 @@ export default function RegisterPage() {
 
     return (
         <div className="flex justify-center">
-            <section className="max-w-sm mx-3 my-4 border-[2px] border-border rounded-[15px] p-6 font-sans">
+            <section className="max-w-sm md:w-[340px] mx-3 my-4 border-[2px] border-border rounded-[15px] p-6 font-sans">
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     {/* Username */}
@@ -121,7 +121,7 @@ export default function RegisterPage() {
                 </form>
 
                 {/* Link to Login */}
-                <p className="text-center text-xs mt-6 font-sans">
+                <p className="text-center text-xs mt-8 font-sans">
                     Already have an account?{' '}
                     <Link href="/public/login" className="underline">
                         Login

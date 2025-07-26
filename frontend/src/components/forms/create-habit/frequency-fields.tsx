@@ -2,23 +2,22 @@
 
 import { BaseButton } from "@/components/ui/button/base-button/base-button";
 import { DatePickerDialog } from "@/components/ui/dialog/date-picker-dialog";
+import { habitCommonFrequencies, HabitCommonFrequency, habitCustomDays, HabitCustomDays } from "@/types/habit";
+import { HabitEndType } from "@/lib/validation/habitSchema";
 import { format } from "date-fns";
 
-type Frequency = 'daily' | 'weekly' | 'monthly' | 'custom';
-type EndType = 'never' | 'on' | 'after';
-
-type Props = {
-    frequency: Frequency | null;
-    customType: 'daily' | 'weekly' | 'monthly';
-    setCustomType: (val: 'daily' | 'weekly' | 'monthly') => void;
+type Props<T extends string, S extends string> = {
+    frequency: T | null;
+    customType: HabitCommonFrequency;
+    setCustomType: (val: HabitCommonFrequency) => void;
     startDate: Date | undefined;
     setStartDate: (date?: Date) => void;
     repeatInterval: number;
     setRepeatInterval: (val: number) => void;
-    customDays: string[];
-    toggleCustomDay: (day: string) => void;
-    endType: EndType;
-    setEndType: (val: EndType) => void;
+    customDays: S[];
+    toggleCustomDay: (day: HabitCustomDays) => void;
+    endType: HabitEndType;
+    setEndType: (val: HabitEndType) => void;
     endDate: Date | undefined;
     setEndDate: (date?: Date) => void;
     repeatCount: number;
@@ -26,7 +25,7 @@ type Props = {
     isEditing?: boolean; // optional prop for edit mode
 };
 
-export function FrequencyFields({
+export function FrequencyFields<T extends string, S extends string>({
     frequency,
     customType,
     setCustomType,
@@ -43,11 +42,29 @@ export function FrequencyFields({
     repeatCount,
     setRepeatCount,
     isEditing = false
-}: Props) {
+}: Props<T, S>) {
     function customFrequencyLabel() {
         if (customType === 'weekly') return 'weeks';
         if (customType === 'monthly') return 'months';
         return 'days';
+    }
+
+    const mapDay = (day: HabitCustomDays) => {
+        switch (day) {
+            case 'Monday': return 'MO';
+            case 'Tuesday': return 'TU';
+            case 'Wednesday': return 'WE';
+            case 'Thursday': return 'TH';
+            case 'Friday': return 'FR';
+            case 'Saturday': return 'SA';
+            case 'Sunday': return 'SU';
+            default: return '';
+        }
+    }
+
+    const handleRepeatIntervalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(e.target.value);
+        setRepeatInterval(isNaN(value) ? 1 : value);
     }
 
     return (
@@ -76,14 +93,14 @@ export function FrequencyFields({
                     <div className="mt-4">
                         <label className="font-semibold md:text-md">Custom type</label>
                         <div className="flex flex-col w-auto md:flex-row md:gap-1 mt-2 mb-3">
-                            {['daily', 'weekly', 'monthly'].map((type) => (
+                            {habitCommonFrequencies.map((type) => (
                                 <BaseButton
                                     key={type}
                                     type="button"
                                     variant="text"
                                     className={`text-sm md:text-lg px-4 py-2 m-2 border-[2px] border-black rounded-radius 
                                         ${customType === type ? 'bg-primary' : 'bg-contrast text-black'}`}
-                                    onClick={() => setCustomType(type as 'daily' | 'weekly' | 'monthly')}
+                                    onClick={() => setCustomType(type)}
                                     aria-label={`Set custom frequency to ${type}`}
                                 >
                                     {type}
@@ -98,10 +115,7 @@ export function FrequencyFields({
                             type="number"
                             min={1}
                             value={repeatInterval}
-                            onChange={(e) => {
-                                const value = parseInt(e.target.value);
-                                setRepeatInterval(isNaN(value) ? 1 : value);
-                            }}
+                            onChange={handleRepeatIntervalChange}
                             className="border border-black rounded ml-2 p-1 w-16 md:text-md"
                             id="repeat-interval"
                         />{' '}
@@ -112,15 +126,15 @@ export function FrequencyFields({
                         <div className="mt-4">
                             <label className="font-semibold md:text-md">Repeats on</label>
                             <div className="flex gap-1 mt-2">
-                                {['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'].map(day => (
+                                {habitCustomDays.map(day => (
                                     <BaseButton
                                         key={day}
                                         type="button"
                                         variant="icon"
-                                        className={`bg-contrast w-8 h-8 md:w-10 md:h-10 p-2 text-xs md:text-sm ${customDays.includes(day) ? 'bg-primary' : 'bg-contrast text-black'}`}
+                                        className={`bg-contrast w-8 h-8 md:w-10 md:h-10 p-2 text-xs md:text-sm ${(customDays as string[]).includes(day) ? 'bg-primary' : 'bg-contrast text-black'}`}
                                         onClick={() => toggleCustomDay(day)}
                                     >
-                                        {day}
+                                        {mapDay(day)}
                                     </BaseButton>
                                 ))}
                             </div>
@@ -174,19 +188,19 @@ export function FrequencyFields({
                                     className="md:text-md"
                                 />
                                 After:
-                                <input
-                                    type="number"
-                                    min={1}
-                                    value={repeatCount}
-                                    onChange={(e) => {
-                                        const value = parseInt(e.target.value);
-                                        setRepeatCount(isNaN(value) ? 1 : value);
-
-                                    }}
-                                    onFocus={() => setEndType('after')}
-                                    className="border border-black rounded p-1 w-16 md:text-md"
-                                    id="end-after-count"
-                                />
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        value={repeatCount}
+                                        onChange={(e) => {
+                                            const value = parseInt(e.target.value);
+                                            setRepeatCount(isNaN(value) ? 1 : value);
+                                        
+                                        }}
+                                        onFocus={() => setEndType('after')} 
+                                        className="border border-black rounded p-1 w-16 md:text-md"
+                                        id="end-after-count"
+                                    />
                                 repetitions
                             </label>
                         </div>

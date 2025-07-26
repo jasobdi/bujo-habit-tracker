@@ -12,6 +12,10 @@ import { habitSchema } from "@/lib/validation/habitSchema";
 import { z } from "zod";
 import { format } from "date-fns";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog/alert-dialog";
+import { habitCommonFrequencies, HabitCommonFrequency, HabitCustomDays } from "@/types/habit";
+
+const frequencies = [...habitCommonFrequencies, 'custom'] as const;
+type Frequency = typeof frequencies[number];
 
 export default function NewHabit() {
     const router = useRouter();
@@ -19,18 +23,16 @@ export default function NewHabit() {
 
 
     // define frequency options
-    const frequencies = ['daily', 'weekly', 'monthly', 'custom'] as const;
-    type Frequency = typeof frequencies[number];
 
     // states for custom frequency
-    const [customType, setCustomType] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+    const [customType, setCustomType] = useState<HabitCommonFrequency>('daily');
     const [repeatInterval, setRepeatInterval] = useState<number>(1);
 
     // states for the form
     const [title, setTitle] = useState('');
     const [frequency, setFrequency] = useState<Frequency>('daily');
     const [startDate, setStartDate] = useState<Date | undefined>();
-    const [customDays, setCustomDays] = useState<string[]>([]);
+    const [customDays, setCustomDays] = useState<HabitCustomDays[]>([]);
     const [endType, setEndType] = useState<'never' | 'on' | 'after'>('never');
     const [endDate, setEndDate] = useState<Date | undefined>();
     const [repeatCount, setRepeatCount] = useState<number>(1);
@@ -40,7 +42,7 @@ export default function NewHabit() {
 
     /* Form handling */
     // handle frequency change
-    function toggleCustomDay(day: string) {
+    function toggleCustomDay(day: HabitCustomDays) {
         setCustomDays(prev =>
             prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
         );
@@ -110,23 +112,17 @@ export default function NewHabit() {
             // prepare data for API call, formatting dates and remaining fields here
             const apiData: { [key: string]: any } = { 
                 title: validated.title,
-                frequency: validated.frequency,
+                frequency:  validated.frequency === 'custom' ? `custom_${customType}` : validated.frequency,
                 start_date: format(validated.startDate, 'yyyy-MM-dd'), // Renamed to start_date
                 custom_days: validated.customDays, // Renamed to custom_days
                 category_ids: validated.categories, // Renamed to category_ids
+                repeat_interval: validated.frequency === 'custom' ? repeatInterval : 1, // Renamed to repeat_interval
+                repeat_count: validated.repeatCount, // Renamed to repeat_count
             };
 
             // Handle end date based on endType
             if (validated.endType === "on" && validated.endDate) {
                 apiData.end_date = format(validated.endDate, 'yyyy-MM-dd'); // Renamed to end_date
-            }
-
-            // Handle repeat interval based on endType
-            if (validated.endType === "after" && validated.repeatCount !== undefined) {
-                apiData.repeat_interval = validated.repeatCount; // Renamed to repeat_interval
-            }
-            if (validated.frequency === 'custom' && apiData.repeat_interval === undefined) {
-                apiData.repeat_interval = 1; // Default to 1 if frequency is custom but endType not 'after'
             }
 
             // API call to create the habit
@@ -221,7 +217,7 @@ export default function NewHabit() {
         }
     };
 
-    // toogle for category selection
+    // toggle for category selection
     function toggleCategory(id: number) {
         setSelectedCategories(prev =>
             prev.includes(id)
@@ -253,7 +249,7 @@ export default function NewHabit() {
                                 type="button"
                                 aria-label={`Set frequency to ${f}`}
                                 className={`px-4 py-2 m-2 border-[2px] border-black rounded-radius
-                                    ${frequency === f ? 'bg-primary' : 'bg-contrast text-black'}`}
+                                    ${frequency === f || (f === 'custom' && frequency.startsWith('custom')) ? 'bg-primary' : 'bg-contrast text-black'}`}
                                 onClick={() => setFrequency(f)}
                             >
                                 {f}
@@ -262,23 +258,23 @@ export default function NewHabit() {
                     </div>
                 </div>
 
-                {FrequencyFields({
-                    frequency,
-                    customType,
-                    setCustomType,
-                    startDate,
-                    setStartDate,
-                    repeatInterval,
-                    setRepeatInterval,
-                    customDays,
-                    toggleCustomDay,
-                    endType,
-                    setEndType,
-                    endDate,
-                    setEndDate,
-                    repeatCount,
-                    setRepeatCount
-                })}
+                <FrequencyFields
+                    frequency={frequency}
+                    customType={customType}
+                    setCustomType={setCustomType}
+                    startDate={startDate}
+                    setStartDate={setStartDate}
+                    repeatInterval={repeatInterval}
+                    setRepeatInterval={setRepeatInterval}
+                    customDays={customDays}
+                    toggleCustomDay={toggleCustomDay}
+                    endType={endType}
+                    setEndType={setEndType}
+                    endDate={endDate}
+                    setEndDate={setEndDate}
+                    repeatCount={repeatCount}   
+                    setRepeatCount={setRepeatCount}
+                />
 
                 <div className="mt-4">
                     <label className="font-semibold md:text-md">Categories</label>

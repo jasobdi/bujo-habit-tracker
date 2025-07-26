@@ -50,7 +50,7 @@ export default function LoginPage() {
 
     return (
         <div className="flex justify-center">
-            <section className="max-w-sm mx-3 my-4 border-[2px] border-border rounded-radius p-6 font-sans">
+            <section className="max-w-sm md:w-[340px] mx-3 my-4 border-[2px] border-border rounded-radius p-6 font-sans">
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                     {/* Email */}
@@ -91,7 +91,7 @@ export default function LoginPage() {
                 </form>
 
                 {/* Link to Register */}
-                <p className="text-center text-xs mt-8 font-sans">
+                <p className="text-pretty text-center text-xs mt-8 font-sans">
                     Don’t have an account yet?{' '}
                     <Link href="/public/register" className="underline">
                         Register here
