@@ -1,8 +1,8 @@
 'use client'
 
-import { DayPicker } from "react-day-picker";
 import { BaseButton } from "@/components/ui/button/base-button/base-button";
 import { DatePickerDialog } from "@/components/ui/dialog/date-picker-dialog";
+import { format } from "date-fns";
 
 type Frequency = 'daily' | 'weekly' | 'monthly' | 'custom';
 type EndType = 'never' | 'on' | 'after';
@@ -23,6 +23,7 @@ type Props = {
     setEndDate: (date?: Date) => void;
     repeatCount: number;
     setRepeatCount: (val: number) => void;
+    isEditing?: boolean; // optional prop for edit mode
 };
 
 export function FrequencyFields({
@@ -40,7 +41,8 @@ export function FrequencyFields({
     endDate,
     setEndDate,
     repeatCount,
-    setRepeatCount
+    setRepeatCount,
+    isEditing = false
 }: Props) {
     function customFrequencyLabel() {
         if (customType === 'weekly') return 'weeks';
@@ -51,12 +53,22 @@ export function FrequencyFields({
     return (
         <div className="border-[2px] border-black rounded-radius p-4">
             {/* start date */}
-            <label htmlFor="start-date" className="font-semibold md:text-md">Start date</label>
-            <DatePickerDialog
-                id="start-date"
-                selected={startDate}
-                onSelect={setStartDate}
-                label="Start date" />
+            {isEditing && (
+                <div className="mb-4">
+                    <label className="font-semibold md:text-md">Start Date</label>
+                    <p className="mt-2">{startDate ? format(startDate, 'PPP') : 'Loading...'}</p>
+                </div>
+            )}
+            {!isEditing && (
+                <div>
+                    <label htmlFor="start-date" className="font-semibold md:text-md">Start date</label>
+                    <DatePickerDialog
+                        id="start-date"
+                        selected={startDate}
+                        onSelect={setStartDate}
+                        label="Start date" />
+                </div>
+            )}
 
             {/* custom type & repeat interval */}
             {frequency === 'custom' && (
@@ -162,19 +174,19 @@ export function FrequencyFields({
                                     className="md:text-md"
                                 />
                                 After:
-                                    <input
-                                        type="number"
-                                        min={1}
-                                        value={repeatCount}
-                                        onChange={(e) => {
-                                            const value = parseInt(e.target.value);
-                                            setRepeatCount(isNaN(value) ? 1 : value);
-                                        
-                                        }}
-                                        onFocus={() => setEndType('after')} 
-                                        className="border border-black rounded p-1 w-16 md:text-md"
-                                        id="end-after-count"
-                                    />
+                                <input
+                                    type="number"
+                                    min={1}
+                                    value={repeatCount}
+                                    onChange={(e) => {
+                                        const value = parseInt(e.target.value);
+                                        setRepeatCount(isNaN(value) ? 1 : value);
+
+                                    }}
+                                    onFocus={() => setEndType('after')}
+                                    className="border border-black rounded p-1 w-16 md:text-md"
+                                    id="end-after-count"
+                                />
                                 repetitions
                             </label>
                         </div>

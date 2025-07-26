@@ -2,9 +2,11 @@
 
 import { BaseButton } from "@/components/ui/button/base-button/base-button";
 import { CategoryFormModal } from "@/components/modals/category-form-modal";
-import { Plus, SquarePen, Trash2, Settings } from "lucide-react";
+import { Plus, SquarePen, Trash2 } from "lucide-react";
+import { LogoutButton } from "@/components/logout-button/logout-button";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import Link  from "next/link";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog/alert-dialog";
 
 type Category = {
@@ -133,13 +135,7 @@ export default function ProfilePage() {
             <div className="flex justify-center items-center w-20 h-20 rounded-full border-black border-[2px]">
             </div>
             <h2 className="mt-2 mb-4 font-semibold text-lg">Username</h2>
-            <BaseButton
-                type="button"
-                variant="icon"
-                className="bg-primary mb-4"
-            >
-                <Settings className="w-10 h-10" strokeWidth={1.5} ></Settings>
-            </BaseButton>
+            
             <div className="flex flex-col items-center justify-center w-[90%] md:w-[400px] border-black border-[2px] rounded-radius">
                 <h3 className="font-semibold text-md mt-4 mb-2">Categories</h3>
                 <p>Select a category to edit or delete.</p>
@@ -247,6 +243,19 @@ export default function ProfilePage() {
                     </AlertDialog>
                 )}
 
+            </div>
+
+            {/* settings */}
+            <div className="flex flex-col items-center justify-center w-[90%] md:w-[400px] border-black border-[2px] rounded-radius mt-8">
+                <h3 className="font-semibold text-md mt-4 mb-2">Settings</h3>
+                <Link href="#" className="underline text-xs">
+                        Delete Account
+                    </Link>
+            </div>
+
+            {/* LOGOUT BUTTON */}
+            <div className="flex justify-center mt-8">
+                <LogoutButton />
             </div>
         </div>
 

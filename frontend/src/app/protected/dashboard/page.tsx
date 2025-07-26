@@ -5,7 +5,6 @@ import { getHabitsByMonth } from '@/lib/fetch/getHabitsByMonth'
 import { DashboardCalendar } from '@/components/ui/calendar/dashboard-calendar'
 import { BaseButton } from '@/components/ui/button/base-button/base-button'
 import { Overview } from '@/components/overview/overview'
-import { LogoutButton } from '@/components/logout-button/logout-button'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
@@ -66,12 +65,6 @@ export default async function DashboardPage() {
                 </div>
 
             </section>
-
-
-            {/* LOGOUT BUTTON */}
-            <div className="flex justify-center mt-8">
-                <LogoutButton />
-            </div>
 
         </div>
     );
