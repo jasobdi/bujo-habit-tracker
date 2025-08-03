@@ -13,9 +13,10 @@ type Props = {
     onSelect: (date?: Date) => void
     label?: string
     id: string
+    hasError?: boolean
 }
 
-export function DatePickerDialog({ selected, onSelect, label = "Pick a date", id }: Props) {
+export function DatePickerDialog({ selected, onSelect, label = "Pick a date", id, hasError = false }: Props) {
     const [inputValue, setInputValue] = useState(
         selected ? format(selected, "dd/MM/yyyy") : ""
     )
@@ -48,7 +49,7 @@ export function DatePickerDialog({ selected, onSelect, label = "Pick a date", id
             <input
                 id={id}
                 type="text"
-                className="border border-black rounded p-2 w-full"
+                className={`border border-black rounded p-2 w-full ${hasError ? 'border-error' : ''}`}
                 placeholder="dd/mm/yyyy"
                 value={inputValue}
                 onChange={handleInputChange}

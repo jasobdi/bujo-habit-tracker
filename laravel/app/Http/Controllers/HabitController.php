@@ -6,6 +6,7 @@ use App\Models\Habit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+use function Laravel\Prompts\error;
 
 class HabitController extends Controller
 {
@@ -38,23 +39,23 @@ class HabitController extends Controller
                 $q->whereNull('end_date')
                     ->orWhere('end_date', '>=', $date);
             });
-            // frequency is daily, weekly or monthly
+            // frequency is daily, weekly, monthly or custom
             $query->where(function ($q) use ($date) {
                 $q->where('frequency', 'daily')
                     ->orWhere(function ($q2) use ($date) {
                         $q2->where('frequency', 'weekly')
-                            ->whereJsonContains('custom_days', $date->format('l')); // l = weekday name (Monday)
+                            ->whereRaw('strftime("%w", start_date) = strftime("%w", ?)', [$date->toDateString()]); // compare weekday (0=Sunday, 1=Monday, etc.)
                     })->orWhere(function ($q3) use ($date) {
                         $q3->where('frequency', 'monthly')
                             ->whereDay('start_date', '=', $date->day); // compare day of month
-                    })->orWhere(function ($q2) use ($date) {
-                        $q2->where('frequency', 'custom_daily')
+                    })->orWhere(function ($q4) use ($date) {
+                        $q4->where('frequency', 'custom_daily')
                             ->whereRaw('(julianday(?) - julianday(start_date)) % repeat_interval = 0', [$date->toDateString()]);
-                    })->orWhere(function ($q2) use ($date) {
-                        $q2->where('frequency', 'custom_weekly')
+                    })->orWhere(function ($q5) use ($date) {
+                        $q5->where('frequency', 'custom_weekly')
                             ->whereJsonContains('custom_days', $date->format('l'));
-                    })->orWhere(function ($q3) use ($date) {
-                        $q3->where('frequency', 'custom_monthly')
+                    })->orWhere(function ($q6) use ($date) {
+                        $q6->where('frequency', 'custom_monthly')
                             ->whereDay('start_date', '=', $date->day) // compare day of month
                             ->whereRaw('((strftime("%Y", ?) - strftime("%Y", start_date)) * 12 + (strftime("%m", ?) - strftime("%m", start_date))) % repeat_interval = 0', [$date->toDateString(), $date->toDateString()]);
                 });
@@ -96,11 +97,19 @@ class HabitController extends Controller
                 for ($date = $startDate->copy(); $date->lte($endDate); $date->addDays($habit->repeat_interval)) {
                     $activeDates[] = $date->toDateString();
                 }
-            } elseif ($habit->frequency === "weekly" && is_array($habit->custom_days)) {
-                for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
-                    if (in_array($date->format('l'), $habit->custom_days)) {
-                        $activeDates[] = $date->toDateString();
-                    }
+            } elseif ($habit->frequency === "weekly") {
+                // find the first appearance of the weekday from $date starting from the start date
+                $firstAppearance = $habit->start_date->copy();
+                $targetDayOfWeek = $startDate->dayOfWeek; // 0=sunday, 1=monday, ..., 6=saturday
+                $startDayOfWeek = $firstAppearance->dayOfWeek;
+
+                // Calculate the days until the desired weekday
+                $daysToAdd = ($targetDayOfWeek - $startDayOfWeek + 7) % 7;
+                $firstAppearance->addDays($daysToAdd);
+                error_log( $firstAppearance->toDateString() . " = " . $endDate->toDateString());
+                for ($date = $firstAppearance->copy(); $date->lte($endDate); $date->addDays(7)) {
+                    error_log("Adding date: " . $date->toDateString());
+                    $activeDates[] = $date->toDateString();
                 }
             } elseif ($habit->frequency === "custom_weekly" && is_array($habit->custom_days)) {
                 for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {

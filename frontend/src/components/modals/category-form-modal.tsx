@@ -7,14 +7,14 @@ import { ChevronsLeft, Save } from "lucide-react"
 import { useSession } from 'next-auth/react'
 import { useEffect } from "react"
 
-type CategoryData = {
+type Category = {
     id?: number; // optional
     title: string;
 }
 
 type CategoryFormModalProps = {
-    initialData: CategoryData | null;
-    onSubmit: (category: CategoryData) => void; // callback when form submitted
+    initialData: Category | null;
+    onSubmit: (category: Category) => Promise<Category>; // return all data from type Category
     onClose?: () => void; // optional callback when modal closes
     children?: React.ReactNode; // trigger button
 }
@@ -50,12 +50,12 @@ export function CategoryFormModal({ initialData, onSubmit, onClose, children }: 
 
     const handleSubmit = async () => {
         if (!title.trim()) return;
-
         setIsSubmitting(true);
 
         try {
             // API call is being handeled in the parent component
-            await onSubmit({ id: initialData?.id, title });
+            // onSubmit return the new or updated category
+            await onSubmit({ title });
             handleClose(false); // close modal
             setTitle(''); // reset title
 

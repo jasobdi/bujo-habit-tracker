@@ -8,11 +8,10 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { CategoryFormModal } from '@/components/modals/category-form-modal';
 import { FrequencyFields } from '@/components/forms/create-habit/frequency-fields';
 import { useSession } from 'next-auth/react';
-import { habitSchema } from '@/lib/validation/habitSchema';
-import { z } from 'zod';
+import { HabitEndType, habitSchema } from '@/lib/validation/habitSchema';
 import { format, parseISO } from 'date-fns'; // parseISO for Date-Strings
-import { createHabit } from '@/lib/fetch/createHabit';
 import { updateHabit } from '@/lib/fetch/updateHabit';
+import { habitCommonFrequencies, HabitCommonFrequency } from '@/types/habit';
 
 
 export default function EditHabit() {
@@ -22,11 +21,11 @@ export default function EditHabit() {
     const habitId = params.id as string; // get habit ID from URL
 
     // define frequency options
-    const frequencies = ['daily', 'weekly', 'monthly', 'custom'] as const;
+    const frequencies = [...habitCommonFrequencies, 'custom'] as const;
     type Frequency = typeof frequencies[number];
 
     // states for custom frequency
-    const [customType, setCustomType] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+    const [customType, setCustomType] = useState<HabitCommonFrequency>('daily');
     const [repeatInterval, setRepeatInterval] = useState<number>(1);
 
     // states for the form
@@ -34,7 +33,7 @@ export default function EditHabit() {
     const [frequency, setFrequency] = useState<Frequency>('daily');
     const [startDate, setStartDate] = useState<Date | undefined>();
     const [customDays, setCustomDays] = useState<string[]>([]);
-    const [endType, setEndType] = useState<'never' | 'on' | 'after'>('never');
+    const [endType, setEndType] = useState<HabitEndType>('never');
     const [endDate, setEndDate] = useState<Date | undefined>();
     const [repeatCount, setRepeatCount] = useState<number>(1);
 
@@ -50,20 +49,19 @@ export default function EditHabit() {
     // state for Categories
     const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-    const [categoriesUpdated, setCategoriesUpdated] = useState(0);
 
 
     const fetchHabitData = async () => {
         if (!session?.accessToken || !habitId) {
-            console.error('Habit-ID oder Access Token fehlen.');
+            console.error('Habit-ID or Access Token missing.');
             return;
         }
 
         const numericHabitId = parseInt(habitId, 10);
 
-        // Überprüfen, ob die Konvertierung erfolgreich war
+        // Check if convert to number was successful and if habitId is a valid number
         if (isNaN(numericHabitId)) {
-            console.error('Ungültige Habit-ID.');
+            console.error('Habit-ID is not valid.');
             return;
         }
 
@@ -134,7 +132,7 @@ export default function EditHabit() {
             fetchCategories(); // load categories
             fetchHabitData(); // load habit data
         }
-    }, [session?.accessToken, categoriesUpdated, habitId]);
+    }, [session?.accessToken, habitId]);
 
 
     /* Form handling */
@@ -170,10 +168,12 @@ export default function EditHabit() {
 
             const apiData: { [key: string]: any } = {
                 title: validated.title,
-                frequency: validated.frequency,
-                start_date: format(validated.startDate, 'yyyy-MM-dd'),
-                custom_days: validated.customDays,
-                category_ids: validated.categories,
+                frequency:  validated.frequency === 'custom' ? `custom_${customType}` : validated.frequency,
+                start_date: format(validated.startDate, 'yyyy-MM-dd'), // Renamed to start_date
+                custom_days: validated.customDays, // Renamed to custom_days
+                category_ids: validated.categories, // Renamed to category_ids
+                repeat_interval: validated.frequency === 'custom' ? repeatInterval : 1, // Renamed to repeat_interval
+                repeat_count: validated.repeatCount, // Renamed to repeat_count
             };
 
             if (validated.endType === "on" && validated.endDate) {
@@ -205,10 +205,10 @@ export default function EditHabit() {
     }
 
     // create a category through the modal & update the category-tag list
-    const handleCategorySubmit = async (categoryData: { id?: number, title: string }) => {
+    const handleCategorySubmit = async (categoryData: { id?: number, title: string }): Promise<Category> => {
         if (!session?.accessToken) {
             console.error("Not authenticated.");
-            return;
+            throw new Error("Not authenticated.");
         }
 
         try {
@@ -227,11 +227,22 @@ export default function EditHabit() {
                 throw new Error(errorText);
             }
 
-            setCategoriesUpdated(prev => prev + 1); // trigger re-fetch of categories
+            
+            const result = await res.json(); // read JSON-response
+            const newCategory: Category = result.category; // grab nested Category object
+            console.log("Die API hat folgendes Objekt zurückgegeben:", newCategory);
+
+            setAvailableCategories(prev => [...prev, newCategory]); // add newly created category to the list
+            setSelectedCategories(prev => [...prev, newCategory.id]); // add newly created category to the selected categories
+            
+            console.log("Neue Kategorie erstellt und als ausgewählt gesetzt:", newCategory.id);
+
+            return newCategory;
 
         } catch (error) {
             console.error("Failed to create category:", error);
-            // Hier könntest du eine Toast-Nachricht oder einen Alert anzeigen
+            throw error;
+            // later: error handling for user
         }
     };
 
@@ -276,6 +287,7 @@ export default function EditHabit() {
                                 aria-label={`Set frequency to ${f}`}
                                 className={`px-4 py-2 m-2 border-[2px] border-black rounded-radius
                                     ${frequency === f ? 'bg-primary' : 'bg-contrast text-black'}`}
+                                    
                                 onClick={() => setFrequency(f)}
                             >
                                 {f}

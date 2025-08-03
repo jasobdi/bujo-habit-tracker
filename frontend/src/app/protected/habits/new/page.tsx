@@ -29,6 +29,8 @@ export default function NewHabit() {
     const [repeatInterval, setRepeatInterval] = useState<number>(1);
 
     // states for the form
+    const [titleError, setTitleError] = useState<string|undefined>(undefined);
+    const [startDateError, setStartDateError] = useState<string|undefined>(undefined);
     const [title, setTitle] = useState('');
     const [frequency, setFrequency] = useState<Frequency>('daily');
     const [startDate, setStartDate] = useState<Date | undefined>();
@@ -48,6 +50,21 @@ export default function NewHabit() {
         );
     }
 
+    function getErrorMessageForField(errors: z.ZodError, field: string): string|undefined {
+        
+        if (!errors) return undefined; // no error found
+
+        // check if input field has error
+        for (const error of errors.errors) {
+                console.error(error.message)
+            if (error.path.includes(field)) {
+                return error.message; // has error -> return error message from zod
+            }
+        }
+        return undefined; // no error found
+
+    }
+
     // cancel-button handler
     function handleCancel(e: React.MouseEvent) {
         e.preventDefault();
@@ -64,36 +81,36 @@ export default function NewHabit() {
             return;
         }
 
-        // Basic Validation
-        if (!title.trim()) {
-            alert("Please enter a title.");
-            return;
-        }
+        // // Basic Validation
+        // if (!title.trim()) {
+        //     alert("Please enter a title.");
+        //     return;
+        // }
 
-        if (!frequency) {
-            alert("Please select a frequency.");
-            return;
-        }
+        // if (!frequency) {
+        //     alert("Please select a frequency.");
+        //     return;
+        // }
 
-        if (!startDate) {
-            alert("Please select a start date.");
-            return;
-        }
+        // if (!startDate) {
+        //     alert("Please select a start date.");
+        //     return;
+        // }
 
-        if (frequency === 'custom' && customDays.length === 0) {
-            alert("Please select at least one custom day.");
-            return;
-        }
+        // if (frequency === 'custom' && customDays.length === 0) {
+        //     alert("Please select at least one custom day.");
+        //     return;
+        // }
 
-        if (endType === 'on' && !endDate) {
-            alert("Please select an end date.");
-            return;
-        }
+        // if (endType === 'on' && !endDate) {
+        //     alert("Please select an end date.");
+        //     return;
+        // }
 
-        if (endType === 'after' && repeatCount <= 0) {
-            alert("Repeat count must be greater than 0.");
-            return;
-        }
+        // if (endType === 'after' && repeatCount <= 0) {
+        //     alert("Repeat count must be greater than 0.");
+        //     return;
+        // }
 
         // validation with Zod schema
         try {
@@ -135,6 +152,9 @@ export default function NewHabit() {
 
         } catch (error) {
             if (error instanceof z.ZodError) {
+                setTitleError(getErrorMessageForField(error,'title'));
+                setStartDateError(getErrorMessageForField(error, 'startDate'));
+                
                 console.error("Validation errors:", error.flatten());
                 console.error("Validation issues (detailed):", error.issues);
             } else {
@@ -184,11 +204,11 @@ export default function NewHabit() {
         fetchCategories();
     }, [session?.accessToken, categoriesUpdated]);
 
-    // create a category through the modal
-    const handleCategorySubmit = async (categoryData: { id?: number, title: string }) => {
+    // create a category through the modal & update the category-tag list
+    const handleCategorySubmit = async (categoryData: { id?: number, title: string }): Promise<Category> => {
         if (!session?.accessToken) {
             console.error("Not authenticated.");
-            return;
+            throw new Error("Not authenticated.");
         }
 
         try {
@@ -207,13 +227,19 @@ export default function NewHabit() {
                 throw new Error(errorText);
             }
 
-            const newCategory = await res.json();
+            const result = await res.json(); // read JSON-response
+            const newCategory: Category = result.category; // grab nested Category object
+
             setAvailableCategories(prev => [...prev, newCategory]); // add newly created category to the list
+            setSelectedCategories(prev => [...prev, newCategory.id]); // add newly created category to the selected categories
             setCategoriesUpdated(prev => prev + 1); // trigger re-fetch of categories
+            
+            return newCategory;
 
         } catch (error) {
             console.error("Failed to create category:", error);
-            // Hier könntest du eine Toast-Nachricht oder einen Alert anzeigen
+            throw error;
+            // later: error handling for user
         }
     };
 
@@ -235,8 +261,9 @@ export default function NewHabit() {
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        className="w-full border-[2px] border-black rounded-radius mt-2 mb-4 p-2 font-normal"
+                        className={`w-full border-[2px] border-black rounded-radius mt-2 mb-4 p-2 font-normal ${titleError ? 'border-error' : ''}`}
                     />
+                    {titleError?<p>{titleError}</p>:null}
                 </label>
 
                 <div>
@@ -249,7 +276,7 @@ export default function NewHabit() {
                                 type="button"
                                 aria-label={`Set frequency to ${f}`}
                                 className={`px-4 py-2 m-2 border-[2px] border-black rounded-radius
-                                    ${frequency === f || (f === 'custom' && frequency.startsWith('custom')) ? 'bg-primary' : 'bg-contrast text-black'}`}
+                                    ${frequency === f ? 'bg-primary' : 'bg-contrast text-black'}`}
                                 onClick={() => setFrequency(f)}
                             >
                                 {f}
@@ -264,6 +291,7 @@ export default function NewHabit() {
                     setCustomType={setCustomType}
                     startDate={startDate}
                     setStartDate={setStartDate}
+                    startDateError={startDateError}
                     repeatInterval={repeatInterval}
                     setRepeatInterval={setRepeatInterval}
                     customDays={customDays}

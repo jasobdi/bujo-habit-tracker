@@ -23,6 +23,7 @@ type Props<T extends string, S extends string> = {
     repeatCount: number;
     setRepeatCount: (val: number) => void;
     isEditing?: boolean; // optional prop for edit mode
+    startDateError?: string;  
 };
 
 export function FrequencyFields<T extends string, S extends string>({
@@ -41,7 +42,8 @@ export function FrequencyFields<T extends string, S extends string>({
     setEndDate,
     repeatCount,
     setRepeatCount,
-    isEditing = false
+    isEditing = false,
+    startDateError
 }: Props<T, S>) {
     function customFrequencyLabel() {
         if (customType === 'weekly') return 'weeks';
@@ -77,13 +79,15 @@ export function FrequencyFields<T extends string, S extends string>({
                 </div>
             )}
             {!isEditing && (
-                <div>
-                    <label htmlFor="start-date" className="font-semibold md:text-md">Start date</label>
+                <div className={`${startDateError ? 'border-error' : ''}`}>
+                    <label htmlFor="start-date" className={`font-semibold md:text-md `}>Start date</label>
                     <DatePickerDialog
                         id="start-date"
                         selected={startDate}
                         onSelect={setStartDate}
-                        label="Start date" />
+                        label="Start date"
+                        hasError={!!startDateError} />
+                        {startDateError?<p>{startDateError}</p>:null}
                 </div>
             )}
 
