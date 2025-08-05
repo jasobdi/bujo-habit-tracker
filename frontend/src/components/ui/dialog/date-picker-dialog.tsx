@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from "react"
-import { Dialog, DialogTrigger, DialogTitle, DialogContent } from "./dialog"
+import { Dialog, DialogTrigger, DialogTitle, DialogContent, DialogDescription } from "./dialog"
 import { DayPicker } from "react-day-picker"
 import { format, parse, isValid } from "date-fns"
 import { Calendar1 } from "lucide-react"
@@ -16,6 +16,10 @@ type Props = {
     hasError?: boolean
 }
 
+/** 
+ * DatePickerDialog component allows users to select a date from a calendar dialog.
+ * In this case it is used to select a startDate or endDate while creating or editing a habit.
+ * */
 export function DatePickerDialog({ selected, onSelect, label = "Pick a date", id, hasError = false }: Props) {
     const [inputValue, setInputValue] = useState(
         selected ? format(selected, "dd/MM/yyyy") : ""
@@ -69,6 +73,9 @@ export function DatePickerDialog({ selected, onSelect, label = "Pick a date", id
                 </DialogTrigger>
                 <DialogContent className="pt-10 px-4 pb-4 md:">
                 <DialogTitle className="sr-only">{label}</DialogTitle>
+                <DialogDescription>
+                    Select the start date for your habit.
+                </DialogDescription>
                     <DayPicker
                         mode="single"
                         selected={selected}

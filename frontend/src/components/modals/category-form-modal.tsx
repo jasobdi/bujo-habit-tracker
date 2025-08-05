@@ -19,6 +19,11 @@ type CategoryFormModalProps = {
     children?: React.ReactNode; // trigger button
 }
 
+/**
+ * 
+ * CategoryFormModal component allows users to create or edit a category.
+ */
+
 export function CategoryFormModal({ initialData, onSubmit, onClose, children }: CategoryFormModalProps) {
     const { data: session } = useSession();
     const [title, setTitle] = useState(initialData?.title || "");

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { DashboardCalendar } from '../ui/calendar/dashboard-calendar';
-import { Overview } from '../overview/overview';
+import { HabitOverview } from '../habit-overview/habit-overview';
 import { BaseButton } from '../ui/button/base-button/base-button';
 import { LogoutButton } from '../logout-button/logout-button';
 import Link from 'next/link';
@@ -10,6 +10,13 @@ import Link from 'next/link';
 interface DashboardClientWrapperProps {
     token: string
 }
+
+/**
+ * DashboardClientWrapper component serves as a wrapper for the dashboard client view.
+ * It includes a calendar for selecting dates, an overview panel, and a legend for habit completion status.
+ * In the mobile view the calendar & legend are displayed on a separate page, as well as the overview panel.
+ * In the desktop view the calendar & legend are displayed on the left side and the overview panel on the right side.
+ */
 
 export default function DashboardClientWrapper({ token }: DashboardClientWrapperProps) {
     const [selectedDate, setSelectedDate] = useState(new Date())
@@ -47,7 +54,7 @@ export default function DashboardClientWrapper({ token }: DashboardClientWrapper
                 <div className="flex flex-col">
                     {/* RIGHT SIDE: Overview Pannel (hidden on mobile) */}
                     <div className="hidden md:block flex-1 border-[2px] border-border rounded-radius p-4">
-                        <Overview token={token} date={selectedDate} />
+                        <HabitOverview token={token} date={selectedDate} />
                     </div>
 
                     {/* BaseButton under Overview on Desktop */}

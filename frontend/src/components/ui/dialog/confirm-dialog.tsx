@@ -4,6 +4,12 @@ import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "
 import { BaseButton } from "../button/base-button/base-button"
 import { useState } from "react"
 
+
+/**
+ * ConfirmDialog component displays a confirmation dialog when the user wants to perform an action that requires confirmation.
+ * In this case it is used to confirm actions like deleting a habit or category.
+ */
+
 export function ConfirmDialog({
     title = "Are you sure?",
     description,

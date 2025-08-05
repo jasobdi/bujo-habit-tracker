@@ -26,6 +26,11 @@ type Props<T extends string, S extends string> = {
     startDateError?: string;  
 };
 
+/**
+ * FrequencyFields component allows users to set the frequency of a habit.
+ * In this case it is used in the NewHabit form and the EditHabit form.
+ */
+
 export function FrequencyFields<T extends string, S extends string>({
     frequency,
     customType,

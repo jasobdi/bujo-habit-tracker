@@ -13,6 +13,12 @@ interface HabitActionModalProps {
     onHabitDeleted: () => void; // callback function to refresh habit list
 }
 
+/**
+ * 
+ * HabitActionModal component displays a modal with actions for a habit.
+ * In this case it is used to go back, edit or delete a habit on the habits page.
+ */
+
 export function HabitActionModal({ habit, onHabitDeleted }: HabitActionModalProps) {
     const [open, setOpen] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false); // State to manage loading during delete

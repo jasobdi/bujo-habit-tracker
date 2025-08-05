@@ -11,9 +11,12 @@ import "react-day-picker/style.css";
 import { HabitService } from "@/lib/HabitService";
 
 /**
- * DashboardCalendar
- * Displays the calendar with custom month/year dropdown.
- * On day selection, routes to overview page with selected date.
+ * DashboardCalendar component is a calendar view for the dashboard.
+ * It displays the calendar with custom month/year dropdown.
+ * It highlights days based on habit completion status:
+ * - Completed habits: teal background
+ * - Not completed habits: grey background
+ * On day selection, it routes to the overview page with the selected date on display.
  */
 
 export function DashboardCalendar() {
