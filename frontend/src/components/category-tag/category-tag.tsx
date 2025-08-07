@@ -8,7 +8,7 @@ interface CategoryTagProps {
 
 export function CategoryTag({ category}: CategoryTagProps) {
     return (
-        <div className="border-black border-[2px] rounded-radius-btn px-2 bg-tags">
+        <div className="border-black border-[2px] rounded-radius-btn px-2 py-1 bg-tags">
             <span className="text-sm">
                 {category.title}
             </span>

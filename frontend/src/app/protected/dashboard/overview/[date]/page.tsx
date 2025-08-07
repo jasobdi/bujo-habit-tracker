@@ -1,18 +1,36 @@
 'use client'
 
-import { useRouter, useParams } from 'next/navigation';
-import 'react-day-picker/dist/style.css';
-import { BaseButton } from '@/components/ui/button/base-button/base-button';
-import { ChevronsLeft, Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import Link from 'next/link';
+import 'react-day-picker/dist/style.css';
+import { ChevronsLeft, Plus } from 'lucide-react';
+import { BaseButton } from '@/components/ui/button/base-button/base-button';
 import { HabitOverview } from '@/components/habit-overview/habit-overview';
 
 
-export default function HabitsOverviewByDate() {
 
-    const params = useParams<{ date: string }>(); // get [date] from URL
-    const dateStr = params.date;
-    const dateObj = new Date(dateStr);
+interface HabitsOverviewPageProps {
+    dateObj: Date;
+}
+
+export default function HabitsOverviewPage({ dateObj }: HabitsOverviewPageProps) {
+    const router = useRouter();
+
+    const [selectedDate, setSelectedDate] = useState(dateObj);
+
+    // callback function for date changes 
+    const handleDateChange = (newDate: Date) => {
+        setSelectedDate(newDate);
+        const formattedDate = newDate.toLocaleDateString('sv-SE');
+        router.push(`/protected/dashboard/overview/${formattedDate}`);
+    };
+
+    const handleHabitCompletionChange = () => {
+        // This function can be used to trigger a re-fetch or update of habits
+        // when a habit completion is changed.
+        // Currently, it does nothing but can be expanded as needed.
+    };
 
 
     return (
@@ -32,9 +50,13 @@ export default function HabitsOverviewByDate() {
             </div>
 
             <HabitOverview
-                initialDate={dateObj}
-                isMobileView={true} // this will render the overview on this separate page in mobile view
+                initialDate={selectedDate}
+                isMobileView={true}
+                onDateChange={handleDateChange}
+                onHabitCompletionChange={handleHabitCompletionChange}
             />
         </div>
-    )
+    );
 }
+
+export { HabitsOverviewPage };

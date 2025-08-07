@@ -1,10 +1,10 @@
 'use client'
 
 import React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Habit } from '@/types/habit';
 import { HabitService } from '@/lib/HabitService';
 import { createHabitCompletion } from "@/lib/fetch/createHabitCompletion";
@@ -12,7 +12,6 @@ import { deleteHabitCompletion } from "@/lib/fetch/deleteHabitCompletion";
 import { getHabitCompletionsByDay } from '@/lib/fetch/getHabitCompletionsByDay';
 import { getHabitsByDate } from '@/lib/fetch/getHabitsByDate';
 import { Checkbox } from '../ui/checkbox/checkbox';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 /**
  * HabitOverview component displays an overview list of today's habits.
@@ -21,24 +20,27 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
  */
 
 type HabitOverviewProps = {
-    initialDate: Date;
-    isMobileView: boolean; 
+    initialDate: Date; // the date to display habits for, passed from the parent component
+    isMobileView: boolean; // checks if the component is rendered in mobile view
+    onDateChange: (date: Date) => void; // callback to notify parent component about date changes
+    onHabitCompletionChange: () => void;
 };
 
-export default function HabitOverview({ initialDate, isMobileView }: HabitOverviewProps) {
-    const { data: session} = useSession();
+export default function HabitOverview({ initialDate, isMobileView, onDateChange, onHabitCompletionChange }: HabitOverviewProps) {
+    const { data: session } = useSession();
     const router = useRouter();
 
     // state for displayed habits and selected date
     const [isLoading, setIsLoading] = useState(true); // Initial state is true because habits are fetched
     const [habits, setHabits] = useState<(Habit & { completed: boolean })[]>([]);
-    const [selectedDate, setSelectedDate] = useState(initialDate);
+
+    const selectedDate = initialDate;
 
     useEffect(() => {
         const fetchHabitsForDate = async () => {
             if (!session?.accessToken || !selectedDate) return;
 
-            setIsLoading(true); 
+            setIsLoading(true);
 
             // load habits for the selected date
             const habitsData = await getHabitsByDate(selectedDate.toLocaleDateString('sv-SE'), session.accessToken);
@@ -48,54 +50,57 @@ export default function HabitOverview({ initialDate, isMobileView }: HabitOvervi
                 day: selectedDate.getDate(),
                 token: session.accessToken,
             })).data;
-            
-            
+
+
             const enrichedHabits = (habitsData || []).map((habit: Habit) => ({
                 ...habit,
                 completed: HabitService.isHabitCompleted(habit, completions, selectedDate),
             }));
 
             setHabits(enrichedHabits);
-            setIsLoading(false); 
+            setIsLoading(false);
         };
         fetchHabitsForDate();
-    }, [selectedDate, session, initialDate]);
+    }, [session, initialDate]);
 
     const handlePrevious = () => {
         const newDate = new Date(selectedDate);
         newDate.setDate(newDate.getDate() - 1);
-        setSelectedDate(newDate);
-
+        
         if (isMobileView) {
             router.push(`/protected/dashboard/overview/${newDate.toLocaleDateString('sv-SE')}`);
+        } else {
+            onDateChange(newDate); // gives no date to the parent
         }
     };
 
     const handleNext = () => {
         const newDate = new Date(selectedDate);
         newDate.setDate(newDate.getDate() + 1);
-        setSelectedDate(newDate);
-        
+
         if (isMobileView) {
             router.push(`/protected/dashboard/overview/${newDate.toLocaleDateString('sv-SE')}`);
+        } else {
+            onDateChange(newDate); // gives no date to the parent
         }
     };
-
     const handleToggle = async (habitId: number, completed: boolean) => {
         if (!session?.accessToken) return;
 
         const dateStr = selectedDate.toLocaleDateString('sv-SE');
 
         if (completed) {
-            await deleteHabitCompletion({ 
-                habit_id: habitId, 
-                date: dateStr, 
-                token: session.accessToken });
+            await deleteHabitCompletion({
+                habit_id: habitId,
+                date: dateStr,
+                token: session.accessToken
+            });
         } else {
-            await createHabitCompletion({ 
-                habit_id: habitId, 
-                date: dateStr, 
-                token: session.accessToken });
+            await createHabitCompletion({
+                habit_id: habitId,
+                date: dateStr,
+                token: session.accessToken
+            });
         }
 
         const updatedHabits = habits.map((habit) =>
@@ -103,12 +108,13 @@ export default function HabitOverview({ initialDate, isMobileView }: HabitOvervi
         );
 
         setHabits(updatedHabits);
+        onHabitCompletionChange(); // notify parent about the completion changes
     };
 
 
     return (
         <section>
-            <div className="flex items-center justify-center space-x-4">
+            <div className="md:hidden flex items-center justify-center space-x-4 mb-4">
 
                 <button onClick={handlePrevious}>
                     <ChevronLeft className="w-10 h-10" />
@@ -129,10 +135,10 @@ export default function HabitOverview({ initialDate, isMobileView }: HabitOvervi
 
             <div className=" border-[2px] border-black rounded-radius w-full max-w-md overflow-hidden">
                 {isLoading ? (
-                <p className='text-center p-4'>Loading...</p>
-            ) : habits.length === 0 ? (
-                <p className='text-center p-4'>No habits for this day.</p>
-            ) : (
+                    <p className='text-center p-4'>Loading...</p>
+                ) : habits.length === 0 ? (
+                    <p className='text-center p-4'>No habits for this day.</p>
+                ) : (
                     <ul>
                         {habits.map((habit, index) => (
                             <li
