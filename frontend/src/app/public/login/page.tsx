@@ -36,8 +36,6 @@ export default function LoginPage() {
             callbackUrl: '/protected/dashboard',
         })
 
-        // console.log("SignIn result: ", res)
-
         if (!res || !res.ok)  {
             setError('Invalid email or password')
             return

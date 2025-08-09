@@ -12,19 +12,21 @@ type Category = {
     title: string;
 }
 
-type CategoryFormModalProps = {
-    initialData: Category | null;
-    onSubmit: (category: Category) => Promise<Category>; // return all data from type Category
-    onClose?: () => void; // optional callback when modal closes
-    children?: React.ReactNode; // trigger button
-}
-
 /**
  * 
  * CategoryFormModal component allows users to create or edit a category.
  */
 
-export function CategoryFormModal({ initialData, onSubmit, onClose, children }: CategoryFormModalProps) {
+export function CategoryFormModal<T>({ 
+    initialData, 
+    onSubmit, 
+    onClose, 
+    children }: {
+        initialData: Category | null;
+        onSubmit: (category: { id?: number; title: string; }) => Promise<T>;
+        onClose?: () => void; 
+        children?: React.ReactNode;
+    }) {
     const { data: session } = useSession();
     const [title, setTitle] = useState(initialData?.title || "");
     const [isOpen, setIsOpen] = useState(false);
@@ -66,7 +68,7 @@ export function CategoryFormModal({ initialData, onSubmit, onClose, children }: 
 
         } catch (err) {
             console.error("Failed to submit category", err);
-            // Fehlerbehandlung
+            // Error handling 
 
         } finally {
             setIsSubmitting(false);

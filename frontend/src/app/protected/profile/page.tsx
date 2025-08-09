@@ -2,6 +2,7 @@
 
 import { BaseButton } from "@/components/ui/button/base-button/base-button";
 import { CategoryFormModal } from "@/components/modals/category-form-modal";
+import Image from "next/image";
 import { Plus, SquarePen, Trash2 } from "lucide-react";
 import { LogoutButton } from "@/components/logout-button/logout-button";
 import { useSession } from "next-auth/react";
@@ -133,8 +134,17 @@ export default function ProfilePage() {
     return (
         <div className="flex flex-col items-center justify-center h-auto w-full px-4 py-8">
             <div className="flex justify-center items-center w-20 h-20 rounded-full border-black border-[2px]">
+            <Image
+                src="/images/profile_pic.png"
+                alt="Profile picture"
+                width={80} 
+                height={80}
+                className="rounded-full" 
+            />
             </div>
-            <h2 className="mt-2 mb-4 font-semibold text-lg">Username</h2>
+            <h2 className="mt-2 mb-4 font-semibold text-lg">
+                Hello {session?.user?.username || "Hello!"}
+            </h2>
             
             <div className="flex flex-col items-center justify-center w-[90%] md:w-[400px] border-black border-[2px] rounded-radius">
                 <h3 className="font-semibold text-md mt-4 mb-2">Categories</h3>
