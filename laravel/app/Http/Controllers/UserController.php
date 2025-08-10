@@ -16,10 +16,17 @@ class UserController extends Controller
 
     // no create method -> is very similar to register in AuthController
 
+    // SHOW
+    public function show($id)
+    {
+        $user = Auth::user();
+        return response()->json($user);
+    }
+
     // UPDATE
     public function update(Request $request)
     {
-        $user = Auth::user(); // get logged in user
+        $user = Auth::user();
 
         $validated = $request->validate([
             'email' => 'sometimes|email|unique:users,email,' . $user->id,
@@ -42,7 +49,7 @@ class UserController extends Controller
         $user->delete();
 
         return response()->json([
-            'message' => 'User deleted successfully'
+            'message' => 'Account deleted successfully'
         ]);
     }
 }

@@ -23,9 +23,10 @@ Route::prefix('api')->group(function () {
     
         // USERS
         Route::get('/users', [UserController::class, 'index']);
+        Route::get('/users/{id}', [UserController::class, 'show']);
         // 'create' is 'register' in AuthController
-        Route::patch('/users', [UserController::class, 'update']);
-        Route::delete('/users', [UserController::class, 'delete']);
+        Route::patch('/user', [UserController::class, 'update']);
+        Route::delete('/user', [UserController::class, 'delete']);
 
         // CATEGORIES
         Route::get('/categories', [CategoryController::class, 'index']);
