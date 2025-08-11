@@ -40,7 +40,8 @@ export default function ProfilePage() {
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
-    const [occupied, setOccupied] = useState(false); // ob Kategorie in Benutzung ist
+    const [occupied, setOccupied] = useState(false); // check if category is assigned to habits
+    const [usageLoading, setUsageLoading] = useState(false);
 
     /** USER */
     const [userData, setUserData] = useState<UserData | null>(null);
@@ -58,6 +59,7 @@ export default function ProfilePage() {
                     Authorization: `Bearer ${session.accessToken}`,
                     Accept: "application/json",
                 },
+                cache: "no-store",
             });
 
             if (!res.ok) {
@@ -85,6 +87,7 @@ export default function ProfilePage() {
                     Authorization: `Bearer ${session.accessToken}`,
                     Accept: "application/json",
                 },
+                cache: "no-store",
             });
 
             if (!res.ok) {
@@ -107,18 +110,52 @@ export default function ProfilePage() {
     async function checkCategoryUsage(categoryId: number) {
         if (!token) return;
         try {
+            setUsageLoading(true);
             const res = await fetch(`http://localhost:8000/api/categories/${categoryId}/usage`, {
                 headers: {
                     Authorization: `Bearer ${session.accessToken}`,
                     Accept: "application/json",
                 },
+                cache: "no-store",
             });
             if (!res.ok) throw new Error(`Failed to check usage: ${res.status}`);
-            const data = await res.json(); // { in_use: boolean }
-            setOccupied(!!data.in_use);
+            const data = await res.json();
+
+            const {
+                in_use,
+                inUse,
+                occupied: occ,
+                assigned,
+                in_use_count,
+                inUseCount,
+                count,
+            } = (data ?? {}) as Record<string, unknown>;
+
+            let isOccupied: boolean | undefined =
+                typeof in_use === "boolean" ? in_use :
+                    typeof inUse === "boolean" ? inUse :
+                        typeof occ === "boolean" ? occ :
+                            typeof assigned === "boolean" ? assigned :
+                                typeof in_use_count === "number" ? in_use_count > 0 :
+                                    typeof inUseCount === "number" ? inUseCount > 0 :
+                                        typeof count === "number" ? count > 0 :
+                                            typeof data === "boolean" ? data :
+                                                typeof data === "number" ? data > 0 :
+                                                    typeof (data as any)?.message === "string" ? undefined :
+                                                        undefined;
+
+            // Fallback: wenn ein string "true"/"false" o.ä. kommt
+            if (isOccupied === undefined && typeof in_use === "string") {
+                isOccupied = in_use.toLowerCase() === "true";
+            }
+
+            setOccupied(!!isOccupied);
+            console.debug("[usage]", { categoryId, data, parsed: !!isOccupied });
         } catch (err) {
             console.error("Error checking category usage:", err);
             setOccupied(false);
+        } finally {
+            setUsageLoading(false);
         }
     }
 
@@ -155,27 +192,27 @@ export default function ProfilePage() {
     };
 
     const handleDeleteCategory = async () => {
-        if (!selectedCategory) return;
+        if (!selectedCategory || !token) return;
 
         try {
             const res = await fetch(`http://localhost:8000/api/categories/${selectedCategory.id}`, {
                 method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${session?.accessToken}`,
-                },
+                headers: { Authorization: `Bearer ${session?.accessToken}` },
+                cache: "no-store",
             });
 
             if (!res.ok) {
-                const errorText = await res.text();
+                // 409 = in use -> check usage
                 if (res.status === 409) {
-                    const { message } = JSON.parse(errorText);
-                    alert(message);
-                } else {
-                    console.error("Delete failed:", res.status, errorText);
+                    await checkCategoryUsage(selectedCategory.id);
+                    return;
                 }
+                const errorText = await res.text();
+                console.error("Delete failed:", res.status, errorText);
                 return;
             }
 
+            // Successfully deleted
             await fetchCategories();
             setSelectedCategory(null);
             setIsDeleteAlertOpen(false);
@@ -213,7 +250,7 @@ export default function ProfilePage() {
         }
     };
 
-    /** ---------- Effects (must stand before early returns) ---------- */
+    /** ---------- useEffects (must stand before early returns) ---------- */
     // load categories & user date, as soon as authenticated or token is available
     useEffect(() => {
         if (status !== "authenticated" || !token) {
@@ -222,7 +259,17 @@ export default function ProfilePage() {
         }
         fetchCategories();
         fetchUserData();
-    }, [status, session?.accessToken]);
+    }, [status, token]);
+
+    // automatically check if the selected category is occupied
+    // when the selected category  or the access token changes
+    useEffect(() => {
+        if (!selectedCategory) {
+            setOccupied(false);
+            return;
+        }
+        checkCategoryUsage(selectedCategory.id);
+    }, [selectedCategory, token]);
 
     /** ---------- Early returns ---------- */
     if (status === "loading") return <div>Loading...</div>;
@@ -294,14 +341,16 @@ export default function ProfilePage() {
                         variant="icon"
                         className={selectedCategory && !occupied ? "bg-tertiary" : "bg-contrast"}
                         disabled={!selectedCategory || occupied}
-                        onClick={() => setIsDeleteAlertOpen(true)}
+                        onClick={() => {
+                            if (!occupied) setIsDeleteAlertOpen(true);
+                        }}
                     >
                         <Trash2 className="w-10 h-10" strokeWidth={1.5} />
                     </BaseButton>
                 </div>
 
                 {selectedCategory && occupied && (
-                    <p className="mt-2">
+                    <p className="mt-2 text-center">
                         This category is assigned to one or more habits and cannot be deleted.
                     </p>
                 )}
