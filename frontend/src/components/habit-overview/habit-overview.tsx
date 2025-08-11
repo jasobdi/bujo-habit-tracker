@@ -5,13 +5,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Checkbox } from '../ui/checkbox/checkbox';
 import { Habit } from '@/types/habit';
 import { HabitService } from '@/lib/HabitService';
+import { getHabitsByDate } from '@/lib/fetch/getHabitsByDate';
 import { createHabitCompletion } from "@/lib/fetch/createHabitCompletion";
 import { deleteHabitCompletion } from "@/lib/fetch/deleteHabitCompletion";
 import { getHabitCompletionsByDay } from '@/lib/fetch/getHabitCompletionsByDay';
-import { getHabitsByDate } from '@/lib/fetch/getHabitsByDate';
-import { Checkbox } from '../ui/checkbox/checkbox';
 
 /**
  * HabitOverview component displays an overview list of today's habits.
@@ -26,7 +26,12 @@ type HabitOverviewProps = {
     onHabitCompletionChange: () => void;
 };
 
-export default function HabitOverview({ initialDate, isMobileView, onDateChange, onHabitCompletionChange }: HabitOverviewProps) {
+export default function HabitOverview({
+    initialDate,
+    isMobileView,
+    onDateChange,
+    onHabitCompletionChange
+}: HabitOverviewProps) {
     const { data: session } = useSession();
     const router = useRouter();
 
@@ -34,39 +39,62 @@ export default function HabitOverview({ initialDate, isMobileView, onDateChange,
     const [isLoading, setIsLoading] = useState(true); // Initial state is true because habits are fetched
     const [habits, setHabits] = useState<(Habit & { completed: boolean })[]>([]);
 
+    // date from Props
     const selectedDate = initialDate;
 
     useEffect(() => {
-        const fetchHabitsForDate = async () => {
-            if (!session?.accessToken || !selectedDate) return;
+        let cancelled = false;
+
+        async function fetchHabitsForDate() {
+            if (!session?.accessToken || !selectedDate) {
+                setIsLoading(false);
+                return;
+            }
 
             setIsLoading(true);
 
-            // load habits for the selected date
-            const habitsData = await getHabitsByDate(selectedDate.toLocaleDateString('sv-SE'), session.accessToken);
-            const completions = (await getHabitCompletionsByDay({
-                year: selectedDate.getFullYear(),
-                month: selectedDate.getMonth() + 1,
-                day: selectedDate.getDate(),
-                token: session.accessToken,
-            })).data;
+            try {
+                // 1) Habits for the selected date
+                const habitsData = await getHabitsByDate(
+                    selectedDate.toLocaleDateString('sv-SE'),
+                    session.accessToken
+                );
 
+                // 2) Completions for selected date
+                const { data: completions } = await getHabitCompletionsByDay({
+                    year: selectedDate.getFullYear(),
+                    month: selectedDate.getMonth() + 1,
+                    day: selectedDate.getDate(),
+                    token: session.accessToken,
+                });
 
-            const enrichedHabits = (habitsData || []).map((habit: Habit) => ({
-                ...habit,
-                completed: HabitService.isHabitCompleted(habit, completions, selectedDate),
-            }));
+                const list = (habitsData || []).map((habit: Habit) => ({
+                    ...habit,
+                    completed: HabitService.isHabitCompleted(habit, completions, selectedDate),
+                }));
 
-            setHabits(enrichedHabits);
-            setIsLoading(false);
-        };
+                if (!cancelled) {
+                    setHabits(list);
+                }
+            } catch (err) {
+                console.error('Error loading habits for date:', err);
+                if (!cancelled) setHabits([]);
+            } finally {
+                if (!cancelled) setIsLoading(false);
+            }
+        }
+
         fetchHabitsForDate();
-    }, [session, initialDate]);
+        return () => {
+            cancelled = true;
+        };
+    }, [session?.accessToken, selectedDate]);
 
+    // Handler for navigation button: previous day
     const handlePrevious = () => {
         const newDate = new Date(selectedDate);
         newDate.setDate(newDate.getDate() - 1);
-        
+
         if (isMobileView) {
             router.push(`/protected/dashboard/overview/${newDate.toLocaleDateString('sv-SE')}`);
         } else {
@@ -74,6 +102,7 @@ export default function HabitOverview({ initialDate, isMobileView, onDateChange,
         }
     };
 
+    // Handler for navigation button: next day
     const handleNext = () => {
         const newDate = new Date(selectedDate);
         newDate.setDate(newDate.getDate() + 1);
@@ -84,37 +113,45 @@ export default function HabitOverview({ initialDate, isMobileView, onDateChange,
             onDateChange(newDate); // gives no date to the parent
         }
     };
+
+    // Handler for toggling habit completion
     const handleToggle = async (habitId: number, completed: boolean) => {
         if (!session?.accessToken) return;
 
         const dateStr = selectedDate.toLocaleDateString('sv-SE');
 
-        if (completed) {
-            await deleteHabitCompletion({
-                habit_id: habitId,
-                date: dateStr,
-                token: session.accessToken
-            });
-        } else {
-            await createHabitCompletion({
-                habit_id: habitId,
-                date: dateStr,
-                token: session.accessToken
-            });
+        try {
+            if (completed) {
+                await deleteHabitCompletion({
+                    habit_id: habitId,
+                    date: dateStr,
+                    token: session.accessToken,
+                });
+            } else {
+                await createHabitCompletion({
+                    habit_id: habitId,
+                    date: dateStr,
+                    token: session.accessToken,
+                });
+            }
+
+            // optimistic update of the habits state
+            setHabits(prev =>
+                prev.map(h => (h.id === habitId ? { ...h, completed: !completed } : h))
+            );
+
+            // inform DashbaordCalendar
+            onHabitCompletionChange();
+        } catch (err) {
+            console.error('Failed to toggle completion:', err);
         }
-
-        const updatedHabits = habits.map((habit) =>
-            habit.id === habitId ? { ...habit, completed: !completed } : habit
-        );
-
-        setHabits(updatedHabits);
-        onHabitCompletionChange(); // notify parent about the completion changes
     };
+
 
 
     return (
         <section>
-            <div className="md:hidden flex items-center justify-center space-x-4 mb-4">
+            <div className=" flex items-center justify-center space-x-4 mb-4"> {/* HIDE!! on DESKTOP */}
 
                 <button onClick={handlePrevious}>
                     <ChevronLeft className="w-10 h-10" />
@@ -151,10 +188,10 @@ export default function HabitOverview({ initialDate, isMobileView, onDateChange,
                                 <Checkbox
                                     checked={habit.completed}
                                     onCheckedChange={() => handleToggle(habit.id, habit.completed)}
-                                    className={`
-                                            mr-4 w-6 h-6 border-black border-[2px] rounded-[5px]
-                                            ${habit.completed ? 'bg-completed' : 'bg-transparent'} // changes checkbox bg according to status
-                                        `}
+                                    className={`mr-4 w-6 h-6 border-black border-[2px] rounded-[5px] 
+                                    ${habit.completed ? 'bg-completed' : 'bg-transparent'
+                                        }`}
+                                    aria-label={`Toggle ${habit.title}`}
                                 />
                                 <span>{habit.title}</span>
                             </li>
@@ -163,7 +200,6 @@ export default function HabitOverview({ initialDate, isMobileView, onDateChange,
                 )}
             </div>
         </section>
-
     );
 }
 

@@ -1,7 +1,7 @@
 'use client'
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import 'react-day-picker/dist/style.css';
 import { ChevronsLeft, Plus } from 'lucide-react';
@@ -9,15 +9,26 @@ import { BaseButton } from '@/components/ui/button/base-button/base-button';
 import { HabitOverview } from '@/components/habit-overview/habit-overview';
 
 
-
-interface HabitsOverviewPageProps {
-    dateObj: Date;
-}
-
-export default function HabitsOverviewPage({ dateObj }: HabitsOverviewPageProps) {
+export default function HabitsOverviewPage() {
     const router = useRouter();
+    const params = useParams<{ date: string }>();
 
-    const [selectedDate, setSelectedDate] = useState(dateObj);
+    // robust date handling using useMemo
+    const initial = useMemo(() => { // useMemo only recalculates when params.date changes
+        const raw = params?.date; // get date from URL parameters
+        if (typeof raw === 'string') { 
+            const d = new Date(raw); // change string to date object: format YYYY-MM-DD
+            return isNaN(d.getTime()) ? new Date() : d; // check if date is valid - if not, return current date
+        }
+        return new Date();
+    }, [params?.date]);
+
+    const [selectedDate, setSelectedDate] = useState(initial);
+
+    // if URL parameter changes, update the selected date
+    useEffect(() => {
+        setSelectedDate(initial);
+    }, [initial]);
 
     // callback function for date changes 
     const handleDateChange = (newDate: Date) => {
