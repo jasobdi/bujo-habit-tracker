@@ -31,7 +31,7 @@ export const authOptions: NextAuthOptions = {
 
                     if (res.ok && data.token && data.user?.id) {
                         return {
-                            id: data.user.id,
+                            id: String(data.user.id),
                             username: data.user.username,
                             email: data.user.email,
                             accessToken: data.token, // Laravel Bearer Token
@@ -49,16 +49,13 @@ export const authOptions: NextAuthOptions = {
     ],
     callbacks: {
         async jwt({ token, user }) {
-            // console.log("JWT CALLBACK - token before:", token)
-            // console.log("JWT CALLBACK - user:", user)
         
             if (user) {
                 token.accessToken = user.accessToken
-                token.id = user.id
+                token.id = String(user.id)
                 token.username = user.username
-                token.email = user.email
+                token.email = user.email ?? undefined;
             }
-            // console.log("JWT CALLBACK - token after:", token)
             return token
         },
         async session({ session, token }) {

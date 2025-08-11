@@ -42,53 +42,54 @@ export default function HabitOverview({
     // date from Props
     const selectedDate = initialDate;
 
+    // no access token or date -> don't execute useEffect
     useEffect(() => {
-        let cancelled = false;
+        if (!session?.accessToken || !initialDate) return;
 
-        async function fetchHabitsForDate() {
-            if (!session?.accessToken || !selectedDate) {
-                setIsLoading(false);
-                return;
-            }
+        // flag to only run the effect once
+        let didRun = false;
+
+        // fetch habits for the selected date
+        const run = async () => {
+            if (didRun) return; // if already run, exit
+            didRun = true;
 
             setIsLoading(true);
 
-            try {
-                // 1) Habits for the selected date
-                const habitsData = await getHabitsByDate(
-                    selectedDate.toLocaleDateString('sv-SE'),
-                    session.accessToken
-                );
+            // ask for habits and completions at the same time
+            const [habitsData, compsRes] = await Promise.all([
+                // fetch habits for the selected date
+                getHabitsByDate(
+                    initialDate.toLocaleDateString('sv-SE'), 
+                    session.accessToken),
 
-                // 2) Completions for selected date
-                const { data: completions } = await getHabitCompletionsByDay({
-                    year: selectedDate.getFullYear(),
-                    month: selectedDate.getMonth() + 1,
-                    day: selectedDate.getDate(),
+                // fetch completions for the selected date
+                getHabitCompletionsByDay({
+                    year: initialDate.getFullYear(),
+                    month: initialDate.getMonth() + 1,
+                    day: initialDate.getDate(),
                     token: session.accessToken,
-                });
+                })
+            ]);
 
-                const list = (habitsData || []).map((habit: Habit) => ({
-                    ...habit,
-                    completed: HabitService.isHabitCompleted(habit, completions, selectedDate),
-                }));
+            // get completions from API response
+            const completions = compsRes.data;
 
-                if (!cancelled) {
-                    setHabits(list);
-                }
-            } catch (err) {
-                console.error('Error loading habits for date:', err);
-                if (!cancelled) setHabits([]);
-            } finally {
-                if (!cancelled) setIsLoading(false);
-            }
-        }
+            // enrich habits with completion status
+            const enriched = (habitsData || []).map(h => ({
+                ...h,
+                completed: HabitService.isHabitCompleted(h, completions, initialDate),
+            }));
 
-        fetchHabitsForDate();
-        return () => {
-            cancelled = true;
+            setHabits(enriched);
+            setIsLoading(false);
         };
-    }, [session?.accessToken, selectedDate]);
+
+        // run the fetch function
+        run();
+
+        // only runs if token or date change
+    }, [session?.accessToken, initialDate]);
 
     // Handler for navigation button: previous day
     const handlePrevious = () => {

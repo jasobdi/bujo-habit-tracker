@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory; // for testing purposes
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Habit;
 
 class Category extends Model
 {
-    use HasFactory; // for testing purposes
     protected $fillable = ['title', 'user_id'];
 
     public function habits() {

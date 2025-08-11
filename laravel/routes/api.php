@@ -33,6 +33,7 @@ Route::prefix('api')->group(function () {
         Route::get('/categories/{id}', [CategoryController::class, 'show']);
         Route::post('/categories', [CategoryController::class, 'create']);
         Route::patch('/categories/{id}', [CategoryController::class, 'update']);
+        Route::get('/categories/{id}/usage', [CategoryController::class, 'usage']);
         Route::delete('/categories/{id}', [CategoryController::class, 'delete']);
 
         // HABITS

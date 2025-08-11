@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/app/api/auth/[...nextauth]/auth-options'
-import { DashboardClientWrapper } from '@/components/dashboard-client-wrapper/dashboard-client-wrapper'
+import  DashboardClientWrapper  from '@/components/dashboard-client-wrapper/dashboard-client-wrapper'
 
 /**
  * The DashboardPage is a server-component

@@ -14,8 +14,10 @@ class CategoryController extends Controller
     // READ ALL
     public function index()
     {
-        $user = Auth::user(); // get logged in user
-        $categories = Category::where('user_id', $user->id)->get(); // get all habits from this user
+        $categories = Category::where('user_id', Auth::id())
+        ->withCount(['habits'])
+        ->get();
+
         return response()->json($categories);
     }
 
@@ -68,18 +70,47 @@ class CategoryController extends Controller
         ]);
     }
 
+    // USAGE
+    // check if category is still in use by habits
+    public function usage($id)
+    {
+        $category = Category::withCount('habits')
+            ->where('id', $id)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (!$category) {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
+
+        // Optional: kleine Stichprobe der referenzierenden Habits (Titel)
+        $sampleHabits = $category->habits()
+            ->select('id', 'title')
+            ->take(5)
+            ->get();
+
+        return response()->json([
+            'occupied' => $category->habits_count > 0,
+            'counts'   => [
+                'habits' => $category->habits_count,
+            ],
+            'habit_samples' => $sampleHabits,
+        ]);
+    }
+
     // DELETE
     public function delete($id)
     {
-        $category = Category::where('id', $id)->where('user_id', Auth::id())->first();
+        $category = Category::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->first();
 
         if (!$category) {
             return response()->json(['message' => 'Category not found'], 404);
         }
 
         // check if category is still in use
-        $isUsed = Habit::where('category_id', $category->id)->exists()
-            || Journal::where('category_id', $category->id)->exists();
+        $isUsed = $category->habits()->exists() || $category->journals()->exists();
 
         if ($isUsed) {
             return response()->json([

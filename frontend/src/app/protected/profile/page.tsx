@@ -1,21 +1,29 @@
 'use client';
 
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useSession, signOut } from "next-auth/react";
+import { Plus, SquarePen, Trash2 } from "lucide-react";
 import { BaseButton } from "@/components/ui/button/base-button/base-button";
 import { CategoryFormModal } from "@/components/modals/category-form-modal";
-import { ProfileEditForm } from "@/components/forms/update-user/profile-edit-form";
-import Image from "next/image";
-import { Plus, SquarePen, Trash2 } from "lucide-react";
 import { LogoutButton } from "@/components/logout-button/logout-button";
-import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog/alert-dialog";
-import { signOut } from "next-auth/react";
+import { ProfileEditForm } from "@/components/forms/update-user/profile-edit-form";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog/alert-dialog";
 
 type Category = {
     id: number;
     title: string;
-}
+};
 
 type UserData = {
     username: string;
@@ -24,149 +32,69 @@ type UserData = {
 
 export default function ProfilePage() {
     const { data: session, status } = useSession();
+    const token = session?.accessToken; // string | undefined
 
-    // states for categories
+    /** ---------- State ---------- */
+    /** CATEGORIES */
     const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+    const [occupied, setOccupied] = useState(false); // ob Kategorie in Benutzung ist
 
-    // states for user data
+    /** USER */
     const [userData, setUserData] = useState<UserData | null>(null);
-    const [isLoading, setIsLoading] = useState(true); 
+    const [isLoading, setIsLoading] = useState(true);
     const [isDeleteAccountAlertOpen, setIsDeleteAccountAlertOpen] = useState(false);
 
-
+    /** ---------- Data-Fetcher ---------- */
     /** CATEGORIES */
     async function fetchCategories() {
-        if (!session?.accessToken) {
-            console.warn("No access token available for fetching categories.");
-            return;
-        }
+        if (!token) return;
 
         try {
-            const res = await fetch('http://localhost:8000/api/categories', {
+            const res = await fetch("http://localhost:8000/api/categories", {
                 headers: {
                     Authorization: `Bearer ${session.accessToken}`,
-                    Accept: 'application/json',
+                    Accept: "application/json",
                 },
             });
 
             if (!res.ok) {
                 const text = await res.text();
-                console.error('Failed to fetch categories:', res.status, text);
-                // Handle API-Fehler (z.B. User benachrichtigen)
+                console.error("Failed to fetch categories:", res.status, text);
                 return;
             }
 
             const data: Category[] = await res.json();
-            setAvailableCategories(data); // Die geladenen Daten im State speichern
+            setAvailableCategories(data);
         } catch (err) {
             console.error("Error loading categories:", err);
         }
     }
 
-    useEffect(() => {
-        fetchCategories();
-    }, [session?.accessToken]);
-
-
-    // toggle one category (select / unselect)
-    const toggleCategory = (categoryId: number) => {
-        if (selectedCategory?.id === categoryId) {
-            setSelectedCategory(null); // unselect when already selected
-        } else {
-            const catToSelect = availableCategories.find(cat => cat.id === categoryId);
-            if (catToSelect) {
-                setSelectedCategory(catToSelect); // select
-            }
-        }
-    };
-
-    // handler to create or update a category
-    const handleCategorySubmit = async (categoryData: { id?: number, title: string }) => {
-        // API call
-        try {
-            const method = categoryData.id ? 'PATCH' : 'POST';
-            const url = categoryData.id
-                ? `http://localhost:8000/api/categories/${categoryData.id}`
-                : `http://localhost:8000/api/categories`;
-
-            const res = await fetch(url, {
-                method: method,
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${session?.accessToken}`,
-                    "Accept": "application/json"
-                },
-                body: JSON.stringify({ title: categoryData.title })
-            });
-
-            if (!res.ok) {
-                const errorText = await res.text();
-                throw new Error(errorText);
-            }
-
-            await fetchCategories();
-
-            setSelectedCategory(null); // reset selected category
-            setIsEditModalOpen(false); // close modal
-        } catch (error) {
-            console.error("Fehler beim Speichern der Kategorie:", error);
-            // Fehlerbehandlung für den Benutzer (z.B. Toast-Nachricht)
-        }
-    };
-
-    // handler to delete a category
-    const handleDeleteCategory = async () => {
-        if (!selectedCategory) return;
-
-        try {
-            const res = await fetch(`http://localhost:8000/api/categories/${selectedCategory.id}`, {
-                method: "DELETE",
-                headers: {
-                    "Authorization": `Bearer ${session?.accessToken}`,
-                }
-            });
-
-            if (!res.ok) {
-                const errorText = await res.text();
-                throw new Error(errorText);
-            }
-
-            await fetchCategories();
-
-            setSelectedCategory(null); // reset selected category
-            setIsDeleteAlertOpen(false); // close alert
-        } catch (error) {
-            console.error("Fehler beim Löschen der Kategorie:", error);
-            // Fehlerbehandlung
-        }
-    };
-
-    /** USER DATA */
+    /** USER */
     async function fetchUserData() {
-        if (!session?.accessToken || status !== 'authenticated') {
+        if (!token) {
             setIsLoading(false);
             return;
         }
-
         try {
             const res = await fetch(`http://localhost:8000/api/users/${session.user?.id}`, {
                 headers: {
-                    'Authorization': `Bearer ${session.accessToken}`,
-                    'Accept': 'application/json',
+                    Authorization: `Bearer ${session.accessToken}`,
+                    Accept: "application/json",
                 },
             });
 
             if (!res.ok) {
                 const text = await res.text();
-                console.error('Failed to fetch user data:', res.status, text);
+                console.error("Failed to fetch user data:", res.status, text);
                 setIsLoading(false);
                 return;
             }
 
-            const data = await res.json();
+            const data: UserData = await res.json();
             setUserData(data);
         } catch (err) {
             console.error("Error loading user data:", err);
@@ -175,25 +103,42 @@ export default function ProfilePage() {
         }
     }
 
-    // load date when session changes or status is authenticated
-    useEffect(() => {
-        fetchUserData();
-    }, [session?.accessToken, status]);
-
-    const handleUpdateSuccess = () => {
-        fetchUserData();
-        console.log("Profile updated successfully!");
-    };
-
-    const handleDeleteAccount = async () => {
-        if (!session?.accessToken) return;
-
+    /** Check if a category is assigned to habits */
+    async function checkCategoryUsage(categoryId: number) {
+        if (!token) return;
         try {
-            const res = await fetch(`http://localhost:8000/api/user`, {
-                method: "DELETE",
+            const res = await fetch(`http://localhost:8000/api/categories/${categoryId}/usage`, {
                 headers: {
-                    "Authorization": `Bearer ${session?.accessToken}`,
-                }
+                    Authorization: `Bearer ${session.accessToken}`,
+                    Accept: "application/json",
+                },
+            });
+            if (!res.ok) throw new Error(`Failed to check usage: ${res.status}`);
+            const data = await res.json(); // { in_use: boolean }
+            setOccupied(!!data.in_use);
+        } catch (err) {
+            console.error("Error checking category usage:", err);
+            setOccupied(false);
+        }
+    }
+
+    /** ---------- Mutations ---------- */
+    /** CATEGORIES */
+    const handleCategorySubmit = async (categoryData: { id?: number; title: string }) => {
+        try {
+            const method = categoryData.id ? "PATCH" : "POST";
+            const url = categoryData.id
+                ? `http://localhost:8000/api/categories/${categoryData.id}`
+                : `http://localhost:8000/api/categories`;
+
+            const res = await fetch(url, {
+                method,
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${session?.accessToken}`,
+                    Accept: "application/json",
+                },
+                body: JSON.stringify({ title: categoryData.title }),
             });
 
             if (!res.ok) {
@@ -201,20 +146,106 @@ export default function ProfilePage() {
                 throw new Error(errorText);
             }
 
-            // Success: redirect to registration page
-            await signOut({ callbackUrl: '/public/register' });
+            await fetchCategories();
+            setSelectedCategory(null);
+            setIsEditModalOpen(false);
         } catch (error) {
-            console.error("Error while deleting account:", error);
-        } finally {
-            setIsDeleteAccountAlertOpen(false); // close dialog
+            console.error("Fehler beim Speichern der Kategorie:", error);
         }
     };
 
+    const handleDeleteCategory = async () => {
+        if (!selectedCategory) return;
 
+        try {
+            const res = await fetch(`http://localhost:8000/api/categories/${selectedCategory.id}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${session?.accessToken}`,
+                },
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                if (res.status === 409) {
+                    const { message } = JSON.parse(errorText);
+                    alert(message);
+                } else {
+                    console.error("Delete failed:", res.status, errorText);
+                }
+                return;
+            }
+
+            await fetchCategories();
+            setSelectedCategory(null);
+            setIsDeleteAlertOpen(false);
+        } catch (error) {
+            console.error("Fehler beim Löschen der Kategorie:", error);
+        }
+    };
+
+    /** USER */
+    const handleUpdateSuccess = () => {
+        fetchUserData();
+        console.log("Profile updated successfully!");
+    };
+
+    const handleDeleteAccount = async () => {
+        if (!token) return;
+        try {
+            const res = await fetch(`http://localhost:8000/api/user`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${session?.accessToken}`,
+                },
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText);
+            }
+
+            await signOut({ callbackUrl: "/public/register" });
+        } catch (error) {
+            console.error("Error while deleting account:", error);
+        } finally {
+            setIsDeleteAccountAlertOpen(false);
+        }
+    };
+
+    /** ---------- Effects (must stand before early returns) ---------- */
+    // load categories & user date, as soon as authenticated or token is available
+    useEffect(() => {
+        if (status !== "authenticated" || !token) {
+            setIsLoading(false);
+            return;
+        }
+        fetchCategories();
+        fetchUserData();
+    }, [status, session?.accessToken]);
+
+    /** ---------- Early returns ---------- */
+    if (status === "loading") return <div>Loading...</div>;
+    if (status === "unauthenticated") return <div>Please log in.</div>;
+
+    /** ---------- Handlers ---------- */
+    const toggleCategory = (categoryId: number) => {
+        if (selectedCategory?.id === categoryId) {
+            setSelectedCategory(null);
+            setOccupied(false);
+        } else {
+            const catToSelect = availableCategories.find((cat) => cat.id === categoryId);
+            if (catToSelect) {
+                setSelectedCategory(catToSelect);
+                checkCategoryUsage(catToSelect.id);
+            }
+        }
+    };
+
+    /** ---------- Render ---------- */
     return (
         <div className="flex flex-col items-center justify-center h-auto w-full px-4 py-8">
-
-            {/* CATEGORIES */}
+            {/* AVATAR */}
             <div className="flex justify-center items-center w-20 h-20 rounded-full border-black border-[2px]">
                 <Image
                     src="/images/profile_pic.png"
@@ -228,60 +259,67 @@ export default function ProfilePage() {
                 Hello {session?.user?.username || "Hello!"}
             </h2>
 
+            {/* CATEGORIES */}
             <div className="flex flex-col items-center justify-center w-[90%] md:w-[400px] border-black border-[2px] rounded-radius">
                 <h3 className="font-semibold text-md mt-4 mb-2">Categories</h3>
                 <p>Select a category to edit or delete.</p>
 
                 <div className="flex flex-row gap-4 md:gap-8 my-4">
-
                     {/* create button */}
                     <CategoryFormModal initialData={null} onSubmit={handleCategorySubmit}>
                         <BaseButton
                             type="button"
-                            className={selectedCategory ? 'bg-contrast' : 'bg-secondary'}
+                            className={selectedCategory ? "bg-contrast" : "bg-secondary"}
                             disabled={!!selectedCategory}
-                            variant="icon">
-                            <Plus className="w-10 h-10" strokeWidth={1.5} ></Plus>
+                            variant="icon"
+                        >
+                            <Plus className="w-10 h-10" strokeWidth={1.5} />
                         </BaseButton>
                     </CategoryFormModal>
 
                     {/* update button */}
                     <BaseButton
                         type="button"
-                        className={selectedCategory ? 'bg-secondary' : 'bg-contrast'}
-                        disabled={!selectedCategory} // deactivated if no category selected
+                        className={selectedCategory ? "bg-secondary" : "bg-contrast"}
+                        disabled={!selectedCategory}
                         onClick={() => setIsEditModalOpen(true)}
-                        variant="icon">
-                        <SquarePen className="w-10 h-10" strokeWidth={1.5}></SquarePen>
+                        variant="icon"
+                    >
+                        <SquarePen className="w-10 h-10" strokeWidth={1.5} />
                     </BaseButton>
 
                     {/* delete button */}
                     <BaseButton
                         type="button"
                         variant="icon"
-                        className={selectedCategory ? 'bg-tertiary' : 'bg-contrast'}
-                        disabled={!selectedCategory} // deactivate if no category selected
+                        className={selectedCategory && !occupied ? "bg-tertiary" : "bg-contrast"}
+                        disabled={!selectedCategory || occupied}
                         onClick={() => setIsDeleteAlertOpen(true)}
                     >
-                        <Trash2 className="w-10 h-10" strokeWidth={1.5}></Trash2>
+                        <Trash2 className="w-10 h-10" strokeWidth={1.5} />
                     </BaseButton>
-
                 </div>
+
+                {selectedCategory && occupied && (
+                    <p className="mt-2">
+                        This category is assigned to one or more habits and cannot be deleted.
+                    </p>
+                )}
 
                 {/* category tags */}
                 <div className="flex flex-wrap gap-2 my-2 justify-center">
-                    {availableCategories.map((cat) => cat.id && cat.title ? (
-                        <button
-                            key={cat.id}
-                            type="button"
-                            onClick={() => toggleCategory(cat.id)}
-                            className=
-                            {`md:text-md border-[2px] border-black rounded-radius-btn px-2 py-1 
-                            ${selectedCategory?.id === cat.id ? 'bg-tags' : 'bg-white'}`}
-                        >
-                            {cat.title}
-                        </button>
-                    ) : null
+                    {availableCategories.map((cat) =>
+                        cat.id && cat.title ? (
+                            <button
+                                key={cat.id}
+                                type="button"
+                                onClick={() => toggleCategory(cat.id)}
+                                className={`md:text-md border-[2px] border-black rounded-radius-btn px-2 py-1 ${selectedCategory?.id === cat.id ? "bg-tags" : "bg-white"
+                                    }`}
+                            >
+                                {cat.title}
+                            </button>
+                        ) : null
                     )}
                 </div>
 
@@ -290,21 +328,20 @@ export default function ProfilePage() {
                     <CategoryFormModal
                         initialData={selectedCategory}
                         onSubmit={handleCategorySubmit}
-                        onClose={() => setIsEditModalOpen(false)} // close modal
-                        children={null} // is not used here, but required for the component
+                        onClose={() => setIsEditModalOpen(false)}
+                        children={null}
                     />
                 )}
-
 
                 {/* Alert for deleting category */}
                 {isDeleteAlertOpen && selectedCategory && (
                     <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
                         <AlertDialogContent className="border-[2px] border-black rounded-radius backdrop-blur-sm max-w-sm mx-auto p-6">
                             <AlertDialogHeader>
-
                                 <AlertDialogTitle>Delete Category</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    Are you sure you want to delete the category "{selectedCategory?.title}"? This action cannot be undone.
+                                    Are you sure you want to delete the category "{selectedCategory?.title}"?
+                                    This action cannot be undone.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -323,9 +360,7 @@ export default function ProfilePage() {
                                         type="button"
                                         variant="text"
                                         className="bg-tertiary text-black"
-                                        onClick={() => {
-                                            handleDeleteCategory();
-                                        }}
+                                        onClick={handleDeleteCategory}
                                     >
                                         Delete
                                     </BaseButton>
@@ -334,7 +369,6 @@ export default function ProfilePage() {
                         </AlertDialogContent>
                     </AlertDialog>
                 )}
-
             </div>
 
             {/* SETTINGS */}
@@ -344,10 +378,7 @@ export default function ProfilePage() {
                 {isLoading ? (
                     <p>Loading user data...</p>
                 ) : userData ? (
-                    <ProfileEditForm
-                        initialData={userData}
-                        onUpdateSuccess={handleUpdateSuccess}
-                    />
+                    <ProfileEditForm initialData={userData} onUpdateSuccess={handleUpdateSuccess} />
                 ) : (
                     <p>Failed to load user data.</p>
                 )}
@@ -355,7 +386,10 @@ export default function ProfilePage() {
                 {/* Alert for deleting account */}
                 <AlertDialog open={isDeleteAccountAlertOpen} onOpenChange={setIsDeleteAccountAlertOpen}>
                     <AlertDialogTrigger asChild>
-                        <button className="underline text-md" onClick={() => setIsDeleteAccountAlertOpen(true)}>
+                        <button
+                            className="underline text-md"
+                            onClick={() => setIsDeleteAccountAlertOpen(true)}
+                        >
                             Delete Account
                         </button>
                     </AlertDialogTrigger>
@@ -363,7 +397,8 @@ export default function ProfilePage() {
                         <AlertDialogHeader>
                             <AlertDialogTitle>Delete Account</AlertDialogTitle>
                             <AlertDialogDescription>
-                                Are you sure you want to delete your account? This action is permanent and cannot be undone.
+                                Are you sure you want to delete your account? This action is permanent and
+                                cannot be undone.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -378,12 +413,7 @@ export default function ProfilePage() {
                                 </BaseButton>
                             </AlertDialogCancel>
                             <AlertDialogAction asChild>
-                                <BaseButton
-                                    type="button"
-                                    variant="text"
-                                    className="bg-tertiary text-black"
-                                    onClick={handleDeleteAccount}
-                                >
+                                <BaseButton type="button" variant="text" className="bg-tertiary text-black" onClick={handleDeleteAccount}>
                                     Delete
                                 </BaseButton>
                             </AlertDialogAction>
@@ -397,6 +427,5 @@ export default function ProfilePage() {
                 <LogoutButton />
             </div>
         </div>
-
     );
 }
