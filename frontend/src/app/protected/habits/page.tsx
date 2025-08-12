@@ -176,7 +176,7 @@ export default function HabitsPage() {
                                     key={cat.id}
                                     onClick={() => handleCategoryFilter(cat.id)}
                                     className={`md:text-md border-[2px] border-black rounded-radius-btn px-2 py-1 
-                                                ${selectedCategoryId === cat.id ? 'bg-primary' : 'bg-white'}`}
+                                                ${selectedCategoryId === cat.id ? 'bg-tags' : 'bg-white'}`}
                                 >
                                     {cat.title}
                                 </button>
