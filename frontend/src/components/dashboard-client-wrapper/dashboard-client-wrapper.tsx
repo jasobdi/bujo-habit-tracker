@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import dynamic from "next/dynamic";
 import Link from 'next/link';
 import { Habit } from '@/types/habit';
 import { getHabitsByMonth } from '@/lib/fetch/getHabitsByMonth';
@@ -17,6 +18,10 @@ import { BaseButton } from '../ui/button/base-button/base-button';
  * Included in the wrapper are the HabitCalendar and HabitOverview components, which are displayed side by side on desktop 
  * and on separate pages on mobile.
  */
+
+// imports InlineNotice with dynamic import to avoid server-side rendering
+const InlineNotice = dynamic(() => import("../feedback/inline-notice").then(m => m.InlineNotice), { ssr: false });
+
 
 // hook to check media query (display size)
 const useMediaQuery = (query: string) => {
@@ -101,9 +106,10 @@ export default function DashboardClientWrapper({ token, initialDate }: Dashboard
 
     return (
         <div>
-            <p className="mb-4 mx-4 md:text-center text-md">
-                Check your daily habits by klicking on a day in the calendar.
-            </p>
+            <InlineNotice variant="info" storageKey="DashboardPage-FindDailyHabits-notice" className="mb-8">
+                Check your daily habits by clicking on a day in the calendar.
+            </InlineNotice>
+
             <section className="w-full max-w-6xl flex flex-col md:flex-row md:gap-20">
 
                 <div className="flex flex-col">
@@ -112,12 +118,12 @@ export default function DashboardClientWrapper({ token, initialDate }: Dashboard
 
                         {/* Dropdown + Calendar */}
                         <div className="w-full mb-4 flex justify-center">
-                        <HabitCalendar
-                        habits={habitsForCalendar}
-                        initialDate={selectedDate}
-                        onDateSelect={handleDateSelect}
-                        isMobileView={!isDesktop} 
-                    />
+                            <HabitCalendar
+                                habits={habitsForCalendar}
+                                initialDate={selectedDate}
+                                onDateSelect={handleDateSelect}
+                                isMobileView={!isDesktop}
+                            />
                         </div>
 
                     </div>
@@ -128,7 +134,7 @@ export default function DashboardClientWrapper({ token, initialDate }: Dashboard
                     {/* RIGHT SIDE: Overview Pannel (hidden on mobile) */}
                     <div className="hidden md:block flex-1 p-4">
                         {/* Overview Pannel without displayed date (hidden on mobile) */}
-                        <HabitOverview 
+                        <HabitOverview
                             initialDate={selectedDate}
                             isMobileView={false}
                             onDateChange={setSelectedDate}

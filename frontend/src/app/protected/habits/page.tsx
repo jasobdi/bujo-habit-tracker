@@ -9,6 +9,7 @@ import { Plus, Funnel } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { getAllHabits } from '@/lib/fetch/getAllHabits';
 import { HabitActionModal } from '@/components/modals/habit-action-modal';
+import { InlineNotice } from '@/components/feedback/inline-notice';
 import { Category } from '@/types/category';
 import { Dialog, DialogTrigger, DialogTitle, DialogContent, DialogFooter, DialogClose } from "@/components/ui/dialog/dialog";
 
@@ -146,6 +147,10 @@ export default function HabitsPage() {
 
     return (
         <div className="flex flex-col items-center justify-center h-auto overflow-x-hidden px-4 py-8 font-sans">
+            <InlineNotice variant="info" storageKey="HabitsPage-features-notice" className="mb-8">
+                Select a habit you would like to edit or delete by clicking on the three dots next to it.
+            </InlineNotice>
+            {/** BUTTONS */}
             <div className="flex flex-row gap-20 mb-8">
                 <Link href="/protected/habits/new">
                     <BaseButton variant="icon" className="bg-secondary">
@@ -155,11 +160,11 @@ export default function HabitsPage() {
                 {/* filter button & dialog */}
                 <Dialog open={isFilterDialogOpen} onOpenChange={setIsFilterDialogOpen}>
                     <DialogTrigger asChild>
-                        <BaseButton variant="icon" className="bg-primary">
+                        <BaseButton variant="icon" className="bg-secondary">
                             <Funnel className="w-10 h-10" strokeWidth={1.5}></Funnel>
                         </BaseButton>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="border-[2px] border-black rounded-radius backdrop-blur-sm max-w-md w-[90%] p-6">
                         <DialogTitle>Filter by category</DialogTitle>
                         <div className="flex flex-wrap gap-2 my-4 justify-center w-[90%] max-w-md md:w-[400px]">
                             {/* "All" Button to reset filter */}
@@ -170,6 +175,7 @@ export default function HabitsPage() {
                             >
                                 All
                             </button>
+
                             {/* buttons for every category */}
                             {availableCategories.map(cat => (
                                 <button
@@ -195,6 +201,12 @@ export default function HabitsPage() {
                 </Dialog>
             </div>
 
+            <Link href="/protected/profile">
+                <BaseButton variant="text" className="bg-primary">
+                    See all categories
+                </BaseButton>
+            </Link>
+
             {/* Habit Container */}
             <section className="w-full flex justify-center">
                 <div className="w-[90%] max-w-md md:w-[444px] border-[2px] mx-auto border-black rounded-radius overflow-hidden">
@@ -214,7 +226,7 @@ export default function HabitsPage() {
                                 >
 
                                     <div>
-                                        <span className="text-medium" >{habit.title}</span>
+                                        <span className="text-medium text-md font-bold" >{habit.title}</span>
                                         <div className="flex flex-wrap gap-2 mt-2 ml-2">
                                             {habit.categories?.map((cat) => (
                                                 <CategoryTag key={cat.id} category={cat} />
@@ -224,7 +236,7 @@ export default function HabitsPage() {
                                     <div className="absolute right-4 top-1/2 -translate-y-1/2">
                                         <HabitActionModal habit={habit} onHabitDeleted={handleHabitDeleted} />
                                     </div>
-                                    
+
                                 </li>
                             ))}
                         </ul>

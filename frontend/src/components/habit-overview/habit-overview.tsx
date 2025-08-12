@@ -152,7 +152,7 @@ export default function HabitOverview({
 
     return (
         <section>
-            <div className=" flex items-center justify-center space-x-4 mb-4"> {/* HIDE!! on DESKTOP */}
+            <div className="md:hidden flex items-center justify-center space-x-4 mb-4"> 
 
                 <button onClick={handlePrevious}>
                     <ChevronLeft className="w-10 h-10" />

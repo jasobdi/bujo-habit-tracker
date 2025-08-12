@@ -22,7 +22,9 @@ export default async function DashboardPage() {
 
     return (
         <div className="flex flex-col items-center justify-center h-auto overflow-x-hidden px-4 py-8 font-sans">
-
+            <h2 className="text-2xl font-bold mb-6">
+                Hello {session.user?.username || ''}!
+            </h2>
             <DashboardClientWrapper 
                 token={session.accessToken} 
                 initialDate={today} />

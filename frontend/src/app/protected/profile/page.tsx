@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 import { Plus, SquarePen, Trash2 } from "lucide-react";
 import { BaseButton } from "@/components/ui/button/base-button/base-button";
@@ -292,19 +291,6 @@ export default function ProfilePage() {
     /** ---------- Render ---------- */
     return (
         <div className="flex flex-col items-center justify-center h-auto w-full px-4 py-8">
-            {/* AVATAR */}
-            <div className="flex justify-center items-center w-20 h-20 rounded-full border-black border-[2px]">
-                <Image
-                    src="/images/profile_pic.png"
-                    alt="profile picture"
-                    width={80}
-                    height={80}
-                    className="rounded-full"
-                />
-            </div>
-            <h2 className="mt-2 mb-4 font-semibold text-lg">
-                Hello {session?.user?.username || "Hello!"}
-            </h2>
 
             {/* CATEGORIES */}
             <div className="flex flex-col items-center justify-center w-[90%] md:w-[400px] border-black border-[2px] rounded-radius">
@@ -350,8 +336,8 @@ export default function ProfilePage() {
                 </div>
 
                 {selectedCategory && occupied && (
-                    <p className="mt-2 text-center">
-                        This category is assigned to one or more habits and cannot be deleted.
+                    <p className="mt-2 text-center font-bold text-blue-700 mb-4 px-2">
+                        Note: <br /> This category is assigned to one or more habits and cannot be deleted.
                     </p>
                 )}
 
@@ -436,7 +422,7 @@ export default function ProfilePage() {
                 <AlertDialog open={isDeleteAccountAlertOpen} onOpenChange={setIsDeleteAccountAlertOpen}>
                     <AlertDialogTrigger asChild>
                         <button
-                            className="underline text-md"
+                            className="underline text-md mb-8"
                             onClick={() => setIsDeleteAccountAlertOpen(true)}
                         >
                             Delete Account

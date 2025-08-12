@@ -81,11 +81,11 @@ export function ProfileEditForm({ initialData, onUpdateSuccess }: ProfileEditFor
 
     return (
         <div className="flex justify-center">
-            <section className="max-w-sm md:w-[340px] mx-3 my-4 p-6 font-sans">
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <section className="max-w-sm md:w-[340px] mx-2 my-2 p-4 font-sans">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                     {/* Username */}
                     <div className="flex flex-col">
-                        <label className="text-sm text-center mb-2">Username</label>
+                        <label className="text-sm text-center font-bold mb-3">Username</label>
                         <input
                             type="text"
                             {...register('username')}
@@ -98,7 +98,7 @@ export function ProfileEditForm({ initialData, onUpdateSuccess }: ProfileEditFor
 
                     {/* Email */}
                     <div className="flex flex-col">
-                        <label className="text-sm text-center mb-2">Email</label>
+                        <label className="text-sm text-center font-bold mb-3">Email</label>
                         <input
                             type="email"
                             {...register('email')}
@@ -111,34 +111,39 @@ export function ProfileEditForm({ initialData, onUpdateSuccess }: ProfileEditFor
 
                     {/* Password */}
                     <div className="flex flex-col">
-                        <label className="text-sm text-center mb-2">Password</label>
+                        <label className="text-sm text-center font-bold mb-3">Password</label>
+
                         <div className="relative">
                             <input
                                 type={showPassword ? "text" : "password"}
-                                {...register('password')}
-                                className="p-2 border-[2px] border-border rounded-radius bg-input text-sm text-center"
+                                {...register("password")}
+                                // extra Platz rechts fürs Icon:
+                                className="h-10 w-full rounded-radius border-[2px] border-border bg-input px-3 pr-10 text-sm text-center"
                             />
+
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 text-gray-600"
                                 aria-label={showPassword ? "hide password" : "show password"}
+                                // Icon-Button im Feld, vertikal ausgerichtet:
+                                className="absolute inset-y-0 right-0 flex items-center px-3"
                             >
                                 {showPassword ? (
-                                    <EyeOff className="h-5 w-5 text-gray-500" />
+                                    <EyeOff className="h-5 w-5 text-gray-600" />
                                 ) : (
-                                    <Eye className="h-5 w-5 text-gray-500" />
+                                    <Eye className="h-5 w-5 text-gray-600" />
                                 )}
                             </button>
                         </div>
+
                         {errors.password && (
-                            <p className="text-sm text-error mt-2">{errors.password.message}</p>
+                            <p className="mt-2 text-sm text-error">{errors.password.message}</p>
                         )}
                     </div>
 
                     {/* Submit Button */}
                     <div className="flex justify-center">
-                        <BaseButton variant="icon" className="mt-5 mb-5 bg-primary">
+                        <BaseButton variant="icon" className="mt-2 mb-5 bg-primary">
                             <Save className="h-10 w-10" strokeWidth={1.5} />
                         </BaseButton>
                     </div>

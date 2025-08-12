@@ -319,6 +319,7 @@ export default function EditHabit() {
                 <div className="mt-4">
                     <label className="font-semibold md:text-md">Categories</label>
                     <br />
+                    <p>Habits must contain at least one category.</p>
 
                     <CategoryFormModal initialData={null} onSubmit={handleCategorySubmit}>
                         <BaseButton
