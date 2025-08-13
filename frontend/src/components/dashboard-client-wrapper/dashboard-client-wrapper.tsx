@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import dynamic from "next/dynamic";
@@ -9,6 +9,7 @@ import { Habit } from '@/types/habit';
 import { getHabitsByMonth } from '@/lib/fetch/getHabitsByMonth';
 import { HabitCalendar } from '../habit-calendar/habit-calendar';
 import { HabitOverview } from '../habit-overview/habit-overview';
+import { appToast } from '../feedback/app-toast';
 import { BaseButton } from '../ui/button/base-button/base-button';
 
 /**
@@ -48,15 +49,19 @@ interface DashboardClientWrapperProps {
 };
 
 export default function DashboardClientWrapper({ token, initialDate }: DashboardClientWrapperProps) {
-
     const { status } = useSession();
     const router = useRouter();
     const isDesktop = useMediaQuery('(min-width: 768px)');
 
+    // states
     const [selectedDate, setSelectedDate] = useState(initialDate);
     const [habitsForCalendar, setHabitsForCalendar] = useState<Habit[] | null>(null);
     const [isLoadingCalendar, setIsLoadingCalendar] = useState(true);
     const [refreshToggle, setRefreshToggle] = useState(0);
+
+    // tost notification for errors and info messages
+    const { errorToast, infoToast } = appToast();
+    const noHabitsToastShownRef = useRef(false);
 
     // load habits for the calendar based on the selected date
     useEffect(() => {
@@ -67,29 +72,49 @@ export default function DashboardClientWrapper({ token, initialDate }: Dashboard
             const month = selectedDate.getMonth() + 1;
             setIsLoadingCalendar(true);
 
-            const { data, error } = await getHabitsByMonth({
-                year,
-                month,
-                token: token,
-            });
+            try {
+                const { data, error } = await getHabitsByMonth({ year, month, token });
 
-            if (data) {
-                setHabitsForCalendar(data);
+                // API error while fetching habits
+                if (error) {
+                    console.error("Error loading calendar habits:", error);
+                    // error message to user
+                    errorToast("Failed to load habits", "Please try again later.", 4000, "calendar-load-error");
+                    setHabitsForCalendar([]);
+                    return;
+                }
+                const list = data ?? [];
+                setHabitsForCalendar(list);
+
+                // no habits exist for the selected month
+                if (list.length === 0 && !noHabitsToastShownRef.current) {
+                    // info message to user
+                    infoToast("No habits yet", "Create your first habit to get started.", 4000, "no-habits-info");
+                    noHabitsToastShownRef.current = true;
+                }
+            } catch (e) {
+                console.error("Unexpected error loading calendar habits:", e);
+                errorToast("Failed to load habits", "Please try again later.", 4000, "calendar-load-error");
+                setHabitsForCalendar([]);
+            } finally {
+                setIsLoadingCalendar(false);
             }
-            if (error) {
-                console.error("Error loading calendar habits:", error);
-            }
-            setIsLoadingCalendar(false);
         };
         fetchCalendarHabits();
     }, [token, selectedDate, refreshToggle]);
 
-    // if a date is passed as initialDate on the calendat, set it as selectedDate
+    // if a date is passed as initialDate on the calendar, set it as selectedDate
     const handleDateSelect = (date: Date) => {
+        if (
+            date.getMonth() !== selectedDate.getMonth() ||
+            date.getFullYear() !== selectedDate.getFullYear()
+        ) {
+            noHabitsToastShownRef.current = false; // info-toast if no habits found for the new month -> reset the ref
+        }
         setSelectedDate(date);
     };
 
-    // Callback to refresh the calendar when a habit is completed or changed
+    // callback to refresh the calendar when a habit is completed or changed
     const handleHabitCompletionChange = useCallback(() => {
         // toggle increases by 1 to trigger a re-render
         setRefreshToggle(prev => prev + 1);
@@ -106,17 +131,23 @@ export default function DashboardClientWrapper({ token, initialDate }: Dashboard
 
     return (
         <div>
-            <InlineNotice variant="info" storageKey="DashboardPage-FindDailyHabits-notice" className="mb-8">
-                Check your daily habits by clicking on a day in the calendar.
-            </InlineNotice>
+            {/* InlineNotice */}
+            <div className="w-full flex justify-center">
+                <InlineNotice
+                    variant="info"
+                    storageKey="DashboardPage-FindDailyHabits-notice"
+                    className="mb-8 w-auto max-w-md md:max-w-lg"
+                >
+                    Check your daily habits by clicking on a day in the calendar.
+                </InlineNotice>
+            </div>
 
-            <section className="w-full max-w-6xl flex flex-col md:flex-row md:gap-20">
+            {/** HabitCalendar & HabitOverview components */}
+            <section className="w-full max-w-6xl md:grid md:grid-cols-2 md:items-start md:gap-12 flex flex-col">
 
-                <div className="flex flex-col">
-                    {/* LEFT SIDE: Calendar & Legend */}
+                {/* LEFT - HabitCalendar & Legend */}
+                <div className="md:self-start">
                     <div className="flex flex-col flex-1 p-2">
-
-                        {/* Dropdown + Calendar */}
                         <div className="w-full mb-4 flex justify-center">
                             <HabitCalendar
                                 habits={habitsForCalendar}
@@ -125,31 +156,28 @@ export default function DashboardClientWrapper({ token, initialDate }: Dashboard
                                 isMobileView={!isDesktop}
                             />
                         </div>
-
                     </div>
-
                 </div>
 
-                <div className="flex flex-col">
-                    {/* RIGHT SIDE: Overview Pannel (hidden on mobile) */}
-                    <div className="hidden md:block flex-1 p-4">
-                        {/* Overview Pannel without displayed date (hidden on mobile) */}
-                        <HabitOverview
-                            initialDate={selectedDate}
-                            isMobileView={false}
-                            onDateChange={setSelectedDate}
-                            onHabitCompletionChange={handleHabitCompletionChange}
-                        />
+                {/* RIGHT - HabitOverview & Habits-Button */}
+                <div className="md:self-start">
+                    <div className="hidden md:block flex-1 p-2">
+                        <div className="min-h-[320px]">
+                            <HabitOverview
+                                initialDate={selectedDate}
+                                isMobileView={false}
+                                onDateChange={setSelectedDate}
+                                onHabitCompletionChange={handleHabitCompletionChange}
+                            />
+                        </div>
                     </div>
 
-                    {/* BaseButton under Overview on Desktop */}
-                    <div className="hidden md:flex justify-center mt-2">
+                    <div className="hidden md:flex justify-center mt-4">
                         <Link href="/protected/habits">
                             <BaseButton variant="text">See all Habits</BaseButton>
                         </Link>
                     </div>
                 </div>
-
             </section>
 
         </div>

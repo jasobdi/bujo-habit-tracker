@@ -8,14 +8,13 @@ import { CalendarDropdown } from "./calendar-dropdown";
 import { getHabitsByMonth } from "../../../lib/fetch/getHabitsByMonth";
 import { getHabitCompletionsByMonth } from "@/lib/fetch/getHabitCompletionsByMonth";
 import { Habit } from "@/types/habit";
-import "react-day-picker/style.css";
 import { HabitService } from "@/lib/HabitService";
 
 /**
  * DashboardCalendar component is a calendar view for the dashboard.
  * It displays the calendar with custom month/year dropdown.
  * It highlights days based on habit completion status:
- * - Completed habits: teal background
+ * - Completed habits: green background
  * - Not completed habits: grey background
  * On day selection, it routes to the overview page with the selected date on display.
  */
@@ -23,8 +22,8 @@ import { HabitService } from "@/lib/HabitService";
 type DashboardCalendarProps = {
     onDateSelect: (date: Date) => void;
     isMobileView: boolean;
-    habits: Habit[] | null; 
-    selectedDate: Date; 
+    habits: Habit[] | null;
+    selectedDate: Date;
 };
 
 export function DashboardCalendar({ onDateSelect, isMobileView, habits, selectedDate }: DashboardCalendarProps) {
@@ -37,7 +36,7 @@ export function DashboardCalendar({ onDateSelect, isMobileView, habits, selected
     useEffect(() => {
         async function processHabitsAndCompletions() {
             if (!session?.accessToken || !habits) return;
-            
+
             // get completions for the current month
             const { data: completions, error: completionsError } = await getHabitCompletionsByMonth({
                 year: selectedDate.getFullYear(),
@@ -102,18 +101,38 @@ export function DashboardCalendar({ onDateSelect, isMobileView, habits, selected
                 selected={selectedDate}
                 onSelect={handleSelect}
                 weekStartsOn={1} // 0= Sunday, 1= Monday, etc.
-                defaultMonth={selectedDate} 
+                defaultMonth={selectedDate}
                 fromYear={2024} // start year dropdown from 2024
                 toYear={2026} // end year dropdown 
                 onMonthChange={(month) => {
                     // on change of month the date is updated in the parent - so habits of new month are loaded
                     onDateSelect(month);
                 }}
+                styles={{
+                    day: {
+                        borderRadius: '9999px',
+                        padding: '2px', // optischer Abstand
+                        backgroundColor: 'transparent',
+                    },
+                    day_selected: {
+                        border: '2px solid var(--black)',
+                        borderRadius: '9999px',
+                        backgroundColor: 'transparent', // falls kein extra Hintergrund
+                    },
+                    day_today: {
+                        fontWeight: 700,
+                        color: '#0000CD',
+                    },
+                }}
+                modifiersStyles={{
+                    completed: { backgroundColor: 'var(--completed)' },
+                    not_completed: { backgroundColor: 'var(--contrast)' },
+                }}
                 modifiers={{
                     completed: Object.keys(habitsStatus)
                         .filter((date) => habitsStatus[date] === 'completed')
                         .map((date) => new Date(date)),
-                        
+
                     not_completed: Object.keys(habitsStatus)
                         .filter((date) => habitsStatus[date] === 'not_completed')
                         .map((date) => new Date(date)),
@@ -122,11 +141,7 @@ export function DashboardCalendar({ onDateSelect, isMobileView, habits, selected
                         .filter((date) => new Date(date) > new Date())
                         .map((date) => new Date(date)),
                 }}
-                modifiersClassNames={{
-                    completed: 'bg-completed rounded-full',
-                    not_completed: 'bg-contrast rounded-full',
-                    future: 'bg-white rounded-full',
-                }}
+
             />
         </div>
     );

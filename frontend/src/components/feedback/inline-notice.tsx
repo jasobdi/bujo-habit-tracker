@@ -1,13 +1,13 @@
 "use client";
 
-import { Info, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
+import { Info, CircleCheckBig, AlertTriangle, XCircle } from "lucide-react";
 import { useState, useEffect, useId } from "react";
 
 type NoticeVariant = "info" | "success" | "warning" | "error";
 
 const ICONS = {
     info: Info,
-    success: CheckCircle2,
+    success: CircleCheckBig,
     warning: AlertTriangle,
     error: XCircle,
 } as const;

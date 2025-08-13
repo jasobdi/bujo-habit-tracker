@@ -1,11 +1,11 @@
 'use client'
 
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Checkbox } from '../ui/checkbox/checkbox';
+import { appToast } from '../feedback/app-toast';
 import { Habit } from '@/types/habit';
 import { HabitService } from '@/lib/HabitService';
 import { getHabitsByDate } from '@/lib/fetch/getHabitsByDate';
@@ -42,6 +42,15 @@ export default function HabitOverview({
     // date from Props
     const selectedDate = initialDate;
 
+    // success, error and info toasts
+    const { successToast, errorToast, infoToast } = appToast();
+    const infoShownRef = useRef(false);
+
+    useEffect(() => {
+        // on every date change a new infoToast is allowed to show
+        infoShownRef.current = false;
+    }, [initialDate]);
+
     // no access token or date -> don't execute useEffect
     useEffect(() => {
         if (!session?.accessToken || !initialDate) return;
@@ -51,40 +60,43 @@ export default function HabitOverview({
 
         // fetch habits for the selected date
         const run = async () => {
-            if (didRun) return; // if already run, exit
-            didRun = true;
-
+            if (didRun) return; didRun = true;
             setIsLoading(true);
+            try {
+                const [habitsData, compsRes] = await Promise.all([
+                    getHabitsByDate(initialDate.toLocaleDateString('sv-SE'), session.accessToken),
+                    getHabitCompletionsByDay({
+                        year: initialDate.getFullYear(),
+                        month: initialDate.getMonth() + 1,
+                        day: initialDate.getDate(),
+                        token: session.accessToken,
+                    })
+                ]);
 
-            // ask for habits and completions at the same time
-            const [habitsData, compsRes] = await Promise.all([
-                // fetch habits for the selected date
-                getHabitsByDate(
-                    initialDate.toLocaleDateString('sv-SE'), 
-                    session.accessToken),
+                const completions = compsRes?.data ?? [];
+                const enriched = (habitsData || []).map(h => ({
+                    ...h,
+                    completed: HabitService.isHabitCompleted(h, completions, initialDate),
+                }));
 
-                // fetch completions for the selected date
-                getHabitCompletionsByDay({
-                    year: initialDate.getFullYear(),
-                    month: initialDate.getMonth() + 1,
-                    day: initialDate.getDate(),
-                    token: session.accessToken,
-                })
-            ]);
+                setHabits(enriched);
 
-            // get completions from API response
-            const completions = compsRes.data;
-
-            // enrich habits with completion status
-            const enriched = (habitsData || []).map(h => ({
-                ...h,
-                completed: HabitService.isHabitCompleted(h, completions, initialDate),
-            }));
-
-            setHabits(enriched);
-            setIsLoading(false);
+                // No habits exist for selected date -> infoToast (once per date)
+                if (enriched.length === 0 && !infoShownRef.current) {
+                    const id = `overview-no-habits-${initialDate.toLocaleDateString('sv-SE')}`;
+                    infoToast("No habits for this day", "Create a habit to get started.", 3500, id);
+                    infoShownRef.current = true;
+                }
+                // API error while fetching habits -> errorToast
+            } catch (e) {
+                console.error("Failed to load daily habits:", e);
+                const id = `overview-load-error-${initialDate.toLocaleDateString('sv-SE')}`;
+                errorToast("Failed to load today’s habits", "Please try again later.", 4000, id);
+                setHabits([]);
+            } finally {
+                setIsLoading(false);
+            }
         };
-
         // run the fetch function
         run();
 
@@ -137,14 +149,28 @@ export default function HabitOverview({
             }
 
             // optimistic update of the habits state
-            setHabits(prev =>
-                prev.map(h => (h.id === habitId ? { ...h, completed: !completed } : h))
-            );
+            setHabits(prev => {
+                const next = prev.map(h =>
+                    h.id === habitId ? { ...h, completed: !completed } : h
+                );
+
+                const wasAllDoneBefore = prev.length > 0 && prev.every(h => h.completed);
+                const isAllDoneNow = next.length > 0 && next.every(h => h.completed);
+
+                if (!wasAllDoneBefore && isAllDoneNow) {
+                    const id = `all-habits-${selectedDate.toLocaleDateString('sv-SE')}`;
+                    successToast("All habits completed", undefined, 3000, id);
+                }
+
+                return next;
+            });
 
             // inform DashbaordCalendar
             onHabitCompletionChange();
+            // error while toggling completion -> errorToast
         } catch (err) {
             console.error('Failed to toggle completion:', err);
+            errorToast("Couldn’t update habit", "Please try again.", 3500, `overview-toggle-error-${dateStr}`);
         }
     };
 
@@ -152,7 +178,8 @@ export default function HabitOverview({
 
     return (
         <section>
-            <div className="md:hidden flex items-center justify-center space-x-4 mb-4"> 
+            {/** Mobile: Date-Navigation */}
+            <div className="md:hidden flex items-center justify-center space-x-4 mb-4">
 
                 <button onClick={handlePrevious}>
                     <ChevronLeft className="w-10 h-10" />
@@ -171,34 +198,39 @@ export default function HabitOverview({
                 </button>
             </div>
 
-            <div className=" border-[2px] border-black rounded-radius w-full max-w-md overflow-hidden">
-                {isLoading ? (
-                    <p className='text-center p-4'>Loading...</p>
-                ) : habits.length === 0 ? (
-                    <p className='text-center p-4'>No habits for this day.</p>
-                ) : (
-                    <ul>
-                        {habits.map((habit, index) => (
-                            <li
-                                key={habit.id}
-                                className={`
-                                        flex items-center justify-start px-4 py-2
-                                        ${index % 2 === 1 ? 'bg-contrast' : ''} // every 2nd line: bg gray
-                                    `}
-                            >
-                                <Checkbox
-                                    checked={habit.completed}
-                                    onCheckedChange={() => handleToggle(habit.id, habit.completed)}
-                                    className={`mr-4 w-6 h-6 border-black border-[2px] rounded-[5px] 
-                                    ${habit.completed ? 'bg-completed' : 'bg-transparent'
-                                        }`}
-                                    aria-label={`Toggle ${habit.title}`}
-                                />
-                                <span>{habit.title}</span>
-                            </li>
-                        ))}
-                    </ul>
-                )}
+            {/** Habit-List-Container */}
+            <div className="border-[2px] border-black rounded-radius w-full max-w-md overflow-hidden min-h-[328px] relative">
+
+                {/* Transition-Wrapper */}
+                <div className={`transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
+                    {isLoading ? (
+                        <p className='text-center p-4'>Loading...</p>
+                    ) : habits.length === 0 ? (
+                        <p className='text-center p-4'>No habits for this day.</p>
+                    ) : (
+                        <ul>
+                            {habits.map((habit, index) => (
+                                <li
+                                    key={habit.id}
+                                    className={`
+                                flex items-center justify-start px-4 py-2 transition-transform transition-opacity duration-150 ease-out opacity-100 translate-y-0
+                                ${index % 2 === 1 ? 'bg-contrast' : ''}
+                            `}
+                                >
+                                    <Checkbox
+                                        checked={habit.completed}
+                                        onCheckedChange={() => handleToggle(habit.id, habit.completed)}
+                                        className={`mr-4 w-6 h-6 border-black border-[2px] rounded-[5px] 
+                                        ${habit.completed ? 'bg-completed' : 'bg-transparent'}`}
+                                        aria-label={`Toggle ${habit.title}`}
+                                    />
+                                    <span>{habit.title}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+
             </div>
         </section>
     );

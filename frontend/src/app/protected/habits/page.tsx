@@ -147,9 +147,14 @@ export default function HabitsPage() {
 
     return (
         <div className="flex flex-col items-center justify-center h-auto overflow-x-hidden px-4 py-8 font-sans">
-            <InlineNotice variant="info" storageKey="HabitsPage-features-notice" className="mb-8">
-                Select a habit you would like to edit or delete by clicking on the three dots next to it.
-            </InlineNotice>
+            <div className="w-full flex justify-center">
+                <InlineNotice
+                    variant="info"
+                    storageKey="HabitsPage-features-notice"
+                    className="mb-8 w-auto max-w-md md:max-w-lg">
+                    Select a habit you would like to edit or delete by clicking on the three dots next to it.
+                </InlineNotice>
+            </div>
             {/** BUTTONS */}
             <div className="flex flex-row gap-20 mb-8">
                 <Link href="/protected/habits/new">

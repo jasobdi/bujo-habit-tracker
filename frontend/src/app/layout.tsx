@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat, Patrick_Hand } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner/sonner";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -26,7 +27,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${montserrat.variable} ${patrickHand.variable} font-sans`}>
-        <Providers>{children}</Providers> 
+        <Providers>{children}</Providers>
+        <Toaster position="top-center" closeButton /> 
       </body>
     </html>
   );
