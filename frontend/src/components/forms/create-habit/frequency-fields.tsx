@@ -23,7 +23,11 @@ type Props<T extends string, S extends string> = {
     repeatCount: number;
     setRepeatCount: (val: number) => void;
     isEditing?: boolean; // optional prop for edit mode
-    startDateError?: string;  
+    startDateError?: string;
+    customDaysError?: string;
+    endDateError?: string;
+    repeatCountError?: string;
+    repeatIntervalError?: string;
 };
 
 /**
@@ -48,7 +52,11 @@ export function FrequencyFields<T extends string, S extends string>({
     repeatCount,
     setRepeatCount,
     isEditing = false,
-    startDateError
+    startDateError,
+    customDaysError,
+    endDateError,
+    repeatCountError,
+    repeatIntervalError,
 }: Props<T, S>) {
     function customFrequencyLabel() {
         if (customType === 'weekly') return 'weeks';
@@ -91,8 +99,9 @@ export function FrequencyFields<T extends string, S extends string>({
                         selected={startDate}
                         onSelect={setStartDate}
                         label="Start date"
-                        hasError={!!startDateError} />
-                        {startDateError?<p>{startDateError}</p>:null}
+                        hasError={!!startDateError}
+                    />
+                    {startDateError ? <p className="text-sm text-[var(--error)] font-normal">{startDateError}</p> : null}
                 </div>
             )}
 
@@ -125,16 +134,26 @@ export function FrequencyFields<T extends string, S extends string>({
                             min={1}
                             value={repeatInterval}
                             onChange={handleRepeatIntervalChange}
-                            className="border border-black rounded ml-2 p-1 w-16 md:text-md"
+                            className={`border border-black rounded ml-2 p-1 w-16 md:text-md ${repeatIntervalError ? 'ring-2 ring-[var(--error)]' : ''
+                                }`}
                             id="repeat-interval"
+                            aria-invalid={!!repeatIntervalError}
+                            aria-describedby={repeatIntervalError ? "repeat-interval-error" : undefined}
                         />{' '}
                         {customFrequencyLabel()}
+                        {repeatIntervalError ? <p id="repeat-interval-error" className="mt-2 text-sm text-[var(--error)]">{repeatIntervalError}</p> : null}
                     </div>
 
                     {customType === 'weekly' && (
                         <div className="mt-4">
                             <label className="font-semibold md:text-md">Repeats on</label>
-                            <div className="flex gap-1 mt-2">
+                            <div
+                                className={`flex gap-1 mt-2 ${customDaysError ? 'ring-2 ring-[var(--error)] rounded-radius p-1' : ''
+                                    }`}
+                                aria-invalid={!!customDaysError}
+                                aria-describedby={customDaysError ? 'custom-days-error' : undefined}
+                                role="group"
+                            >
                                 {habitCustomDays.map(day => (
                                     <BaseButton
                                         key={day}
@@ -142,11 +161,13 @@ export function FrequencyFields<T extends string, S extends string>({
                                         variant="icon"
                                         className={`bg-contrast w-8 h-8 md:w-10 md:h-10 p-2 text-xs md:text-sm ${(customDays as string[]).includes(day) ? 'bg-primary' : 'bg-contrast text-black'}`}
                                         onClick={() => toggleCustomDay(day)}
+                                        aria-pressed={(customDays as string[]).includes(day)}
                                     >
                                         {mapDay(day)}
                                     </BaseButton>
                                 ))}
                             </div>
+                            {customDaysError ? <p id="custom-days-error" className="mt-2 text-sm text-[var(--error)] font-normal">{customDaysError}</p> : null}
                         </div>
                     )}
 
@@ -183,9 +204,11 @@ export function FrequencyFields<T extends string, S extends string>({
                                         selected={endDate}
                                         onSelect={setEndDate}
                                         label="End date"
+                                        hasError={!!endDateError}
                                     />
                                 </div>
                             </label>
+                            {endDateError ? <p className="mt-2 text-sm text-[var(--error)] font-normal">{endDateError}</p> : null}
 
                             <label htmlFor="end-after" className="flex items-center gap-2 md:text-md">
                                 <input
@@ -197,21 +220,26 @@ export function FrequencyFields<T extends string, S extends string>({
                                     className="md:text-md"
                                 />
                                 After:
-                                    <input
-                                        type="number"
-                                        min={1}
-                                        value={repeatCount}
-                                        onChange={(e) => {
-                                            const value = parseInt(e.target.value);
-                                            setRepeatCount(isNaN(value) ? 1 : value);
-                                        
-                                        }}
-                                        onFocus={() => setEndType('after')} 
-                                        className="border border-black rounded p-1 w-16 md:text-md"
-                                        id="end-after-count"
-                                    />
+                                <input
+                                    type="number"
+                                    min={1}
+                                    value={repeatCount}
+                                    onChange={(e) => {
+                                        const value = parseInt(e.target.value);
+                                        setRepeatCount(isNaN(value) ? 1 : value);
+
+                                    }}
+                                    onFocus={() => setEndType('after')}
+                                    className={`border border-black rounded p-1 w-16 md:text-md ${
+                                        repeatCountError ? 'ring-2 ring-[var(--error)]' : ''
+                                    }`}
+                                    id="end-after-count"
+                                    aria-invalid={!!repeatCountError}
+                                    aria-describedby={repeatCountError ? 'end-after-count-error' : undefined}
+                                />
                                 repetitions
                             </label>
+                            {repeatCountError ? <p id="end-after-count-error" className="mt-2 text-sm text-[var(--error)] font-normal">{repeatCountError}</p> : null}
                         </div>
                     </div>
                 </>

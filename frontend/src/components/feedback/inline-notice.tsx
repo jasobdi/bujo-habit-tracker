@@ -1,6 +1,6 @@
 "use client";
 
-import { Info, CircleCheckBig, AlertTriangle, XCircle } from "lucide-react";
+import { Info, CircleCheckBig, TriangleAlert, CircleX } from "lucide-react";
 import { useState, useEffect, useId } from "react";
 
 type NoticeVariant = "info" | "success" | "warning" | "error";
@@ -8,8 +8,8 @@ type NoticeVariant = "info" | "success" | "warning" | "error";
 const ICONS = {
     info: Info,
     success: CircleCheckBig,
-    warning: AlertTriangle,
-    error: XCircle,
+    warning: TriangleAlert,
+    error: CircleX,
 } as const;
 
 const WRAPPER = "border-[2px] border-black rounded-radius shadow-sm";
@@ -114,7 +114,7 @@ export function InlineNotice({
                 className="flex-none -m-1 p-1 rounded-radius hover:opacity-80 transition-opacity"
                 title="Close"
             >
-                <XCircle className="w-5 h-5" />
+                <CircleX className="w-5 h-5" />
             </button>
         </div>
     );

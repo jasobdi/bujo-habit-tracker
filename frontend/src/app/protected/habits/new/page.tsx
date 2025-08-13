@@ -11,36 +11,65 @@ import { useSession } from 'next-auth/react';
 import { habitSchema } from "@/lib/validation/habitSchema";
 import { z } from "zod";
 import { format } from "date-fns";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog/alert-dialog";
 import { habitCommonFrequencies, HabitCommonFrequency, HabitCustomDays } from "@/types/habit";
+import { ConfirmDialog } from "@/components/ui/dialog/confirm-dialog";
+import { appToast } from "@/components/feedback/app-toast";
+import { UnsavedChangesGuard } from "@/components/nav/unsaved-changes-guard";
 
 const frequencies = [...habitCommonFrequencies, 'custom'] as const;
 type Frequency = typeof frequencies[number];
+type EndType = 'never' | 'on' | 'after';
+
+const isCustomFrequency = (f: Frequency): f is 'custom' => f === 'custom';
+const isAfterEnd = (t: EndType): t is 'after' => t === 'after';
 
 export default function NewHabit() {
     const router = useRouter();
     const { data: session } = useSession();
-
-
-    // define frequency options
+    const { successToast, errorToast } = appToast();
 
     // states for custom frequency
     const [customType, setCustomType] = useState<HabitCommonFrequency>('daily');
     const [repeatInterval, setRepeatInterval] = useState<number>(1);
 
-    // states for the form
-    const [titleError, setTitleError] = useState<string|undefined>(undefined);
-    const [startDateError, setStartDateError] = useState<string|undefined>(undefined);
+    // form states
     const [title, setTitle] = useState('');
     const [frequency, setFrequency] = useState<Frequency>('daily');
     const [startDate, setStartDate] = useState<Date | undefined>();
     const [customDays, setCustomDays] = useState<HabitCustomDays[]>([]);
-    const [endType, setEndType] = useState<'never' | 'on' | 'after'>('never');
+    const [endType, setEndType] = useState<EndType>('never');
     const [endDate, setEndDate] = useState<Date | undefined>();
     const [repeatCount, setRepeatCount] = useState<number>(1);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // state for confirmation dialog
-    const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
+    // field error states (Zod validation)
+    const [titleError, setTitleError] = useState<string | undefined>(undefined);
+    const [startDateError, setStartDateError] = useState<string | undefined>(undefined);
+    const [frequencyError, setFrequencyError] = useState<string | undefined>(undefined);
+    const [customDaysError, setCustomDaysError] = useState<string | undefined>(undefined);
+    const [endDateError, setEndDateError] = useState<string | undefined>(undefined);
+    const [repeatCountError, setRepeatCountError] = useState<string | undefined>(undefined);
+    const [categoriesError, setCategoriesError] = useState<string | undefined>(undefined);
+    const [repeatIntervalError, setRepeatIntervalError] = useState<string | undefined>(undefined);
+
+    // categories
+    type Category = { id: number; title: string; }
+    const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
+    const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+    const [categoriesUpdated, setCategoriesUpdated] = useState(0);
+
+    // unsaved changes guard (isDirty = unsaved changes)
+    const isDirty =
+        title.trim().length > 0 ||
+        startDate != null ||
+        frequency !== 'daily' ||
+        customType !== 'daily' ||
+        (isCustomFrequency(frequency) && repeatInterval !== 1) ||
+        customDays.length > 0 ||
+        endType !== 'never' ||
+        endDate != null ||
+        (isAfterEnd(endType) && repeatCount !== 1) ||
+        selectedCategories.length > 0;
 
     /* Form handling */
     // handle frequency change
@@ -50,167 +79,69 @@ export default function NewHabit() {
         );
     }
 
-    function getErrorMessageForField(errors: z.ZodError, field: string): string|undefined {
-        
-        if (!errors) return undefined; // no error found
-
-        // check if input field has error
-        for (const error of errors.errors) {
-                console.error(error.message)
-            if (error.path.includes(field)) {
-                return error.message; // has error -> return error message from zod
-            }
-        }
-        return undefined; // no error found
-
+    // Zod-errors for input fields
+    function getErrorFor(err: z.ZodError, field: string): string | undefined {
+        const issue = err.issues.find(i => i.path[0] === field || i.path.join('.') === field);
+        return issue?.message;
     }
 
-    // cancel-button handler
-    function handleCancel(e: React.MouseEvent) {
-        e.preventDefault();
-        setIsCancelConfirmOpen(true); // Open the AlertDialog
+    // Cancel / Back per ConfirmDialog
+    const handleDiscard = () => {
+        router.push('/protected/habits');
     };
 
-    // save-button handler
-    async function handleSave(e: React.MouseEvent) {
-        e.preventDefault();
-
-        // check for session and accessToken
-        if (!session?.accessToken) {
-            alert("Not authenticated.");
-            return;
-        }
-
-        // // Basic Validation
-        // if (!title.trim()) {
-        //     alert("Please enter a title.");
-        //     return;
-        // }
-
-        // if (!frequency) {
-        //     alert("Please select a frequency.");
-        //     return;
-        // }
-
-        // if (!startDate) {
-        //     alert("Please select a start date.");
-        //     return;
-        // }
-
-        // if (frequency === 'custom' && customDays.length === 0) {
-        //     alert("Please select at least one custom day.");
-        //     return;
-        // }
-
-        // if (endType === 'on' && !endDate) {
-        //     alert("Please select an end date.");
-        //     return;
-        // }
-
-        // if (endType === 'after' && repeatCount <= 0) {
-        //     alert("Repeat count must be greater than 0.");
-        //     return;
-        // }
-
-        // validation with Zod schema
+    // Kategorien laden
+    async function fetchCategories() {
+        if (!session?.accessToken) return;
         try {
-            // pass the raw date objects to the zod schema for validation
-            const validated = habitSchema.parse({
-                title,
-                frequency,
-                startDate: startDate,
-                customDays: frequency === "custom" ? customDays : [],
-                endType,
-                endDate: endType === "on" && endDate ? endDate : undefined, // Pass the Date object directly
-                repeatCount: endType === "after" ? repeatCount : undefined,
-                categories: selectedCategories,
+            const res = await fetch('http://localhost:8000/api/categories', {
+                headers: {
+                    Authorization: `Bearer ${session?.accessToken}`,
+                    Accept: 'application/json',
+                },
             });
-
-            // prepare data for API call, formatting dates and remaining fields here
-            const apiData: { [key: string]: any } = { 
-                title: validated.title,
-                frequency:  validated.frequency === 'custom' ? `custom_${customType}` : validated.frequency,
-                start_date: format(validated.startDate, 'yyyy-MM-dd'), // Renamed to start_date
-                custom_days: validated.customDays, // Renamed to custom_days
-                category_ids: validated.categories, // Renamed to category_ids
-                repeat_interval: validated.frequency === 'custom' ? repeatInterval : 1, // Renamed to repeat_interval
-                repeat_count: validated.repeatCount, // Renamed to repeat_count
-            };
-
-            // Handle end date based on endType
-            if (validated.endType === "on" && validated.endDate) {
-                apiData.end_date = format(validated.endDate, 'yyyy-MM-dd'); // Renamed to end_date
+            if (!res.ok) {
+                const text = await res.text();
+                console.error('Failed to fetch categories:', res.status, text);
+                return;
             }
-
-            // API call to create the habit
-            const response = await createHabit(apiData, session.accessToken);
-
-            console.log("Habit created:", response);
-
-            // after successful creation, redirect to habits page
-            router.push('/protected/habits');
-
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                setTitleError(getErrorMessageForField(error,'title'));
-                setStartDateError(getErrorMessageForField(error, 'startDate'));
-                
-                console.error("Validation errors:", error.flatten());
-                console.error("Validation issues (detailed):", error.issues);
-            } else {
-                console.error("Failed to create habit:", error);
-                alert("Something went wrong while saving.");
-            }
+            const data = await res.json();
+            setAvailableCategories(data);
+        } catch (err) {
+            console.error("Error loading categories", err);
         }
     }
-
-    /* Category handling */
-    type Category = {
-        id: number;
-        title: string;
-    }
-
-    // state for Categories
-    const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
-    const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-    const [categoriesUpdated, setCategoriesUpdated] = useState(0);
-
-    // load categories from API
-        async function fetchCategories() {
-            if (!session?.accessToken) return;
-
-            try {
-                const res = await fetch('http://localhost:8000/api/categories', {
-                    headers: {
-                        Authorization: `Bearer ${session?.accessToken}`,
-                        Accept: 'application/json',
-                    },
-                });
-
-                if (!res.ok) {
-                    const text = await res.text();
-                    console.error('Failed to fetch categories:', res.status, text);
-                    return;
-                }
-
-                const data = await res.json();
-                setAvailableCategories(data);
-            } catch (err) {
-                console.error("Error loading categories", err);
-            }
-        }
 
     useEffect(() => {
         fetchCategories();
     }, [session?.accessToken, categoriesUpdated]);
 
-    // create a category through the modal & update the category-tag list
+    // reset error states when the form fields change
+    useEffect(() => {
+        if (frequency !== "custom") {
+            setCustomDays([]);
+            setCustomDaysError(undefined);
+            setRepeatIntervalError(undefined);
+        }
+    }, [frequency]);
+
+    useEffect(() => {
+        if (customType !== "weekly") {
+            setCustomDays([]);
+            setCustomDaysError(undefined);
+        }
+    }, [customType]);
+    useEffect(() => {
+        if (endType !== "on") setEndDateError(undefined);
+        if (endType !== "after") setRepeatCountError(undefined);
+    }, [endType]);
+
+    // create a new category through modal & update category-tag list
     const handleCategorySubmit = async (categoryData: { id?: number, title: string }): Promise<Category> => {
         if (!session?.accessToken) {
             console.error("Not authenticated.");
             throw new Error("Not authenticated.");
         }
-
         try {
             const res = await fetch("http://localhost:8000/api/categories", {
                 method: "POST",
@@ -227,21 +158,116 @@ export default function NewHabit() {
                 throw new Error(errorText);
             }
 
-            const result = await res.json(); // read JSON-response
-            const newCategory: Category = result.category; // grab nested Category object
+            const result = await res.json();
+            const newCategory: Category = result.category;
 
-            setAvailableCategories(prev => [...prev, newCategory]); // add newly created category to the list
-            setSelectedCategories(prev => [...prev, newCategory.id]); // add newly created category to the selected categories
-            setCategoriesUpdated(prev => prev + 1); // trigger re-fetch of categories
-            
+            setAvailableCategories(prev => [...prev, newCategory]);
+            setSelectedCategories(prev => [...prev, newCategory.id]);
+            setCategoriesUpdated(prev => prev + 1);
+
             return newCategory;
-
         } catch (error) {
             console.error("Failed to create category:", error);
             throw error;
-            // later: error handling for user
         }
     };
+
+    /** SAVE */
+    async function handleSave(e: React.MouseEvent) {
+
+        e.preventDefault();
+        if (!session?.accessToken) {
+            errorToast("Not authenticated", "Please log in and try again.", 3500, "habit-create-unauth");
+            return;
+        }
+        // 1) reset errors
+        setTitleError(undefined);
+        setStartDateError(undefined);
+        setFrequencyError(undefined);
+        setCustomDaysError(undefined);
+        setEndDateError(undefined);
+        setRepeatCountError(undefined);
+        setCategoriesError(undefined);
+        setRepeatIntervalError(undefined);
+
+        // 2) raw data for Zod validation
+        const rawData = {
+            title,
+            frequency,
+            startDate,
+            customDays: frequency === "custom" ? customDays : [],
+            endType,
+            endDate: endType === "on" ? endDate : undefined,
+            repeatCount: endType === "after" ? repeatCount : undefined,
+            categories: selectedCategories,
+            repeatInterval: frequency === "custom" ? repeatInterval : undefined,
+            customType,
+        };
+
+        // 3) pre-validation checks without a return, only flags
+        let hasPreError = false;
+
+        if (endType === "on" && !endDate) {
+            setEndDateError("End date is required");
+            hasPreError = true;
+        }
+        if (endType === "after" && (!repeatCount || repeatCount < 1)) {
+            setRepeatCountError("Repeat count must be at least 1");
+            hasPreError = true;
+        }
+        if (frequency === "custom" && customType === "weekly" && customDays.length === 0) {
+            setCustomDaysError("Select at least one weekday");
+            hasPreError = true; // <— statt return
+        }
+
+        // 4) Zod validation
+        const result = habitSchema.safeParse(rawData);
+
+        // Helper to get specific error messages for fields
+        if (!result.success || hasPreError) {
+            if (!result.success) {
+                const err = result.error;
+                setTitleError(getErrorFor(err, 'title'));
+                setStartDateError(getErrorFor(err, 'startDate'));
+                setFrequencyError(getErrorFor(err, 'frequency'));
+                setCustomDaysError(prev => prev ?? getErrorFor(err, 'customDays'));
+                setEndDateError(prev => prev ?? getErrorFor(err, 'endDate'));
+                setRepeatCountError(prev => prev ?? getErrorFor(err, 'repeatCount'));
+                setCategoriesError(getErrorFor(err, 'categories'));
+                setRepeatIntervalError(prev => prev ?? getErrorFor(err, 'repeatInterval'));
+            }
+            errorToast("Form is incomplete", undefined, 4000, "habit-create-validation");
+            return; // stop submit if any error
+        }
+
+        // 5) Successful validation
+        const validated = result.data;
+        const apiData: Record<string, any> = {
+            title: validated.title,
+            frequency: validated.frequency === 'custom' ? `custom_${customType}` : validated.frequency,
+            start_date: format(validated.startDate!, 'yyyy-MM-dd'),
+            custom_days: validated.customDays,
+            category_ids: validated.categories,
+            repeat_interval: validated.frequency === 'custom' ? repeatInterval : 1,
+            repeat_count: validated.repeatCount,
+        };
+        if (validated.endType === "on" && validated.endDate) {
+            apiData.end_date = format(validated.endDate, 'yyyy-MM-dd');
+        }
+
+        // 6) Submit the data to API
+        setIsSubmitting(true);
+        try {
+            await createHabit(apiData, session.accessToken);
+            successToast("Habit created", undefined, 2500, "habit-create-success");
+            router.push('/protected/habits');
+        } catch (err) {
+            console.error("Failed to create habit:", err);
+            errorToast("Failed to save habit", "Please try again.", 4000, "habit-create-error");
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
 
     // toggle for category selection
     function toggleCategory(id: number) {
@@ -255,17 +281,22 @@ export default function NewHabit() {
     return (
         <div className="flex justify-center w-full">
             <form className="flex flex-col p-4 max-w-xs md:max-w-md mx-auto border-black border-[2px] rounded-radius">
+
+                {/* Title */}
                 <label htmlFor="title" className="font-semibold"> Title
                     <input
                         id="title"
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        className={`w-full border-[2px] border-black rounded-radius mt-2 mb-4 p-2 font-normal ${titleError ? 'border-error' : ''}`}
+                        className={`w-full border-[2px] border-black rounded-radius mt-2 mb-1 p-2 font-normal ${titleError ? 'border-[2px] border-[var(--error)]' : ''}`}
+                        aria-invalid={!!titleError}
+                        aria-describedby={titleError ? "title-error" : undefined}
                     />
-                    {titleError?<p>{titleError}</p>:null}
+                    {titleError ? <p id="title-error" className="text-sm text-[var(--error)] font-normal mb-3">{titleError}</p> : <div className="mb-3" />}
                 </label>
 
+                {/* Frequency */}
                 <div>
                     <label htmlFor="frequency" className="font-semibold mb-2">Frequency</label>
                     <div className="flex flex-col w-auto mb-3" id="frequency">
@@ -277,14 +308,19 @@ export default function NewHabit() {
                                 aria-label={`Set frequency to ${f}`}
                                 className={`px-4 py-2 m-2 border-[2px] border-black rounded-radius
                                     ${frequency === f ? 'bg-primary' : 'bg-contrast text-black'}`}
-                                onClick={() => setFrequency(f)}
+                                onClick={() => {
+                                    setFrequency(f);
+                                    if (f === "custom") setCustomType("weekly");
+                                }}
                             >
                                 {f}
                             </BaseButton>
                         ))}
                     </div>
+                    {frequencyError ? <p className="text-sm text-[var(--error)] mb-2">{frequencyError}</p> : null}
                 </div>
 
+                {/* FrequencyFields */}
                 <FrequencyFields
                     frequency={frequency}
                     customType={customType}
@@ -300,25 +336,33 @@ export default function NewHabit() {
                     setEndType={setEndType}
                     endDate={endDate}
                     setEndDate={setEndDate}
-                    repeatCount={repeatCount}   
+                    repeatCount={repeatCount}
                     setRepeatCount={setRepeatCount}
+                    isEditing={false}
+                    customDaysError={customDaysError}
+                    endDateError={endDateError}
+                    repeatCountError={repeatCountError}
+                    repeatIntervalError={repeatIntervalError}
                 />
 
+                {/* Categories */}
                 <div className="mt-4">
                     <label className="font-semibold md:text-md">Categories</label>
                     <br />
                     <p>Habits must contain at least one category.</p>
 
                     <CategoryFormModal initialData={null} onSubmit={handleCategorySubmit}>
-                    <BaseButton
-                        type="button"
-                        variant="text"
-                        className="bg-secondary"
-                    >
-                        <Plus className="w-4 h-4 mr-1" />
-                        add category
-                    </BaseButton>
+                        <BaseButton
+                            type="button"
+                            variant="text"
+                            className="bg-secondary"
+                        >
+                            <Plus className="w-4 h-4 mr-1" />
+                            add category
+                        </BaseButton>
                     </CategoryFormModal>
+
+                    {categoriesError ? <p className="text-sm text-[var(--error)] font-normal">{categoriesError}</p> : null}
 
                     <div className="flex flex-wrap gap-2 my-2">
                         {availableCategories.map((cat) => cat.id && cat.title ? (
@@ -326,63 +370,54 @@ export default function NewHabit() {
                                 key={cat.id}
                                 type="button"
                                 onClick={() => toggleCategory(cat.id)}
-                                className=
-                                {`md:text-md border-[2px] border-black rounded-radius-btn px-2 py-1 
+                                className={`md:text-md border-[2px] border-black rounded-radius-btn px-2 py-1 
                                 ${selectedCategories.includes(cat.id) ? 'bg-tags' : 'bg-white'}`}
+                                aria-pressed={selectedCategories.includes(cat.id)}
                             >
                                 {cat.title}
                             </button>
                         ) : null
                         )}
                     </div>
+
                 </div>
 
+                {/* Cancel / Back + Save */}
                 <div className="flex justify-around mt-6">
-                    {/* Cancel Button - triggers AlertDialog */}
-                    <AlertDialog open={isCancelConfirmOpen} onOpenChange={setIsCancelConfirmOpen}>
-                        <AlertDialogTrigger asChild>
-                            <BaseButton
-                                variant="icon"
-                                type="button"
-                                className="bg-primary"
-                                onClick={handleCancel}
-                            >
+                    {/* Cancel Button - triggers ConfirmDialog */}
+                    <ConfirmDialog
+                        title="Discard new habit?"
+                        description="This will discard all unsaved changes."
+                        destructive
+                        confirmText="Discard"
+                        cancelText="Cancel"
+                        busyText="Discarding..."
+                        onConfirm={handleDiscard}
+                        trigger={
+                            <BaseButton variant="icon" type="button" className="bg-primary">
                                 <ChevronsLeft className="h-10 w-10" strokeWidth={1.5} />
                             </BaseButton>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Are you sure you want to discard this habit?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This action will discard all unsaved changes for this habit.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                    onClick={() => {
-                                        router.push('/protected/habits');
-                                    }}
-                                    className="text-black font-semibold bg-tertiary"
-                                >
-                                    Discard
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-
-
-
+                        }
+                    />
+                    {/* Save Button */}
                     <BaseButton
                         type="submit"
                         variant="icon"
                         className="bg-primary"
                         onClick={handleSave}
+                        disabled={isSubmitting}
+                        aria-busy={isSubmitting}
                     >
                         <Save className="h-10 w-10" strokeWidth={1.5} />
                     </BaseButton>
                 </div>
             </form>
+            {/* Unsaved Changes Guard */}
+            <UnsavedChangesGuard
+                when={isDirty && !isSubmitting}
+                title="Discard new habit?"
+                description="You have unsaved changes. If you leave this page, your changes will be lost."
+            />
         </div>
     );
 }

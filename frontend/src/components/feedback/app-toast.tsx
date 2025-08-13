@@ -1,7 +1,7 @@
 "use client";
 
 import type { ComponentType } from "react";
-import { CircleCheckBig, Info, AlertTriangle, XCircle } from "lucide-react";
+import { CircleCheckBig, Info, TriangleAlert, CircleX } from "lucide-react";
 import { toast } from "sonner";
 
 type Variant = "success" | "info" | "warning" | "error";
@@ -9,8 +9,8 @@ type Variant = "success" | "info" | "warning" | "error";
 const ICONS: Record<Variant, ComponentType<{ className?: string }>> = {
     success: CircleCheckBig,
     info: Info,
-    warning: AlertTriangle,
-    error: XCircle,
+    warning: TriangleAlert,
+    error: CircleX,
 };
 
 // Styling
@@ -29,7 +29,7 @@ type ShowArgs = {
     duration?: number;
     actionLabel?: string;
     onAction?: () => void;
-    id?: string | number; // ⬅ optional: dedupe-id
+    id?: string | number; // optional: dedupe-id
 };
 
 /**

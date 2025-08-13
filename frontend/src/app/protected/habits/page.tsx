@@ -1,26 +1,28 @@
 'use client'
 
-import { HabitWithCategories } from '@/types/habitWithCategories';
-import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
-import { BaseButton } from '@/components/ui/button/base-button/base-button';
-import { CategoryTag } from '@/components/category-tag/category-tag';
-import { Plus, Funnel } from 'lucide-react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { Plus, Funnel } from 'lucide-react';
+import { HabitWithCategories } from '@/types/habitWithCategories';
+import { Category } from '@/types/category';
 import { getAllHabits } from '@/lib/fetch/getAllHabits';
+import { BaseButton } from '@/components/ui/button/base-button/base-button';
+import { Dialog, DialogTrigger, DialogTitle, DialogContent, DialogFooter, DialogClose, DialogOverlay } from "@/components/ui/dialog/dialog";
 import { HabitActionModal } from '@/components/modals/habit-action-modal';
 import { InlineNotice } from '@/components/feedback/inline-notice';
-import { Category } from '@/types/category';
-import { Dialog, DialogTrigger, DialogTitle, DialogContent, DialogFooter, DialogClose } from "@/components/ui/dialog/dialog";
+import { appToast } from '@/components/feedback/app-toast';
+import { CategoryTag } from '@/components/category-tag/category-tag';
 
 export default function HabitsPage() {
+    const { data: session, status = 'loading' } = useSession();
 
-    const { data: session, status = 'loading' } = useSession(); // status added for better loading state
+    // states for habits, categories and filter
     const [habits, setHabits] = useState<HabitWithCategories[]>([]);
-    const [habitsToDisplay, setHabitsToDisplay] = useState<HabitWithCategories[]>([]); // state for filtered habits
-    const [isLoading, setIsLoading] = useState(true); // state for loading indicator
-    const [error, setError] = useState<string | null>(null); // state for error messages
-    const [refreshTrigger, setRefreshTrigger] = useState(0); // state to trigger re-fetching habits
+    const [habitsToDisplay, setHabitsToDisplay] = useState<HabitWithCategories[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
     const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
@@ -51,6 +53,9 @@ export default function HabitsPage() {
         }
     };
 
+    // toasts for error, info and warning messages
+    const { errorToast, infoToast, warningToast } = appToast();
+    const noHabitsToastShownRef = useRef(false);
 
     useEffect(() => {
         const fetchHabits = async () => {
@@ -70,30 +75,50 @@ export default function HabitsPage() {
             }
 
             // if authenticated, proceed to fetch habits
-            setIsLoading(true); // start loading state
-            setError(null); // reset any previous errors
+            setIsLoading(true);
+            setError(null);
 
             try {
                 const { data, error: apiError } = await getAllHabits(session.accessToken);
-                if (data) {
-                    // sort by created_at (descending order)
-                    const sorted = [...data].sort((a, b) =>
-                        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-                    );
-                    setHabits(sorted);
-                } else {
+
+                // API error while fetching habits -> errorToast
+                if (apiError) {
                     console.error("Error with loading habits:", apiError);
-                    setError(apiError?.message || "Habits could not nbe loaded.");
+                    setError(apiError?.message || "Habits could not be loaded.");
                     setHabits([]);
                     setHabitsToDisplay([]);
+                    errorToast("Failed to load habits", "Please try again later.", 4000, "habits-load-error");
+                } else {
+                    const sorted = (data ?? []).sort(
+                        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                    );
+                    setHabits(sorted);
+
+                    // no habits exist (yet) -> infoToast (once)
+                    if (sorted.length === 0 && !noHabitsToastShownRef.current) {
+                        infoToast("No habits yet", "Create your first habit to get started.", 4000, "habits-empty-info");
+                        noHabitsToastShownRef.current = true;
+                    }
                 }
-                // load categories
-                await fetchCategories();
+
+                // error while fetching categories -> warningToast
+                try {
+                    await fetchCategories();
+                } catch (catErr) {
+                    console.error("Error loading categories", catErr);
+                    warningToast?.("Some categories couldn’t be loaded");
+                }
+
             } catch (err: any) {
                 console.error("Unexpected error while loading habits:", err);
                 setError(err.message || "An unexpected error has occurred.");
+                setHabits([]);
+                setHabitsToDisplay([]);
+
+                // errorToast for unexpected errors
+                errorToast("Failed to load habits", "Please try again later.", 4000, "habits-load-error");
             } finally {
-                setIsLoading(false); // end loading state
+                setIsLoading(false);
             }
         };
 
@@ -103,15 +128,15 @@ export default function HabitsPage() {
     /* filter handling */
     useEffect(() => {
         if (selectedCategoryId === null) {
-            setHabitsToDisplay(habits); // Wenn kein Filter gesetzt, alle Habits anzeigen
+            setHabitsToDisplay(habits); // no filter = show all habits
         } else {
-            // Filtere die Habits basierend auf der ausgewählten Kategorie-ID
+            // filter habits by selected categoryId
             const filtered = habits.filter(habit =>
                 habit.categories.some(cat => cat.id === selectedCategoryId)
             );
             setHabitsToDisplay(filtered);
         }
-    }, [selectedCategoryId, habits]); // Abhängigkeiten: ausgewählte ID und alle Habits
+    }, [selectedCategoryId, habits]);
 
     // callback function to refresh the habit list after delete action
     const handleHabitDeleted = useCallback(() => {
@@ -128,13 +153,6 @@ export default function HabitsPage() {
         }
         setIsFilterDialogOpen(false); // close filter dialog if open
     };
-
-    // reset filter to show all habits
-    const handleResetFilter = () => {
-        setSelectedCategoryId(null);
-        setIsFilterDialogOpen(false);
-    };
-
 
     // display loading state or error messages
     if (status === 'loading' || isLoading) {
@@ -164,14 +182,15 @@ export default function HabitsPage() {
                 </Link>
                 {/* filter button & dialog */}
                 <Dialog open={isFilterDialogOpen} onOpenChange={setIsFilterDialogOpen}>
+                    <DialogOverlay className="bg-black/50 backdrop-blur-sm fixed inset-0 z-50" />
                     <DialogTrigger asChild>
                         <BaseButton variant="icon" className="bg-secondary">
                             <Funnel className="w-10 h-10" strokeWidth={1.5}></Funnel>
                         </BaseButton>
                     </DialogTrigger>
                     <DialogContent className="border-[2px] border-black rounded-radius backdrop-blur-sm max-w-md w-[90%] p-6">
-                        <DialogTitle>Filter by category</DialogTitle>
-                        <div className="flex flex-wrap gap-2 my-4 justify-center w-[90%] max-w-md md:w-[400px]">
+                        <DialogTitle className="mb-2 text-center">Filter by category</DialogTitle>
+                        <div className="mx-auto w-full max-w-md flex flex-wrap justify-center gap-2 my-2 text-center">
                             {/* "All" Button to reset filter */}
                             <button
                                 onClick={() => handleCategoryFilter(null)}
@@ -194,13 +213,11 @@ export default function HabitsPage() {
                             ))}
                         </div>
                         <DialogFooter className="mt-4 flex justify-end gap-2">
-                            <BaseButton
-                                type="button"
-                                variant="text"
-                                onClick={() => setIsFilterDialogOpen(false)}
-                            >
-                                Close
-                            </BaseButton>
+                            <DialogClose asChild>
+                                <BaseButton type="button" variant="text" className="border-[2px] border-black rounded-radius-btn bg-contrast">
+                                    Close
+                                </BaseButton>
+                            </DialogClose>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -225,7 +242,7 @@ export default function HabitsPage() {
                                 <li
                                     key={habit.id}
                                     className={`
-                                        flex justify-between items center px-4 py-2 relative
+                                        flex justify-between items-center px-4 py-2
                                         ${index % 2 === 1 ? 'bg-contrast' : ''} // every 2nd line: bg gray
                                     `}
                                 >
@@ -238,7 +255,7 @@ export default function HabitsPage() {
                                             ))}
                                         </div>
                                     </div>
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                    <div className="ml-4">
                                         <HabitActionModal habit={habit} onHabitDeleted={handleHabitDeleted} />
                                     </div>
 

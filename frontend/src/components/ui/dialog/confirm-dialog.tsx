@@ -1,56 +1,95 @@
-'use client'
+"use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "./dialog"
-import { BaseButton } from "../button/base-button/base-button"
-import { useState } from "react"
+import { useState } from "react";
+import {
+    AlertDialog,
+    AlertDialogTrigger,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogCancel,
+    AlertDialogAction,
+} from "@/components/ui/alert-dialog/alert-dialog";
+import { BaseButton } from "@/components/ui/button/base-button/base-button";
 
-
-/**
- * ConfirmDialog component displays a confirmation dialog when the user wants to perform an action that requires confirmation.
- * In this case it is used to confirm actions like deleting a habit or category.
- */
+type ConfirmDialogProps = {
+    
+    title: React.ReactNode;
+    description?: React.ReactNode;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm: () => Promise<void> | void;
+    trigger?: React.ReactNode;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    destructive?: boolean;
+    className?: string;
+    busyText?: string;
+};
 
 export function ConfirmDialog({
-    title = "Are you sure?",
+    title,
     description,
+    confirmText = "Confirm",
+    cancelText = "Cancel",
     onConfirm,
     trigger,
-}: {
-    title?: string
-    description?: string
-    onConfirm: () => void
-    trigger: React.ReactNode
-}) {
-    const [open, setOpen] = useState(false)
+    open,
+    onOpenChange,
+    destructive = false,
+    className = "",
+    busyText = "Please wait…",
+}: ConfirmDialogProps) {
+    const isControlled = open !== undefined;
+    const [internalOpen, setInternalOpen] = useState(false);
+    const actualOpen = isControlled ? (open as boolean) : internalOpen;
+    const setOpen = onOpenChange ?? setInternalOpen;
+
+    const [busy, setBusy] = useState(false);
+
+    const handleConfirm = async () => {
+        try {
+            setBusy(true);
+            await onConfirm();
+            setOpen(false);
+        } finally {
+            setBusy(false);
+        }
+    };
 
     return (
-        <>
-            <span onClick={() => setOpen(true)}>{trigger}</span>
+        <AlertDialog open={actualOpen} onOpenChange={setOpen}>
+            {trigger ? <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger> : null}
 
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="rounded-radius border-[2px] border-black backdrop-blur-sm max-w-sm">
-                    <DialogHeader>
-                        <DialogTitle>{title}</DialogTitle>
-                        {description && <p>{description}</p>}
-                    </DialogHeader>
-                    <DialogFooter className="mt-4 flex justify-end gap-2">
-                        <BaseButton type="button" variant="text" onClick={() => setOpen(false)}>
-                            Cancel
+            <AlertDialogContent className={`border-[2px] border-black rounded-radius backdrop-blur-sm max-w-sm mx-auto p-6 ${className}`}>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>{title}</AlertDialogTitle>
+                    {description ? (
+                        <AlertDialogDescription>{description}</AlertDialogDescription>
+                    ) : null}
+                </AlertDialogHeader>
+
+                <AlertDialogFooter>
+                    <AlertDialogCancel asChild>
+                        <BaseButton type="button" variant="text" className="bg-contrast text-black">
+                            {cancelText}
                         </BaseButton>
+                    </AlertDialogCancel>
+
+                    <AlertDialogAction asChild>
                         <BaseButton
                             type="button"
-                            variant="text"
-                            className="bg-tertiary text-white"
-                            onClick={() => {
-                                onConfirm()
-                                setOpen(false)
-                            }}
+                            onClick={handleConfirm}
+                            disabled={busy}
+                            className={destructive ? "bg-tertiary text-black" : "bg-contrast text-black"}
                         >
-                            Confirm
+                            {busy ? busyText : confirmText}
                         </BaseButton>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </>
-    )
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
 }
