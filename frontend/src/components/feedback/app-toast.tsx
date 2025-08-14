@@ -16,10 +16,10 @@ const ICONS: Record<Variant, ComponentType<{ className?: string }>> = {
 // Styling
 const BASE = "border-[2px] rounded-radius shadow-sm";
 const COLORS: Record<Variant, string> = {
-    success: "bg-[var(--completed)] text-green-700 border-green-700",
-    info: "bg-[var(--primary)] text-blue-700 border-blue-700",
-    warning: "bg-[var(--tertiary)] text-red-700 border-red-700",
-    error: "bg-[var(--tertiary)] text-red-700 border-red-700",
+    success: "bg-[var(--completed)] text-black border-black",
+    info: "bg-[var(--primary)] text-black border-black",
+    warning: "bg-[var(--tertiary)] text-black border-black",
+    error: "bg-[var(--tertiary)] text-black border-black",
 };
 
 type ShowArgs = {
@@ -53,26 +53,26 @@ export function appToast() {
         const VARIANT_STYLE: Record<Variant, React.CSSProperties> = {
             success: {
                 backgroundColor: "var(--completed)",
-                color: "#166534",           // green-700
-                border: "2px solid #166534",
+                color: "black",
+                border: "2px solid black",
                 borderRadius: "var(--radius, 0.375rem)",
             },
             info: {
                 backgroundColor: "var(--primary)",
-                color: "#1d4ed8",       // blue-700
-                border: "2px solid #1d4ed8",
+                color: "black",
+                border: "2px solid black",
                 borderRadius: "var(--radius, 0.375rem)",
             },
             warning: {
                 backgroundColor: "var(--tertiary)",
-                color: "#B91C1C",           // red-700
-                border: "2px solid #B91C1C",
+                color: "black",
+                border: "2px solid black",
                 borderRadius: "var(--radius, 0.375rem)",
             },
             error: {
                 backgroundColor: "var(--tertiary)",
-                color: "#B91C1C",           // red-700
-                border: "2px solid #B91C1C",
+                color: "black", 
+                border: "2px solid black",
                 borderRadius: "var(--radius, 0.375rem)",
             },
         };

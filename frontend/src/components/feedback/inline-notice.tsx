@@ -14,10 +14,10 @@ const ICONS = {
 
 const WRAPPER = "border-[2px] border-black rounded-radius shadow-sm";
 const VARIANTS: Record<NoticeVariant, string> = {
-    info: "bg-[var(--primary)] border-black text-blue-700",
-    success: "bg-[var(--completed)] border-black text-green-700",
-    warning: "bg-[var(--tertiary)] border-black text-red-700",
-    error: "bg-[var(--tertiary)] border-black text-red-700",
+    info: "bg-[var(--primary)] border-black text-black",
+    success: "bg-[var(--completed)] border-black text-black",
+    warning: "bg-[var(--tertiary)] border-black text-black",
+    error: "bg-[var(--tertiary)] border-black text-black",
 };
 
 export function InlineNotice({

@@ -1,13 +1,14 @@
-'use client'
+'use client';
 
-import { useForm } from 'react-hook-form'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
-import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { BaseButton } from '@/components/ui/button/base-button/base-button'
-import Link from 'next/link'
+import { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { BaseButton } from '@/components/ui/button/base-button/base-button';
+import { appToast } from '@/components/feedback/app-toast';
 
 const schema = z.object({
     email: z.string().email('Please enter a valid email'),
@@ -27,30 +28,49 @@ export default function LoginPage() {
 
     const router = useRouter()
     const [error, setError] = useState<string | null>(null)
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const { successToast, errorToast } = appToast()
+
+    const onInvalid = () => {
+        // react-hook-form validation failed before submit
+        errorToast('Invalid email or password')
+    }
 
     const onSubmit = async (data: LoginFormData) => {
-        const res = await signIn('credentials', {
-            redirect: false,
-            email: data.email,
-            password: data.password,
-            callbackUrl: '/protected/dashboard',
-        })
+        setError(null)
+        setIsSubmitting(true)
 
-        if (!res || !res.ok)  {
-            setError('Invalid email or password')
-            return
-        }
+        try {
+            const res = await signIn('credentials', {
+                redirect: false,
+                email: data.email,
+                password: data.password,
+                callbackUrl: '/protected/dashboard',
+            })
 
-        if (res.url) {
-            router.push(res.url)
+            if (!res || !res.ok) {
+                setError('Invalid email or password')
+                errorToast('Invalid email or password')
+                return
+            }
+
+            // show success and navigate
+            successToast('Login successful')
+            if (res.url) router.push(res.url)
+        } catch (e) {
+            setError('Unexpected error while logging in')
+            errorToast('Login failed')
+        } finally {
+            setIsSubmitting(false)
         }
     }
+
 
     return (
         <div className="flex justify-center">
             <section className="max-w-sm md:w-[340px] mx-3 my-4 border-[2px] border-border rounded-radius p-6 font-sans">
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+                <form noValidate onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-8">
                     {/* Email */}
                     <div className="flex flex-col">
                         <label className="text-sm text-center mb-2">Email</label>
@@ -79,7 +99,14 @@ export default function LoginPage() {
 
                     {/* Submit Button */}
                     <div className="flex justify-center">
-                        <BaseButton type="submit" variant="text" className="mt-5 mb-5">
+                        <BaseButton 
+                            type="submit" 
+                            variant="text" 
+                            className="mt-5 mb-5"
+                            disabled={isSubmitting}
+                            aria-busy={isSubmitting}
+                        >
+
                             Login
                         </BaseButton>
                     </div>

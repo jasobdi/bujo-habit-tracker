@@ -1,12 +1,13 @@
-'use client'
+'use client';
 
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { BaseButton } from "@/components/ui/button/base-button/base-button"
-import Link from "next/link"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { BaseButton } from "@/components/ui/button/base-button/base-button";
+import { appToast } from "@/components/feedback/app-toast";
 
 const schema = z.object({
     username: z
@@ -37,9 +38,16 @@ export default function RegisterPage() {
 
     const router = useRouter()
     const [error, setError] = useState<string | null>(null)
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const { successToast, errorToast } = appToast()
+
+    const onInvalid = () => {
+        errorToast('Form is incomplete')
+    }
 
     const onSubmit = async (data: FormData) => {
         setError(null)
+        setIsSubmitting(true)
 
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register`, {
@@ -48,26 +56,31 @@ export default function RegisterPage() {
                 body: JSON.stringify(data),
             })
 
-            const result = await res.json()
+            const result = await res.json().catch(() => ({} as any))
 
             if (!res.ok) {
-                setError(result.message || 'Registration failed')
+                const msg = result?.message || 'Registration failed'
+                setError(msg)
+                errorToast('Registration failed')
                 return
             }
 
+            successToast('Registration successful')
             reset()
             router.push('/public/login')
         } catch {
             setError('An unexpected error occurred')
+            errorToast('Registration failed')
+        } finally {
+            setIsSubmitting(false)
         }
     }
-
 
     return (
         <div className="flex justify-center">
             <section className="max-w-sm md:w-[340px] mx-3 my-4 border-[2px] border-border rounded-[15px] p-6 font-sans">
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <form noValidate onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-6">
                     {/* Username */}
                     <div className="flex flex-col">
                         <label className="text-sm text-center mb-2">Username</label>
@@ -109,7 +122,12 @@ export default function RegisterPage() {
 
                     {/* Submit Button */}
                     <div className="flex justify-center">
-                        <BaseButton variant="text" className="mt-5 mb-5">
+                        <BaseButton 
+                            variant="text" 
+                            className="mt-5 mb-5"
+                            disabled={isSubmitting}
+                            aria-busy={isSubmitting}
+                        >
                             Register
                         </BaseButton>
                     </div>
@@ -129,7 +147,5 @@ export default function RegisterPage() {
                 </p>
             </section>
         </div>
-
-
     )
 }
