@@ -1,10 +1,14 @@
 'use client'
 
 import { signOut } from 'next-auth/react'
-import { BaseButton } from '@/components/ui/button/base-button/base-button'
+import { BaseButton } from '../ui/button/base-button/base-button'
+import { appToast } from '../feedback/app-toast'
 
 export function LogoutButton() {
+    const { successToast } = appToast()
+
     const handleLogout = async () => {
+        successToast("Logged out successfully")
         await signOut({ callbackUrl: '/public/login' })
     }
 

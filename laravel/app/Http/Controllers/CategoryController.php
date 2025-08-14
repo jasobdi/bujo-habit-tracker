@@ -110,7 +110,7 @@ class CategoryController extends Controller
         }
 
         // check if category is still in use
-        $isUsed = $category->habits()->exists() || $category->journals()->exists();
+        $isUsed = $category->habits()->exists();
 
         if ($isUsed) {
             return response()->json([

@@ -16,6 +16,7 @@ const schema = z.object({
         .regex(/^[A-Za-zÄÖÜäöüß\s]+$/, 'No special characters allowed'),
     email: z.string().email('Email is invalid'),
     // password is optional, but if provided, must meet the criteria
+    // for security reasons, the password will not be shown in the form
     password: z
         .string()
         .min(8, 'Password must contain min. 8 characters')
@@ -32,9 +33,10 @@ type FormData = z.infer<typeof schema>
 type ProfileEditFormProps = {
     initialData: { username: string | null | undefined; email: string | null | undefined };
     onUpdateSuccess: () => void;
+    onInvalid?: () => void;
 };
 
-export function ProfileEditForm({ initialData, onUpdateSuccess }: ProfileEditFormProps) {
+export function ProfileEditForm({ initialData, onUpdateSuccess, onInvalid }: ProfileEditFormProps) {
     const { data: session } = useSession();
     const [showPassword, setShowPassword] = useState(false);
     const {
@@ -51,6 +53,11 @@ export function ProfileEditForm({ initialData, onUpdateSuccess }: ProfileEditFor
     })
 
     const [error, setError] = useState<string | null>(null)
+
+    const onFormInvalid = () => {
+        // Tell parent to show the toast
+        onInvalid?.();
+    };
 
     const onSubmit = async (data: FormData) => {
         setError(null)
@@ -82,7 +89,7 @@ export function ProfileEditForm({ initialData, onUpdateSuccess }: ProfileEditFor
     return (
         <div className="flex justify-center">
             <section className="max-w-sm md:w-[340px] mx-2 my-2 p-4 font-sans">
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+                <form noValidate onSubmit={handleSubmit(onSubmit, onFormInvalid)} className="space-y-8">
                     {/* Username */}
                     <div className="flex flex-col">
                         <label className="text-sm text-center font-bold mb-3">Username</label>
@@ -117,7 +124,6 @@ export function ProfileEditForm({ initialData, onUpdateSuccess }: ProfileEditFor
                             <input
                                 type={showPassword ? "text" : "password"}
                                 {...register("password")}
-                                // extra Platz rechts fürs Icon:
                                 className="h-10 w-full rounded-radius border-[2px] border-border bg-input px-3 pr-10 text-sm text-center"
                             />
 
@@ -125,7 +131,6 @@ export function ProfileEditForm({ initialData, onUpdateSuccess }: ProfileEditFor
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
                                 aria-label={showPassword ? "hide password" : "show password"}
-                                // Icon-Button im Feld, vertikal ausgerichtet:
                                 className="absolute inset-y-0 right-0 flex items-center px-3"
                             >
                                 {showPassword ? (
@@ -143,7 +148,7 @@ export function ProfileEditForm({ initialData, onUpdateSuccess }: ProfileEditFor
 
                     {/* Submit Button */}
                     <div className="flex justify-center">
-                        <BaseButton variant="icon" className="mt-2 mb-5 bg-primary">
+                        <BaseButton type="submit" variant="icon" className="mt-2 mb-5 bg-primary">
                             <Save className="h-10 w-10" strokeWidth={1.5} />
                         </BaseButton>
                     </div>
