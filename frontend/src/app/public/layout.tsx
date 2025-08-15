@@ -13,7 +13,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
     const getTitle = () => {
         if (pathname.includes('/login')) return 'Login'
         if (pathname.includes('/register')) return 'Register'
-        if (pathname.includes('/legal')) return 'Legal notice & Privacy policy'
+        if (pathname.includes('/legal')) return 'Legal & Privacy'
         return ''
     }
 
@@ -33,11 +33,11 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             </main>
 
             {/* FOOTER */}
-            <footer className="fixed bottom-0 left-0 w-full h-[12.5vh] pb-6 flex flex-col items-center justify-center text-center font-sans text-xs">
+            <footer className="fixed bottom-0 left-0 w-full h-[12.5vh] pb-6 flex flex-col items-center justify-center text-center font-sans text-xs bg-white">
             <div className="mb-5 h-[2px] w-full bg-black" />
                 <div className="flex flex-col items-center gap-4 md:flex-row md:justify-around md:w-full">
                     <Link href="/public/legal" className="underline">
-                        Legal notice & privacy policy
+                        Legal & Privacy
                     </Link>
                     <p>
                         © {new Date().getFullYear()} Janice Bader

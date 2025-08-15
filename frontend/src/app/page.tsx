@@ -26,8 +26,8 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="sm:h-[12.5vh] py-2 flex flex-col items-center justify-center text-center font-sans text-xs">
                 <div className="flex flex-col items-center gap-8 md:flex-row md:justify-evenly md:w-full">
-                    <Link href="/public/legal" className="hover:underline">
-                        Legal notice & privacy policy
+                    <Link href="/public/legal" className="underline">
+                        Legal & Privacy
                     </Link>
                     <p>
                         © {new Date().getFullYear()} Janice Bader

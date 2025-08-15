@@ -43,7 +43,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
                     <div className="mb-5 h-[2px] w-full bg-black" />
                     <div className="flex flex-col items-center gap-4 md:flex-row md:justify-around md:w-full">
                         <Link href="/public/legal" className="underline">
-                            Legal notice & privacy policy
+                            Legal & Privacy
                         </Link>
                         <p>
                             © {new Date().getFullYear()} Janice Bader
