@@ -47,17 +47,18 @@ export default function HabitsOverviewPage() {
     return (
         <div className="flex flex-col items-center justify-center h-auto overflow-x-hidden px-4 py-8 font-sans">
             <div className="flex flex-row gap-20 mb-8">
-                <Link href="/protected/dashboard">
-                    <BaseButton variant="icon" className="bg-primary">
-                        <ChevronsLeft className="w-10 h-10" strokeWidth={1.5}></ChevronsLeft>
+                    <BaseButton asChild variant="icon" className="bg-primary focus-visible:rounded-full" aria-label="Back to dashboard">
+                        <Link href="/protected/dashboard">
+                            <ChevronsLeft className="w-10 h-10" strokeWidth={1.5}></ChevronsLeft>
+                        </Link>
                     </BaseButton>
-                </Link>
-                <Link href="/protected/habits/new">
-                    <BaseButton variant="icon" className="bg-secondary">
-                        <Plus className="w-10 h-10" strokeWidth={1.5}></Plus>
+                
+                
+                    <BaseButton asChild variant="icon" className="bg-secondary focus-visible:rounded-full" aria-label="Create new habit">
+                        <Link href="/protected/habits/new">
+                            <Plus className="w-10 h-10" strokeWidth={1.5} />
+                        </Link>
                     </BaseButton>
-                </Link>
-
             </div>
 
             <HabitOverview

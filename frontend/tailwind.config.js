@@ -30,8 +30,6 @@ module.exports = {
           black: 'var(--black)',
           tags: 'var(--tags)',
           contrast: 'var(--contrast)',
-          popover: 'var(--popover)',
-          'popover-foreground': 'var(--popover-foreground)',
       },
       borderRadius: {
           radius: 'var(--radius)',

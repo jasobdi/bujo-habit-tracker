@@ -111,7 +111,7 @@ export function InlineNotice({
                 aria-label={`Dismiss ${variant} message`}
                 aria-expanded="true"
                 aria-controls={panelId}
-                className="flex-none -m-1 p-1 rounded-radius hover:opacity-80 transition-opacity"
+                className="flex-none -m-1 p-1 rounded-radius hover:opacity-80 transition-opacity focus-visible:rounded-full"
                 title="Close"
             >
                 <CircleX className="w-5 h-5" />

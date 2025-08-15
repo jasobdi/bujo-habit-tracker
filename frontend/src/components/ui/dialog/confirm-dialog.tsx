@@ -80,6 +80,7 @@ export function ConfirmDialog({
 
                     <AlertDialogAction asChild>
                         <BaseButton
+                            variant="text"
                             type="button"
                             onClick={handleConfirm}
                             disabled={busy}

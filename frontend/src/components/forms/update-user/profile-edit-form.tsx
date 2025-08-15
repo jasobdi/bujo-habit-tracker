@@ -148,7 +148,7 @@ export function ProfileEditForm({ initialData, onUpdateSuccess, onInvalid }: Pro
 
                     {/* Submit Button */}
                     <div className="flex justify-center">
-                        <BaseButton type="submit" variant="icon" className="mt-2 mb-5 bg-primary">
+                        <BaseButton type="submit" variant="icon" className="mt-2 mb-5 bg-primary focus-visible:rounded-full" aria-label="Save changes">
                             <Save className="h-10 w-10" strokeWidth={1.5} />
                         </BaseButton>
                     </div>

@@ -159,7 +159,7 @@ export function FrequencyFields<T extends string, S extends string>({
                                         key={day}
                                         type="button"
                                         variant="icon"
-                                        className={`bg-contrast w-8 h-8 md:w-10 md:h-10 p-2 text-xs md:text-sm ${(customDays as string[]).includes(day) ? 'bg-primary' : 'bg-contrast text-black'}`}
+                                        className={`bg-contrast w-8 h-8 md:w-10 md:h-10 p-2 text-xs md:text-sm ${(customDays as string[]).includes(day) ? 'bg-primary focus-visible:rounded-full' : 'bg-contrast text-black focus-visible:rounded-full'}`}
                                         onClick={() => toggleCustomDay(day)}
                                         aria-pressed={(customDays as string[]).includes(day)}
                                     >

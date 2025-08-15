@@ -173,25 +173,27 @@ export default function HabitsPage() {
                     Select a habit you would like to edit or delete by clicking on the three dots next to it.
                 </InlineNotice>
             </div>
-            {/** BUTTONS */}
+            {/** NEW HABIT BUTTON */}
             <div className="flex flex-row gap-20 mb-8">
-                <Link href="/protected/habits/new">
-                    <BaseButton variant="icon" className="bg-secondary">
-                        <Plus className="w-10 h-10" strokeWidth={1.5}></Plus>
+                
+                    <BaseButton asChild variant="icon" className="bg-secondary focus-visible:rounded-full" aria-label="Create new habit">
+                        <Link href="/protected/habits/new">
+                            <Plus className="w-10 h-10" strokeWidth={1.5} />
+                        </Link>
                     </BaseButton>
-                </Link>
-                {/* filter button & dialog */}
+                
+                {/* FILTER: BUTTON & DIALOG */}
                 <Dialog open={isFilterDialogOpen} onOpenChange={setIsFilterDialogOpen}>
                     <DialogOverlay className="bg-black/50 backdrop-blur-sm fixed inset-0 z-50" />
                     <DialogTrigger asChild>
-                        <BaseButton variant="icon" className="bg-secondary">
+                        <BaseButton variant="icon" className="bg-secondary focus-visible:rounded-full" aria-label="Filter by category">
                             <Funnel className="w-10 h-10" strokeWidth={1.5}></Funnel>
                         </BaseButton>
                     </DialogTrigger>
                     <DialogContent className="border-[2px] border-black rounded-radius backdrop-blur-sm max-w-md w-[90%] p-6">
                         <DialogTitle className="mb-2 text-center">Filter by category</DialogTitle>
                         <div className="mx-auto w-full max-w-md flex flex-wrap justify-center gap-2 my-2 text-center">
-                            {/* "All" Button to reset filter */}
+                            {/* "All" button to reset filter */}
                             <button
                                 onClick={() => handleCategoryFilter(null)}
                                 className={`md:text-md border-[2px] border-black rounded-radius-btn px-2 py-1 
@@ -223,13 +225,14 @@ export default function HabitsPage() {
                 </Dialog>
             </div>
 
-            <Link href="/protected/profile">
-                <BaseButton variant="text" className="bg-primary">
-                    See all categories
+            {/* button directiong to categories */}
+                <BaseButton asChild variant="text" className="bg-primary">
+                    <Link href="/protected/profile">
+                        See all categories
+                    </Link>  
                 </BaseButton>
-            </Link>
-
-            {/* Habit Container */}
+            
+            {/* HABIT CONTAINER */}
             <section className="w-full flex justify-center">
                 <div className="w-[90%] max-w-md md:w-[444px] border-[2px] mx-auto border-black rounded-radius overflow-hidden">
                     {habitsToDisplay.length === 0 ? (
@@ -246,19 +249,20 @@ export default function HabitsPage() {
                                         ${index % 2 === 1 ? 'bg-contrast' : ''} // every 2nd line: bg gray
                                     `}
                                 >
-
-                                    <div>
-                                        <span className="text-medium text-md font-bold" >{habit.title}</span>
+                                    {/* habit title & category tags */}
+                                    <div className="flex flex-col justify-center">
+                                        <span className="text-medium text-md font-bold">{habit.title}</span>
                                         <div className="flex flex-wrap gap-2 mt-2 ml-2">
                                             {habit.categories?.map((cat) => (
                                                 <CategoryTag key={cat.id} category={cat} />
                                             ))}
                                         </div>
                                     </div>
-                                    <div className="ml-4">
+
+                                    {/* trigger for habit actions dialog */}
+                                    <div className="flex items-center">
                                         <HabitActionModal habit={habit} onHabitDeleted={handleHabitDeleted} />
                                     </div>
-
                                 </li>
                             ))}
                         </ul>
@@ -266,7 +270,5 @@ export default function HabitsPage() {
                 </div>
             </section>
         </div>
-
-
     );
 }

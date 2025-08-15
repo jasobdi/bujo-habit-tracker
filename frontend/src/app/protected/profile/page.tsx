@@ -9,17 +9,7 @@ import { LogoutButton } from "@/components/logout-button/logout-button";
 import { ProfileEditForm } from "@/components/forms/update-user/profile-edit-form";
 import { appToast } from "@/components/feedback/app-toast";
 import { InlineNotice } from "@/components/feedback/inline-notice";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/dialog/confirm-dialog";
 
 type Category = {
     id: number;
@@ -41,7 +31,6 @@ export default function ProfilePage() {
     const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
     const [occupied, setOccupied] = useState(false); // check if category is assigned to habits
     const [usageLoading, setUsageLoading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -51,7 +40,7 @@ export default function ProfilePage() {
     /** USER */
     const [userData, setUserData] = useState<UserData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [isDeleteAccountAlertOpen, setIsDeleteAccountAlertOpen] = useState(false);
+
 
     /** ---------- Data-Fetcher ---------- */
     /** CATEGORIES */
@@ -287,7 +276,8 @@ export default function ProfilePage() {
 
             await fetchCategories();
             setSelectedCategory(null);
-            setIsDeleteAlertOpen(false);
+
+
             successToast("Category deleted");
         } catch (error) {
             console.error("Delete failed:", error);
@@ -320,8 +310,6 @@ export default function ProfilePage() {
         } catch (error) {
             console.error("Error while deleting account:", error);
             errorToast("Failed to delete account");
-        } finally {
-            setIsDeleteAccountAlertOpen(false);
         }
     };
 
@@ -383,42 +371,58 @@ export default function ProfilePage() {
                 <p>Select a category to edit or delete.</p>
 
                 <div className="flex flex-row gap-4 md:gap-8 my-4">
-                    {/* create button */}
+                    {/* button: create category */}
                     <CategoryFormModal initialData={null} onSubmit={submitCreateCategory}>
                         <BaseButton
                             type="button"
-                            className={selectedCategory ? "bg-contrast" : "bg-secondary"}
+                            className={selectedCategory ? "bg-contrast" : "bg-secondary focus-visible:rounded-full"}
                             disabled={!!selectedCategory}
                             variant="icon"
+                            aria-label="Create new category"
                         >
                             <Plus className="w-10 h-10" strokeWidth={1.5} />
                         </BaseButton>
                     </CategoryFormModal>
 
-                    {/* update button */}
+                    {/* button: update category */}
                     <BaseButton
                         type="button"
-                        className={selectedCategory ? "bg-secondary" : "bg-contrast"}
+                        className={selectedCategory ? "bg-secondary focus-visible:rounded-full" : "bg-contrast"}
                         disabled={!selectedCategory}
                         onClick={() => setIsEditModalOpen(true)}
                         variant="icon"
+                        aria-label="Edit selected category"
                     >
                         <SquarePen className="w-10 h-10" strokeWidth={1.5} />
                     </BaseButton>
 
-                    {/* delete button */}
-                    <BaseButton
-                        type="button"
-                        variant="icon"
-                        className={selectedCategory && !occupied ? "bg-tertiary" : "bg-contrast"}
-                        disabled={!selectedCategory || occupied || isDeleting}
-                        onClick={() => {
-                            if (!occupied) setIsDeleteAlertOpen(true);
-                        }}
-                        aria-busy={isDeleting}
-                    >
-                        <Trash2 className="w-10 h-10" strokeWidth={1.5} />
-                    </BaseButton>
+                    {/* button: delete category via ConfirmDialog */}
+                    <ConfirmDialog
+                        title="Delete Category"
+                        description={
+                            selectedCategory
+                                ? `Are you sure you want to delete the category "${selectedCategory.title}"? This action cannot be undone.`
+                                : "Are you sure you want to delete this category?"
+                        }
+                        destructive
+                        confirmText={isDeleting ? "Deleting..." : "Delete"}
+                        cancelText="Cancel"
+                        busyText="Deleting..."
+                        onConfirm={handleDeleteCategory}
+                        trigger={
+                            <BaseButton
+                                type="button"
+                                variant="icon"
+                                className={selectedCategory && !occupied ? "bg-tertiary focus-visible:rounded-full" : "bg-contrast"}
+                                disabled={!selectedCategory || occupied || isDeleting}
+                                aria-busy={isDeleting}
+                                aria-label="Delete selected category"
+                            >
+                                <Trash2 className="w-10 h-10" strokeWidth={1.5} />
+                            </BaseButton>
+                        }
+                    />
+
                 </div>
 
                 {/* Inline notice for "category in use" */}
@@ -466,45 +470,6 @@ export default function ProfilePage() {
                         onOpenChange={setIsEditModalOpen}
                     />
                 )}
-
-                {/* Alert for deleting category */}
-                {isDeleteAlertOpen && selectedCategory && (
-                    <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
-                        <AlertDialogContent className="border-[2px] border-black rounded-radius backdrop-blur-sm max-w-sm mx-auto p-6">
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Category</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Are you sure you want to delete the category "{selectedCategory?.title}"?
-                                    This action cannot be undone.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel asChild>
-                                    <BaseButton
-                                        type="button"
-                                        variant="text"
-                                        className="bg-primary text-black"
-                                        onClick={() => setIsDeleteAlertOpen(false)}
-                                    >
-                                        Cancel
-                                    </BaseButton>
-                                </AlertDialogCancel>
-                                <AlertDialogAction asChild>
-                                    <BaseButton
-                                        type="button"
-                                        variant="text"
-                                        className="bg-tertiary text-black"
-                                        onClick={handleDeleteCategory}
-                                        disabled={isDeleting}
-                                        aria-busy={isDeleting}
-                                    >
-                                        Delete
-                                    </BaseButton>
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                )}
             </div>
 
             {/* SETTINGS */}
@@ -523,42 +488,20 @@ export default function ProfilePage() {
                 )}
 
                 {/* Alert for deleting account */}
-                <AlertDialog open={isDeleteAccountAlertOpen} onOpenChange={setIsDeleteAccountAlertOpen}>
-                    <AlertDialogTrigger asChild>
-                        <button
-                            className="underline text-md mb-8"
-                            onClick={() => setIsDeleteAccountAlertOpen(true)}
-                        >
+                <ConfirmDialog
+                    title="Delete Account"
+                    description="Are you sure you want to delete your account? This action is permanent and cannot be undone."
+                    destructive
+                    confirmText="Delete"
+                    cancelText="Cancel"
+                    busyText="Deleting..."
+                    onConfirm={handleDeleteAccount}
+                    trigger={
+                        <button className="underline text-md mb-8" type="button">
                             Delete Account
                         </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="border-[2px] border-black rounded-radius backdrop-blur-sm max-w-sm mx-auto p-6">
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Account</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Are you sure you want to delete your account? This action is permanent and
-                                cannot be undone.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel asChild>
-                                <BaseButton
-                                    type="button"
-                                    variant="text"
-                                    className="bg-primary text-black"
-                                    onClick={() => setIsDeleteAccountAlertOpen(false)}
-                                >
-                                    Cancel
-                                </BaseButton>
-                            </AlertDialogCancel>
-                            <AlertDialogAction asChild>
-                                <BaseButton type="button" variant="text" className="bg-tertiary text-black" onClick={handleDeleteAccount}>
-                                    Delete
-                                </BaseButton>
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                    }
+                />
             </div>
 
             {/* LOGOUT BUTTON */}

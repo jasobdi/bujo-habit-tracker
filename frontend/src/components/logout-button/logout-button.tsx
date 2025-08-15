@@ -16,7 +16,7 @@ export function LogoutButton() {
         <div className="flex justify-center">
             <BaseButton 
                 variant="text" 
-                className="bg-tertiary" 
+                className="bg-primary" 
                 onClick={handleLogout}
             >
                 Logout

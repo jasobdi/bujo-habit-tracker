@@ -394,7 +394,7 @@ export default function NewHabit() {
                         busyText="Discarding..."
                         onConfirm={handleDiscard}
                         trigger={
-                            <BaseButton variant="icon" type="button" className="bg-primary">
+                            <BaseButton variant="icon" type="button" className="bg-primary focus-visible:rounded-full" aria-label="Back to all habits">
                                 <ChevronsLeft className="h-10 w-10" strokeWidth={1.5} />
                             </BaseButton>
                         }
@@ -403,7 +403,8 @@ export default function NewHabit() {
                     <BaseButton
                         type="submit"
                         variant="icon"
-                        className="bg-primary"
+                        className="bg-primary focus-visible:rounded-full"
+                        aria-label="Save new habit"
                         onClick={handleSave}
                         disabled={isSubmitting}
                         aria-busy={isSubmitting}

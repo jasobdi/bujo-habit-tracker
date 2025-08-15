@@ -104,6 +104,7 @@ export function DashboardCalendar({ onDateSelect, isMobileView, habits, selected
                 defaultMonth={selectedDate}
                 fromYear={2024} // start year dropdown from 2024
                 toYear={2026} // end year dropdown 
+                navLayout="after"
                 onMonthChange={(month) => {
                     // on change of month the date is updated in the parent - so habits of new month are loaded
                     onDateSelect(month);
@@ -111,13 +112,13 @@ export function DashboardCalendar({ onDateSelect, isMobileView, habits, selected
                 styles={{
                     day: {
                         borderRadius: '9999px',
-                        padding: '2px', // optischer Abstand
+                        padding: '2px',
                         backgroundColor: 'transparent',
                     },
                     day_selected: {
                         border: '2px solid var(--black)',
                         borderRadius: '9999px',
-                        backgroundColor: 'transparent', // falls kein extra Hintergrund
+                        backgroundColor: 'transparent',
                     },
                     day_today: {
                         fontWeight: 700,

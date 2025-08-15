@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ChevronsLeft, Trash2, SquarePen, Ellipsis } from "lucide-react";
 import { deleteHabit } from "@/lib/fetch/deleteHabit";
 import { type Habit } from "@/types/habit";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogOverlay } from "../ui/dialog/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogOverlay, DialogTrigger } from "../ui/dialog/dialog";
 import { ConfirmDialog } from "../ui/dialog/confirm-dialog";
 import { BaseButton } from "../ui/button/base-button/base-button";
 import { appToast } from "../feedback/app-toast";
@@ -52,11 +52,19 @@ export function HabitActionModal({ habit, onHabitDeleted }: HabitActionModalProp
 
     return (
         <>
-            {/* Trigger for the main action modal */}
-            <Ellipsis onClick={() => setOpen(true)} className="cursor-pointer" />
-
+            
             {/* Main Action Modal */}
             <Dialog open={open} onOpenChange={setOpen}>
+                {/* Trigger to open Modal */}
+                <DialogTrigger asChild>
+                    <button
+                        type="button"
+                        className="p-2 focus-visible:outline-none focus-visible:ring-[4px] focus-visible:ring-amber-500"
+                        aria-label={`Open actions for ${habit.title}`}
+                    >
+                        <Ellipsis className="w-7 h-7" />
+                    </button>
+                </DialogTrigger>
                 <DialogOverlay className="bg-black/50 backdrop-blur-sm fixed inset-0 z-50" />
                 <DialogContent className="flex flex-col items-center w-auto border-black border-[2px] rounded-radius z-50">
                     <DialogHeader>
@@ -65,7 +73,7 @@ export function HabitActionModal({ habit, onHabitDeleted }: HabitActionModalProp
 
                     {/* Back Button */}
                     <div className="flex glex-row gap-4 mt-4">
-                        <BaseButton variant="icon" className="bg-primary focus-visible:rounded-full" onClick={() => setOpen(false)}>
+                        <BaseButton variant="icon" className="bg-primary focus-visible:rounded-full" onClick={() => setOpen(false)} aria-label="Back to all habits">
                             <ChevronsLeft className="w-10 h-10" strokeWidth={1.5} />
                         </BaseButton>
 
@@ -86,7 +94,7 @@ export function HabitActionModal({ habit, onHabitDeleted }: HabitActionModalProp
                             busyText="Deleting..."
                             onConfirm={handleDelete}
                             trigger={
-                                <BaseButton variant="icon" className="bg-tertiary focus-visible:rounded-full">
+                                <BaseButton variant="icon" className="bg-tertiary focus-visible:rounded-full" aria-label="Delete hbait">
                                     <Trash2 className="w-10 h-10" strokeWidth={1.5} />
                                 </BaseButton>
                             }

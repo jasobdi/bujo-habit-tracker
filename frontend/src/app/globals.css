@@ -3,8 +3,6 @@
 @tailwind utilities;
 @import 'react-day-picker/dist/style.css';
 
-
-
 :focus-visible {
   outline: 4px solid #f59e0b; /* amber-500 */
   outline-offset: 2px;
@@ -15,10 +13,10 @@
 
   /* layout-base colors */
   --background: #ffffff;
-  --foreground: #000000; /* font */
+  --foreground: #000000; /* text */
 
   /* button-colors */
-  --primary: #BEECF8;         /* default - information (blue) */
+  --primary: #BEECF8;         /* default - informatio & navigation (blue) */
   --secondary: #F5C272;       /* actions (orange) */
   --tertiary: #F1A8A8;        /* attention (red) */
   --completed: #C5F8BE;       /* completed (green) */
@@ -42,12 +40,6 @@
   /* border-radius (rounded) */
   --radius-btn: 10px;
   --radius: 15px;
-
-  /* Popovers */
-  --popover: var(--background);
-  --popover-foreground: var(--foreground); 
-
-  
 }
 
 body {

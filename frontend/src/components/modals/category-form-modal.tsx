@@ -156,8 +156,9 @@ export function CategoryFormModal({
                             <BaseButton
                                 type="button"
                                 variant="icon"
-                                className="bg-primary"
+                                className="bg-primary focus-visible:rounded-full"
                                 onClick={() => handleClose(false)}
+                                aria-label="Back to categories"
                             >
                                 <ChevronsLeft className="h-10 w-10" strokeWidth={1.5} />
                             </BaseButton>
@@ -165,8 +166,9 @@ export function CategoryFormModal({
                             <BaseButton
                                 type="submit"
                                 variant="icon"
-                                className="bg-primary"
+                                className="bg-primary focus-visible:rounded-full"
                                 disabled={isSubmitting}
+                                aria-label="Save"
                             >
                                 <Save className="h-10 w-10" strokeWidth={1.5} />
                             </BaseButton>

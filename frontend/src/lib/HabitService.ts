@@ -22,12 +22,6 @@ export class HabitService {
     const isCompleted = completions.some(
       (c) => c.habit_id === habit.id && this.isSameDay(new Date(c.date), dueDate)
     );
-
-    if (isCompleted) {
-      console.log(`✅ Completed habit ${habit.title} on ${dueDate.toLocaleDateString('sv-SE')}`);
-    } else {
-      console.log(`❌ NOT completed habit ${habit.title} on ${dueDate.toLocaleDateString('sv-SE')}`);
-    }
     return isCompleted;
   }
 

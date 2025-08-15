@@ -160,6 +160,7 @@ export default function DashboardClientWrapper({ token, initialDate }: Dashboard
                 </div>
 
                 {/* RIGHT - HabitOverview & Habits-Button */}
+                {/* hidden on mobile - separate on OverviewPage */}
                 <div className="md:self-start">
                     <div className="hidden md:block flex-1 p-2">
                         <div className="min-h-[320px]">

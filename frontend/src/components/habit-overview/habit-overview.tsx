@@ -179,12 +179,12 @@ export default function HabitOverview({
     return (
         <section>
             {/** Mobile: Date-Navigation */}
-            <div className="md:hidden flex items-center justify-center space-x-4 mb-4">
-
+            <div className="md:hidden flex items-center justify-center space-x-4 mb-4 w-full max-w-md mx-auto"> {/** HIDE ON DESKTOP AFTER TESTING md:hidden */}
                 <button onClick={handlePrevious}>
                     <ChevronLeft className="w-10 h-10" />
                 </button>
-                <span className="text-lg">
+
+                <span className="text-lg min-w-[180px] text-center">
                     {selectedDate?.toLocaleDateString('en-GB', {
                         weekday: 'short',
                         day: 'numeric',

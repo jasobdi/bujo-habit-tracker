@@ -12,9 +12,8 @@ import {
 } from "@/components/ui/select";
 
 /**
- * DashboardCalendar
- * Displays the calendar with custom month/year dropdown.
- * On day selection, routes to habit overview with selected date.
+ * CalendarDropdown component
+ * Displays a custom month/year dropdown in the DashboardCalendat.
  */
 export function CalendarDropdown(props: DropdownProps) {
     const { options, value, onChange } = props;
@@ -36,7 +35,7 @@ export function CalendarDropdown(props: DropdownProps) {
             <SelectTrigger>
                 <SelectValue placeholder="Select..." />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
                 <SelectGroup>
                     {options?.map((option) => (
                         <SelectItem
