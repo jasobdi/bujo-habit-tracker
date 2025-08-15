@@ -25,8 +25,6 @@ export async function getHabitCompletionsByDay({
         cache: "no-store",
     });
 
-    // console.log("getHabitCompletionsByDay called with:", data);
-
     if (!data) {
         console.error("No data returned from getHabitCompletionsByDay", { error, statusCode });
         return { data: [], error, statusCode };

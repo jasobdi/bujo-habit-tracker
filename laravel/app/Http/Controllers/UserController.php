@@ -14,7 +14,7 @@ class UserController extends Controller
         return Auth::user();
     }
 
-    // no create method -> is very similar to register in AuthController
+    // no create method -> it is "register" in AuthController
 
     // SHOW
     public function show($id)

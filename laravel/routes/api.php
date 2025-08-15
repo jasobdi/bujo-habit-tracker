@@ -7,7 +7,6 @@ use App\Http\Controllers\HabitController;
 use App\Http\Controllers\JournalController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HabitCompletionController;
-use App\Models\User;
 
 Route::prefix('api')->group(function () {
 
@@ -48,7 +47,6 @@ Route::prefix('api')->group(function () {
         Route::delete('/habit-completions', [HabitCompletionController::class, 'destroy']);
         Route::get('/habit-completions/daily', [HabitCompletionController::class, 'daily']);
         Route::get('/habit-completions/monthly', [HabitCompletionController::class, 'monthly']);
-        Route::get('habit-completions/date', [HabitCompletionController::class, 'date']);
 
         // JOURNALS
         Route::get('/journals', [JournalController::class, 'index']);
