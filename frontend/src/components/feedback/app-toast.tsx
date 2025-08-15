@@ -79,7 +79,7 @@ export function appToast() {
 
         toast(title, {
             id,
-            description,
+            description: description ? <span className="text-black">{description}</span> : undefined,
             duration,
             className: `${BASE} ${COLORS[variant]}`,
             style: VARIANT_STYLE[variant],

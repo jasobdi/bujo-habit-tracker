@@ -84,7 +84,7 @@ export default function HabitOverview({
                 // No habits exist for selected date -> infoToast (once per date)
                 if (enriched.length === 0 && !infoShownRef.current) {
                     const id = `overview-no-habits-${initialDate.toLocaleDateString('sv-SE')}`;
-                    infoToast("No habits for this day", "Create a habit to get started.", 3500, id);
+                    infoToast("No habits for this day", undefined, 3500, id);
                     infoShownRef.current = true;
                 }
                 // API error while fetching habits -> errorToast

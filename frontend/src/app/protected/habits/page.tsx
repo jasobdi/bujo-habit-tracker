@@ -96,7 +96,7 @@ export default function HabitsPage() {
 
                     // no habits exist (yet) -> infoToast (once)
                     if (sorted.length === 0 && !noHabitsToastShownRef.current) {
-                        infoToast("No habits yet", "Create your first habit to get started.", 4000, "habits-empty-info");
+                        infoToast("No habits yet.", undefined , 4000, "habits-empty-info");
                         noHabitsToastShownRef.current = true;
                     }
                 }

@@ -79,7 +79,7 @@ export default function DashboardClientWrapper({ token, initialDate }: Dashboard
                 if (error) {
                     console.error("Error loading calendar habits:", error);
                     // error message to user
-                    errorToast("Failed to load habits", "Please try again later.", 4000, "calendar-load-error");
+                    errorToast("Failed to load habits, please try again later", undefined, 4000, "calendar-load-error");
                     setHabitsForCalendar([]);
                     return;
                 }
@@ -89,7 +89,7 @@ export default function DashboardClientWrapper({ token, initialDate }: Dashboard
                 // no habits exist for the selected month
                 if (list.length === 0 && !noHabitsToastShownRef.current) {
                     // info message to user
-                    infoToast("No habits yet", "Create your first habit to get started.", 4000, "no-habits-info");
+                    infoToast("No habits yet.", undefined, 4000, "no-habits-info");
                     noHabitsToastShownRef.current = true;
                 }
             } catch (e) {
