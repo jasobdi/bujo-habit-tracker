@@ -2,17 +2,15 @@
 
 namespace App\Models;
 
-use Bootstrap\Column;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\User as Authenticatable; // replaces Model
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Database\Eloquent\Factories\HasFactory; // for testing purposes
 use Illuminate\Notifications\Notifiable; // send messages to users (maybe later)
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable // now inherits from Authenticatable instead of Model
 {
-    use HasFactory, Notifiable, HasApiTokens; 
+    use Notifiable, HasApiTokens; 
 
     protected $fillable = [
         'email',

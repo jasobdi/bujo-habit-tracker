@@ -3,6 +3,12 @@
 import { Info, CircleCheckBig, TriangleAlert, CircleX } from "lucide-react";
 import { useState, useEffect, useId } from "react";
 
+/**
+ * InlineNotice component displays a notice message that can be minimized or expanded.
+ * It supports different variants (info, success, warning, error) 
+ * and can store its state in localStorage.
+ */
+
 type NoticeVariant = "info" | "success" | "warning" | "error";
 
 const ICONS = {

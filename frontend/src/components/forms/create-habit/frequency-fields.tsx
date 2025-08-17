@@ -1,10 +1,15 @@
 'use client'
 
-import { BaseButton } from "@/components/ui/button/base-button/base-button";
-import { DatePickerDialog } from "@/components/ui/dialog/date-picker-dialog";
+import { BaseButton } from "../../ui/button/base-button/base-button";
+import { DatePickerDialog } from "../..//ui/dialog/date-picker-dialog";
 import { habitCommonFrequencies, HabitCommonFrequency, habitCustomDays, HabitCustomDays } from "@/types/habit";
 import { HabitEndType } from "@/lib/validation/habitSchema";
 import { format } from "date-fns";
+
+/**
+ * FrequencyFields component allows users to set the frequency of a habit.
+ * In this case it is used in the NewHabit form and the EditHabit form.
+ */
 
 type Props<T extends string, S extends string> = {
     frequency: T | null;
@@ -29,11 +34,6 @@ type Props<T extends string, S extends string> = {
     repeatCountError?: string;
     repeatIntervalError?: string;
 };
-
-/**
- * FrequencyFields component allows users to set the frequency of a habit.
- * In this case it is used in the NewHabit form and the EditHabit form.
- */
 
 export function FrequencyFields<T extends string, S extends string>({
     frequency,

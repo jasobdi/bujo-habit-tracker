@@ -1,6 +1,10 @@
-'use server'
+'use server';
 
-import { setTokenCookie } from '@/lib/server/auth-cookies'
+import { setTokenCookie } from '@/lib/server/auth-cookies';
+
+/**
+ * Handles user login by sending credentials to the API and setting the authentication token cookie.
+ */
 
 export async function loginAction(data: {
     email: string

@@ -1,13 +1,18 @@
-'use client'
+'use client';
 
-import { useForm } from "react-hook-form"
-import { Save } from "lucide-react"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
-import { BaseButton } from "@/components/ui/button/base-button/base-button"
-import { useSession } from "next-auth/react"
-import { Eye, EyeOff } from "lucide-react"
+import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { useForm } from "react-hook-form";
+import { Save, Eye, EyeOff } from "lucide-react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { BaseButton } from "@/components/ui/button/base-button/base-button";
+
+/**
+ * ProfileEditForm allows a user to update their profile information,
+ * including username, email, and password.
+ */
+
 
 const schema = z.object({
     username: z

@@ -1,5 +1,9 @@
 import * as React from "react";
 
+/**
+ * Logo component contains the SVG data of the logo.
+ */
+
 export function Logo(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg

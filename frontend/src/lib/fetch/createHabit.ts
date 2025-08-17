@@ -1,3 +1,7 @@
+/**
+ * Function to create a new habit by sending a POST request to the API.
+ */
+
 export async function createHabit(data: any, token: string) {
     const res = await fetch('http://localhost:8000/api/habits', {
         method: 'POST',

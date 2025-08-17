@@ -2,6 +2,14 @@ import React from 'react';
 import { Habit } from '@/types/habit';
 import { DashboardCalendar } from '../ui/calendar/dashboard-calendar';
 
+/**
+ * HabitCalendar component displays a calendar view of habits,
+ * showing habit completion for each day.
+ * It allows users to select a date and view habits for that date.
+ * It includes a legend to explain the color coding of habit completion.
+ * It is used in the DashboardClientWrapper component.
+ */
+
 type HabitCalendarProps = {
     habits: Habit[] | null;
     initialDate: Date;

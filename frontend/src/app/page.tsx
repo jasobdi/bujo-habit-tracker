@@ -1,16 +1,20 @@
-// LANDING PAGE
-import { Logo } from "../components/ui/logo/logo"
-import { BaseButton } from "@/components/ui/button/base-button/base-button"
-import Link from "next/link"
-import { cn } from "@/lib/utils"
+import Link from "next/link";
+import { Logo } from "@/components/ui/logo/logo";
+import { BaseButton } from "@/components/ui/button/base-button/base-button";
+import { cn } from "@/lib/utils";
+
+/**
+ * LandingPage is the main entry point of the application.
+ * It contains the logo, title, start button (directing to log-in), register-link and footer.
+ */
 
 export default function LandingPage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-between bg-primary px-4 py-6">
-      {/* Logo & Titel */}
+      {/* Logo & Title */}
       <div className="flex flex-col items-center mt-10">
         <Logo className="w-[200px] h-[200px]" />
-        <h1 className="text-3xl mt-6 font-hand text-center">Bullet Journal & Habit Tracker</h1>
+        <h1 className="text-3xl mt-6 font-hand text-center">Habit Tracker</h1>
       </div>
 
       {/* Start Button & Link */}

@@ -7,6 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
+/**
+ * JournalController handles CRUD operations for user journals.
+ * 
+ * At the moment Journals is not used or displayed in the frontend as it is not part of the MVP.
+ * In the future, it will be used to store daily journal entries for users.
+ * Same as for habits, categories can be used to categorize journal entries.
+ */
+
 class JournalController extends Controller
 {
     // READ ALL

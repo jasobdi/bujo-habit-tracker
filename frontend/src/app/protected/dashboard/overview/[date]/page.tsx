@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useRouter, useParams } from 'next/navigation';
 import { useState, useEffect, useMemo } from 'react';
@@ -8,6 +8,11 @@ import { ChevronsLeft, Plus } from 'lucide-react';
 import { BaseButton } from '@/components/ui/button/base-button/base-button';
 import { HabitOverview } from '@/components/habit-overview/habit-overview';
 
+/**
+ * HabitsOverviewPage displays an overview of habits for a specific date (selected date).
+ * It allows users to navigate back to the dashboard or to create a new habit.
+ * This page is only used for the mobile view.
+ */
 
 export default function HabitsOverviewPage() {
     const router = useRouter();
@@ -47,13 +52,14 @@ export default function HabitsOverviewPage() {
     return (
         <div className="flex flex-col items-center justify-center h-auto overflow-x-hidden px-4 py-8 font-sans">
             <div className="flex flex-row gap-20 mb-8">
+                    {/* BACK BUTTON */}
                     <BaseButton asChild variant="icon" className="bg-primary focus-visible:rounded-full" aria-label="Back to dashboard">
                         <Link href="/protected/dashboard">
                             <ChevronsLeft className="w-10 h-10" strokeWidth={1.5}></ChevronsLeft>
                         </Link>
                     </BaseButton>
                 
-                
+                     {/* CREATE NEW HABIT BUTTON */}
                     <BaseButton asChild variant="icon" className="bg-secondary focus-visible:rounded-full" aria-label="Create new habit">
                         <Link href="/protected/habits/new">
                             <Plus className="w-10 h-10" strokeWidth={1.5} />
@@ -61,6 +67,7 @@ export default function HabitsOverviewPage() {
                     </BaseButton>
             </div>
 
+             {/* HABIT OVERVIEW COMPONENT */}
             <HabitOverview
                 initialDate={selectedDate}
                 isMobileView={true}

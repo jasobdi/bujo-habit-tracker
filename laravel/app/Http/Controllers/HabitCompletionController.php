@@ -6,6 +6,11 @@ use Illuminate\Http\Request;
 use App\Models\HabitCompletion;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * HabitCompletionController handles habit completion actions
+ * This includes marking habits as completed and unmarking them.
+ */
+
 class HabitCompletionController extends Controller
 {
     // Mark as completed & safe

@@ -1,4 +1,5 @@
-import { z } from 'zod/v4'
+import { z } from 'zod/v4';
+
 
 // this is separated from register/page.tsx for reusability
 export const registerSchema = z.object({

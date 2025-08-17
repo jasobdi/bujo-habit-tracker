@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { ChevronsLeft, Trash2, SquarePen, Ellipsis } from "lucide-react";
@@ -9,16 +9,16 @@ import { ConfirmDialog } from "../ui/dialog/confirm-dialog";
 import { BaseButton } from "../ui/button/base-button/base-button";
 import { appToast } from "../feedback/app-toast";
 
+/**
+ * HabitActionModal component displays a dialog with actions for a habit.
+ * In this case it is used to go back, edit or delete a habit on the habits page.
+ * It is opened by clicking the action button (ellipsis icon).
+ */
+
 interface HabitActionModalProps {
     habit: Habit;
     onHabitDeleted: () => void; // callback function to refresh habit list
 }
-
-/**
- * 
- * HabitActionModal component displays a modal with actions for a habit.
- * In this case it is used to go back, edit or delete a habit on the habits page.
- */
 
 export function HabitActionModal({ habit, onHabitDeleted }: HabitActionModalProps) {
     const [open, setOpen] = useState(false)
@@ -53,7 +53,7 @@ export function HabitActionModal({ habit, onHabitDeleted }: HabitActionModalProp
     return (
         <>
             
-            {/* Main Action Modal */}
+            {/* Modal */}
             <Dialog open={open} onOpenChange={setOpen}>
                 {/* Trigger to open Modal */}
                 <DialogTrigger asChild>
@@ -99,8 +99,6 @@ export function HabitActionModal({ habit, onHabitDeleted }: HabitActionModalProp
                                 </BaseButton>
                             }
                         />
-
-
                     </div>
                 </DialogContent>
             </Dialog>

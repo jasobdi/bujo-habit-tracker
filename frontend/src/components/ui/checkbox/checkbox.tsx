@@ -1,10 +1,14 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
-import { CheckIcon } from "lucide-react"
+import * as React from "react";
+import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
+import { CheckIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-import { cn } from "@/lib/utils"
+/**
+ * Checkbox component is based on the Radix UI CheckboxPrimitive component.
+ * It provides a checkbox with custom styles and behavior.
+ */
 
 function Checkbox({
   className,

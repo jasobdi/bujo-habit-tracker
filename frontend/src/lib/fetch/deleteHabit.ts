@@ -1,4 +1,6 @@
-import { fetchApi } from "../api/fetchApi";
+/**
+ * Function to delete a habit by sending a DELETE request to the API.
+ */
 
 interface DeleteHabitParams {
     habit_id: number;

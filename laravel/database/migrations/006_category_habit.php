@@ -3,6 +3,13 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Migration for creating the category_habit pivot table.
+ * 
+ * This table is used to link habits and categories.
+ * Each habit can belong to multiple categories, and each category can have multiple habits.
+ */
+
 
 return new class extends Migration
 {

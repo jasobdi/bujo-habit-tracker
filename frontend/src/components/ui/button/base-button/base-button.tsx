@@ -3,9 +3,11 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
-/** BaseButton component is the base to all the Buttons in this project.
+/** 
+ * BaseButton component is the base to all the Buttons in this project.
  * It uses class-variance-authority to handle variants and styles.
  * It can be used as a standalone button or as a base for other buttons.
+ * It is based on the Shadcn UI Button component.
  */
 
 const buttonVariants = cva(

@@ -1,3 +1,7 @@
+/**
+ * This file contains the helper function performLogin to do the login.
+ */
+
 export async function performLogin(data: {
     email: string
     password: string

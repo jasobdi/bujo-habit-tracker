@@ -11,8 +11,14 @@ import {
     AlertDialogFooter,
     AlertDialogCancel,
     AlertDialogAction,
-} from "@/components/ui/alert-dialog/alert-dialog";
-import { BaseButton } from "@/components/ui/button/base-button/base-button";
+} from "../alert-dialog/alert-dialog";
+import { BaseButton } from "../button/base-button/base-button";
+
+/**
+ * ConfirmDialog component
+ * Displays a confirmation dialog with customizable title, description, and buttons.
+ * It can be triggered by a button or other element.
+ */
 
 type ConfirmDialogProps = {
     

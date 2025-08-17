@@ -4,6 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Migration for creating the 'users' table.
+ * This table stores user information such as email, username, password, and date format preference.
+ * Date format is not yet used in the app, but it is planned to be implemented in the future.
+ */
+
 return new class extends Migration
 {
     public function up()  // creates Table 'users' in Database

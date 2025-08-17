@@ -1,5 +1,10 @@
-import { fetchApi } from "../api/fetchApi"; // fetchApi contains all the logic for making API calls
+import { fetchApi } from "../api/fetchApi";
 import { Habit } from "../../types/habit"; 
+
+/**
+ * Function to display all habits for the selected month by sending a GET request to the API.
+ * This function is used to show the habit completions on the DashboardCalendar component.
+ */
 
 interface GetHabitsByMonthParams {
     year: number;

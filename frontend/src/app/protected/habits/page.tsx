@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { useSession } from 'next-auth/react';
@@ -13,6 +13,11 @@ import { HabitActionModal } from '@/components/modals/habit-action-modal';
 import { InlineNotice } from '@/components/feedback/inline-notice';
 import { appToast } from '@/components/feedback/app-toast';
 import { CategoryTag } from '@/components/category-tag/category-tag';
+
+/**
+ * HabitsPage displays a list of all habits created by the current user,
+ * the habits can be filtered by categories
+ */
 
 export default function HabitsPage() {
     const { data: session, status = 'loading' } = useSession();
@@ -225,7 +230,7 @@ export default function HabitsPage() {
                 </Dialog>
             </div>
 
-            {/* button directiong to categories */}
+            {/* BUTTON DIRECTING TO CATEGORIES */}
                 <BaseButton asChild variant="text" className="bg-primary">
                     <Link href="/protected/profile">
                         See all categories

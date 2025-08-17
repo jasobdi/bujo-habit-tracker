@@ -1,4 +1,8 @@
-"use server"
+'use server';
+
+/**
+ * Handles user registration by sending user data to the API.
+*/
 
 export async function registerAction(data: {
     email: string

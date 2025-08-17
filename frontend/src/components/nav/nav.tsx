@@ -1,7 +1,12 @@
-'use client'
+'use client';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, SquareCheckBig, User } from 'lucide-react';
+
+/**
+ * Nav component provides a bottom navigation bar with links to Dashboard, Habits, and Profile.
+ * It highlights the active page based on the current pathname.
+ */
 
 export function Nav(){
     const pathname = usePathname();

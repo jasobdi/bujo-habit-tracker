@@ -1,6 +1,10 @@
-'use client'
+'use client';
 
 import { Category } from "../../types/category";
+
+/**
+ * CategoryTag component displays a tag for a given category.
+ */
 
 interface CategoryTagProps {
     category: Category;

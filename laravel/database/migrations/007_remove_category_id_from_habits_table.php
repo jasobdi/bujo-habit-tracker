@@ -4,6 +4,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Migration for removing the category_id column from the habits table.
+ */
+
 return new class extends Migration
 {
     public function up()

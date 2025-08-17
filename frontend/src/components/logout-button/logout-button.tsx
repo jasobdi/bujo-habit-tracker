@@ -1,8 +1,12 @@
-'use client'
+'use client';
 
-import { signOut } from 'next-auth/react'
-import { BaseButton } from '../ui/button/base-button/base-button'
-import { appToast } from '../feedback/app-toast'
+import { signOut } from 'next-auth/react';
+import { BaseButton } from '../ui/button/base-button/base-button';
+import { appToast } from '../feedback/app-toast';
+
+/**
+ * LogoutButton component provides a butto on the ProfilePage to log out the user.
+ */
 
 export function LogoutButton() {
     const { successToast } = appToast()

@@ -9,6 +9,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { BaseButton } from "@/components/ui/button/base-button/base-button";
 import { appToast } from "@/components/feedback/app-toast";
 
+/**
+ * RegisterPage allows a user to create a new account with username, email, and password.
+ * It uses react-hook-form for form handling and zod for validation.
+ */
+
 const schema = z.object({
     username: z
         .string()

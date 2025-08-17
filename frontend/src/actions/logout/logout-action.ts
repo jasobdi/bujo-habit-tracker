@@ -1,6 +1,10 @@
-'use server'
+'use server';
 
-import { getTokenFromCookie, deleteTokenCookie } from '@/lib/server/auth-cookies'
+import { getTokenFromCookie, deleteTokenCookie } from '@/lib/server/auth-cookies';
+
+/**
+ * logoutAction handles the user logout by sending a request to the API to invalidate the session
+ */
 
 export async function logoutAction() {
     const token = getTokenFromCookie()

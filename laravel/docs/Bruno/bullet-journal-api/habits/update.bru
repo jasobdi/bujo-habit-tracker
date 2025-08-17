@@ -5,7 +5,7 @@ meta {
 }
 
 patch {
-  url: http://localhost:8000/api/habits/9
+  url: http://localhost:8000/api/habits/2
   body: json
   auth: none
 }
@@ -18,7 +18,11 @@ headers {
 
 body:json {
   {
-    "custom_days": ["Saturday", "Sunday"]
+    "title": "3h Programming",
+    "category_ids": [5],
+    "frequency": "weekly",
+    "repeat_interval": 1,
+    "custom_days": ["Saturday", "Sunday"],
+    "start_date": "2025-04-30"
   }
-  
 }

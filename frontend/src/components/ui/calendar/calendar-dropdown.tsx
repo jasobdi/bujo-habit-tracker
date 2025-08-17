@@ -1,19 +1,13 @@
-'use client'
+'use client';
 
 import React from "react";
 import { DropdownProps } from "react-day-picker";
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../select";
 
 /**
  * CalendarDropdown component
- * Displays a custom month/year dropdown in the DashboardCalendat.
+ * Displays a custom month/year dropdown in the DashboardCalendar.
+ * It uses the Dropdown component from the `react-day-picker` library.
  */
 export function CalendarDropdown(props: DropdownProps) {
     const { options, value, onChange } = props;

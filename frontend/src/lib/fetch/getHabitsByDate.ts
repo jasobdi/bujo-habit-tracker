@@ -1,6 +1,11 @@
 import { fetchApi } from "../api/fetchApi";
 import { Habit } from "@/types/habit";
 
+/**
+ * Function to display all habits for the selected day by sending a GET request to the API.
+ * This function is used to show the habits on the HabitOverview component.
+ */
+
 export async function getHabitsByDate(date: string, token: string) {
     const endpoint = `habits?date=${date}`;
 

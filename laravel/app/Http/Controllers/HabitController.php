@@ -6,7 +6,9 @@ use App\Models\Habit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-use function Laravel\Prompts\error;
+/**
+ * HabitController handles CRUD operations for habits
+ */
 
 class HabitController extends Controller
 {

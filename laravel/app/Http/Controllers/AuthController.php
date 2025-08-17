@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 
+/**
+ * AuthController handles user authentication
+ */
+
 class AuthController extends Controller
 {
     // REGISTER (CREATE USER)

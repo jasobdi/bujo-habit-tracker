@@ -1,5 +1,10 @@
 import { fetchApi } from "../api/fetchApi";
 
+/**
+ * Function to get all habit completions for the selected month by sending a GET request to the API.
+ * This function is used to show the completions on the DashboardCalendar component.
+ */
+
 interface GetHabitCompletionsByMonthParams {
     year: number;
     month: number;

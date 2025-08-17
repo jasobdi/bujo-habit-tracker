@@ -20,6 +20,8 @@ export type HabitCustomDays = typeof habitCustomDays[number];
 
 export const habitCommonFrequencies = ["daily", "weekly", "monthly"] as const;
 export type HabitCommonFrequency = typeof habitCommonFrequencies[number];
+
 export const habitCustomFrequencies = ["custom_daily", "custom_weekly", "custom_monthly"] as const;
 export type HabitCustomFrequency = typeof habitCustomFrequencies[number];
+
 export type HabitFrequency = HabitCommonFrequency | HabitCustomFrequency;

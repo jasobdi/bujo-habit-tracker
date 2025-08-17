@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -16,8 +16,8 @@ import { BaseButton } from '../ui/button/base-button/base-button';
  * DashboardClientWrapper component serves as a wrapper for the dashboard client view.
  * It contains all the client component logic for the dashboard, including fetching habits for the selected date.
  * It also handles media queries to adjust the layout based on the display size.
- * Included in the wrapper are the HabitCalendar and HabitOverview components, which are displayed side by side on desktop 
- * and on separate pages on mobile.
+ * Included in the wrapper are the HabitCalendar and HabitOverview components, which are displayed side by side on desktop.
+ * On Mobile the HabitCalendar is displayed alone, and the HabitOverview is shown only on the OverviewPage.
  */
 
 // imports InlineNotice with dynamic import to avoid server-side rendering

@@ -1,11 +1,16 @@
-'use client'
+'use client';
 
-import React, { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog/dialog"
-import { BaseButton } from "@/components/ui/button/base-button/base-button"
-import { ChevronsLeft, Save } from "lucide-react"
-import { useEffect } from "react"
-import { appToast } from "../feedback/app-toast"
+import React, { useState, useEffect } from "react";
+import { ChevronsLeft, Save } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog/dialog";
+import { BaseButton } from "../ui/button/base-button/base-button";
+import { appToast } from "../feedback/app-toast";
+
+/**
+ * CategoryFormModal component allows users to create or edit a category.
+ * It is used in the NewHabit and EditHabit forms
+ * and on the ProfilePage to manage user categories.
+ */
 
 type CategoryOutput = { id: number; title: string };
 type CategoryInitial = { id?: number; title: string };
@@ -25,11 +30,6 @@ type Props = {
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
 };
-
-/**
- * 
- * CategoryFormModal component allows users to create or edit a category.
- */
 
 export function CategoryFormModal({
     onSubmit,
@@ -119,19 +119,21 @@ export function CategoryFormModal({
 
     return (
         <>
-            {/* Inline trigger only if children provided */}
+            {/* INLINE TRIGGER only if children provided */}
             {children ? (
                 <div onClick={() => setOpen(true)} className="inline-block cursor-pointer">
                     {children}
                 </div>
             ) : null}
 
+            {/* DIALOG */}
             <Dialog open={actualOpen} onOpenChange={handleClose}>
                 <DialogContent className="border-[2px] border-black rounded-radius backdrop-blur-sm max-w-md mx-auto">
                     <DialogHeader>
                         <DialogTitle>{dialogTitle}</DialogTitle>
                     </DialogHeader>
 
+                    {/* Form */}
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
@@ -142,6 +144,7 @@ export function CategoryFormModal({
                         <label htmlFor="title" className="font-medium">
                             Category Title
                         </label>
+                        {/* Input */}
                         <input
                             id="title"
                             type="text"
@@ -151,7 +154,7 @@ export function CategoryFormModal({
                             placeholder="e.g. Health"
                             required
                         />
-
+                        {/* Submit and Back Buttons */}
                         <div className="flex justify-around gap-4 mt-4">
                             <BaseButton
                                 type="button"

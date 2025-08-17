@@ -1,6 +1,10 @@
 import { fetchApi } from "../api/fetchApi";
 import { HabitWithCategories } from "@/types/habitWithCategories";
 
+/**
+ * Function to display all habits with their assigned categories by sending a GET request to the API.
+ */
+
 export async function getAllHabits(token: string): Promise<{ data: HabitWithCategories[] | null, error: any }> {
     const endpoint = `habits`;
 

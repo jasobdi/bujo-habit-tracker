@@ -4,6 +4,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Migration for creating the personal_access_tokens table.
+ */
+
 return new class extends Migration {
   function up() {
     Schema::create('personal_access_tokens', function (Blueprint $table) {

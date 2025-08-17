@@ -1,10 +1,14 @@
-'use client'
+'use client';
 
-import '../globals.css'
-import type { ReactNode } from 'react'
-import { usePathname } from 'next/navigation'
-import Link from 'next/link';
-import { Nav } from '@/components/nav/nav'
+import '../globals.css';
+import type { ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';;
+import { Nav } from '@/components/nav/nav';
+
+/**
+ * ProtectedLayout is the layout component for the protected routes (dashboard, habits, profile).
+ */
 
 export default function ProtectedLayout({ children }: { children: ReactNode }) {
 

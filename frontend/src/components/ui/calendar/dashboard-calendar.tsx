@@ -1,11 +1,10 @@
-'use client'
+'use client';
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { DayPicker } from "react-day-picker";
 import { CalendarDropdown } from "./calendar-dropdown";
-import { getHabitsByMonth } from "../../../lib/fetch/getHabitsByMonth";
 import { getHabitCompletionsByMonth } from "@/lib/fetch/getHabitCompletionsByMonth";
 import { Habit } from "@/types/habit";
 import { HabitService } from "@/lib/HabitService";
@@ -17,6 +16,8 @@ import { HabitService } from "@/lib/HabitService";
  * - Completed habits: green background
  * - Not completed habits: grey background
  * On day selection, it routes to the overview page with the selected date on display.
+ * It contains the DayPicker component from the `react-day-picker` library.
+ * And is part of the HabitCalendar component.
  */
 
 type DashboardCalendarProps = {

@@ -10,6 +10,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { BaseButton } from '@/components/ui/button/base-button/base-button';
 import { appToast } from '@/components/feedback/app-toast';
 
+/**
+ * LoginPage allows a user to log in using their email and password.
+ * It uses NextAuth for authentication and react-hook-form for form handling.
+ */
+
 const schema = z.object({
     email: z.string().email('Please enter a valid email'),
     password: z.string().min(1, 'Password is required'),

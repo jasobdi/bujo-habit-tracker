@@ -1,3 +1,4 @@
+// placeholder privacy policy
 
 export default function LegalPage() {
 

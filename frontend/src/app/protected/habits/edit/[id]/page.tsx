@@ -16,6 +16,15 @@ import { ConfirmDialog } from '@/components/ui/dialog/confirm-dialog';
 import { UnsavedChangesGuard } from '@/components/nav/unsaved-changes-guard';
 import { useMemo } from "react";
 
+
+/**
+ * EditHabit page allows a user to edit a habit
+ * with various frequency options, custom days, and optional ending conditions.
+ * Every habit must have at least one category assigned.
+ * 
+ * The UnsavedChangesGuard prevents accidental navigation away from the page with unsaved changes.
+ */
+
 export default function EditHabit() {
     const router = useRouter();
     const { data: session } = useSession();
@@ -62,7 +71,7 @@ export default function EditHabit() {
     // toasts
     const { successToast, errorToast } = appToast();
 
-    // --- Snapshot helpers --- // 
+    /** SNAPSHOT HANDLER */ 
 
     // Change a form state into a JSON string
     const snapshotOf = (s: {
@@ -118,7 +127,7 @@ export default function EditHabit() {
     // isDirty: if an original snapshot is available and it is differs from the current
     const isDirty = originalSnapshot !== null && originalSnapshot !== currentSnapshot;
 
-    // --- Validation helper --- //
+    /** VALIDATION HELPER FUNCTION */
 
     function getErrorFor(err: any, field: string): string | undefined {
         if (!err?.issues) return undefined;
@@ -126,17 +135,17 @@ export default function EditHabit() {
         return issue?.message;
     }
 
-    // --- Load habit + categories --- //
-
+    /** EFFECTS */
+    // Load habits & categories on mount
     useEffect(() => {
         if (!session?.accessToken || !habitId) return;
 
         let cancelled = false;
 
         (async () => {
-            setIsFetching(true);                // ← Laden starten
+            setIsFetching(true); 
             try {
-                // Kategorien und Habit parallel laden
+                // load habit and category parallelly
                 const [catsRes, habitRes] = await Promise.all([
                     fetch('http://localhost:8000/api/categories', {
                         headers: {
@@ -160,10 +169,10 @@ export default function EditHabit() {
                 const [cats, h] = await Promise.all([catsRes.json(), habitRes.json()]);
                 if (cancelled) return;
 
-                // Kategorien setzen
+                // Set categories
                 setAvailableCategories(cats);
 
-                // Habit-Daten mappen
+                // Set habit data
                 setTitle(h.title);
 
                 if (typeof h.frequency === 'string' && h.frequency.startsWith('custom_')) {
@@ -252,7 +261,7 @@ export default function EditHabit() {
         };
     }, [session?.accessToken, habitId]);
 
-    // --- Handlers --- //
+    /** HANDLERS */
 
     function toggleCustomDay(day: string) {
         setCustomDays(prev => (prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]));
@@ -302,7 +311,7 @@ export default function EditHabit() {
         const rawData = {
             title,
             frequency,
-            startDate, // fixed but still validated
+            startDate, // cannot be changed, but is still validated
             customDays: frequency === 'custom' ? customDays : [],
             endType,
             endDate: endType === 'on' ? endDate : undefined,
@@ -385,6 +394,7 @@ export default function EditHabit() {
         );
     }
 
+    /** EARLY RETURNS */
     if (!habitId) return <div>Loading error: Habit ID is missing.</div>;
     if (isFetching) return <div>Loading data...</div>;
 
@@ -526,7 +536,7 @@ export default function EditHabit() {
                             }
                         />
 
-
+                        {/* Save Button */}
                         <BaseButton
                             type="submit"
                             variant="icon"

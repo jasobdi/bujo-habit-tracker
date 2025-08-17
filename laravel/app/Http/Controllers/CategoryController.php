@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
-use App\Models\Habit;
-use App\Models\Journal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * CategoryController handles CRUD operations for categories
+ */
 
 class CategoryController extends Controller
 {

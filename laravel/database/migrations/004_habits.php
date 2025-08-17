@@ -4,6 +4,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Migration for creating the habits table.
+ * 
+ * This table is used to store user habits.
+ * Each habit is linked to a user, and when a user is deleted,
+ * all their habits will also be deleted.
+ */
+
 return new class extends Migration
 {
 

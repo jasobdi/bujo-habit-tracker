@@ -11,10 +11,15 @@ import { appToast } from "@/components/feedback/app-toast";
 import { InlineNotice } from "@/components/feedback/inline-notice";
 import { ConfirmDialog } from "@/components/ui/dialog/confirm-dialog";
 
-type Category = {
-    id: number;
-    title: string;
-};
+/**
+ * ProfilePage allows users to manage their categories and user data (username, email, password).
+ * 
+ * Categories can only be deleted if they are not assigned to any habits.
+ * The InlineNotice shows if a category is currently in use and by how many habits.
+ * 
+ * For security reasons, the current password will not be shown in the form.
+ * Currently it can be changes simply by entering a new password.
+ */
 
 type UserData = {
     username: string;
@@ -26,8 +31,9 @@ export default function ProfilePage() {
     const token = session?.accessToken; // string | undefined
     const { successToast, errorToast } = appToast();
 
-    /** ---------- State ---------- */
-    /** CATEGORIES */
+    /** STATES */
+
+    // categories
     const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -37,13 +43,14 @@ export default function ProfilePage() {
     const [usageCount, setUsageCount] = useState<number | null>(null);
     const [noticeDismissed, setNoticeDismissed] = useState(false);
 
-    /** USER */
+    // userdata
     const [userData, setUserData] = useState<UserData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
 
-    /** ---------- Data-Fetcher ---------- */
-    /** CATEGORIES */
+    /** DATA FETCHER */
+
+    // categories
     async function fetchCategories() {
         if (!token) return;
         try {
@@ -70,7 +77,7 @@ export default function ProfilePage() {
         }
     }
 
-    /** USER */
+    // user data
     async function fetchUserData() {
         if (!token) {
             setIsLoading(false);
@@ -164,8 +171,9 @@ export default function ProfilePage() {
         }
     }
 
-    /** ---------- Mutations ---------- */
-    /** CATEGORIES */
+    /** MUTATIONS */
+
+    // categories
     type Category = { id: number; title: string };
 
     // Submit CREATE (new)
@@ -252,6 +260,7 @@ export default function ProfilePage() {
         }
     }
 
+    // Handle DELETE
     const handleDeleteCategory = async () => {
         if (!selectedCategory || !token) return;
 
@@ -286,7 +295,8 @@ export default function ProfilePage() {
             setIsDeleting(false);
         }
     };
-    /** USER */
+
+    // user data
     const handleUpdateSuccess = () => {
         fetchUserData();
         successToast("Profile updated");
@@ -313,8 +323,9 @@ export default function ProfilePage() {
         }
     };
 
-    /** ---------- useEffects (must stand before early returns) ---------- */
-    // load categories & user date, as soon as authenticated or token is available
+    /** USE EFFECTS (must stand before early returns)  */
+
+    // load categories & user data, as soon as authenticated or when token is available
     useEffect(() => {
         if (status !== "authenticated" || !token) {
             setIsLoading(false);
@@ -340,11 +351,11 @@ export default function ProfilePage() {
         setNoticeDismissed(false);
     }, [selectedCategory?.id]);
 
-    /** ---------- Early returns ---------- */
+    /** EARLY RETURNS */
     if (status === "loading") return <div>Loading...</div>;
     if (status === "unauthenticated") return <div>Please log in.</div>;
 
-    /** ---------- Handlers ---------- */
+    /** HANDLERS */
     const toggleCategory = (categoryId: number) => {
         if (selectedCategory?.id === categoryId) {
             setSelectedCategory(null);
@@ -361,7 +372,6 @@ export default function ProfilePage() {
         }
     };
 
-    /** ---------- Render ---------- */
     return (
         <div className="flex flex-col items-center justify-center h-auto w-full px-4 py-8">
 
@@ -396,7 +406,7 @@ export default function ProfilePage() {
                         <SquarePen className="w-10 h-10" strokeWidth={1.5} />
                     </BaseButton>
 
-                    {/* button: delete category via ConfirmDialog */}
+                    {/* button: delete category & ConfirmDialog */}
                     <ConfirmDialog
                         title="Delete Category"
                         description={
@@ -422,7 +432,6 @@ export default function ProfilePage() {
                             </BaseButton>
                         }
                     />
-
                 </div>
 
                 {/* Inline notice for "category in use" */}
@@ -439,7 +448,6 @@ export default function ProfilePage() {
                                     ? `${usageCount} habits ${usageCount === 1 ? '' : 's'} currently use this category. Unassign it first, to enable deletion.`
                                     : `This category is currently used by one or more habits. Unassign it first, to enable deletion.`}
                             </span>
-
                         </div>
                     </InlineNotice>
                 )}

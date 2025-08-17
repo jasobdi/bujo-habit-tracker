@@ -1,7 +1,7 @@
-import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/auth-options'
-import  DashboardClientWrapper  from '@/components/dashboard-client-wrapper/dashboard-client-wrapper'
+import { redirect } from 'next/navigation';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/auth-options';
+import  DashboardClientWrapper  from '@/components/dashboard-client-wrapper/dashboard-client-wrapper';
 
 /**
  * The DashboardPage is a server-component
@@ -22,13 +22,14 @@ export default async function DashboardPage() {
 
     return (
         <div className="flex flex-col items-center justify-center h-auto overflow-x-hidden px-4 py-8 font-sans">
+            {/* HELLO MESSAGE */}
             <h2 className="text-2xl font-bold mb-6">
                 Hello {session.user?.username || ''}!
             </h2>
+            {/* DASHBAORD-CLIENT-WRAPPER */}
             <DashboardClientWrapper 
                 token={session.accessToken} 
                 initialDate={today} />
-
         </div>
     );
 

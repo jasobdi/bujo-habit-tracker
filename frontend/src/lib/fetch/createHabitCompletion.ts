@@ -1,5 +1,10 @@
 import { fetchApi } from "../api/fetchApi";
 
+/**
+ * Function to create a new habit completion by sending a POST request to the API.
+ * creating a completion means the user has "checked" a habit for a specific date.
+ */
+
 interface CreateHabitCompletionParams {
     habit_id: number;
     date: string; // yyyy-mm-dd

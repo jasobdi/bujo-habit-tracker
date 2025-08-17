@@ -4,6 +4,10 @@ import { Providers } from "./providers";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner/sonner";
 
+/**
+ * RootLayout is the main layout component for the application.
+ */
+
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",

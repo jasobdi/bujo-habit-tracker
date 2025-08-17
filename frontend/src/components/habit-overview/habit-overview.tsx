@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -15,8 +15,9 @@ import { getHabitCompletionsByDay } from '@/lib/fetch/getHabitCompletionsByDay';
 
 /**
  * HabitOverview component displays an overview list of today's habits.
- * On the mobile view it is located on a separate page.
+ * On the mobile view it is located on a separate page (HabitsOverviewPage).
  * On the desktop view it is part of the dashboard.
+ * It is part of the DashboardClientWrapper component.
  */
 
 type HabitOverviewProps = {
@@ -51,11 +52,11 @@ export default function HabitOverview({
         infoShownRef.current = false;
     }, [initialDate]);
 
-    // no access token or date -> don't execute useEffect
+    // no access token or date -> do not execute useEffect
     useEffect(() => {
         if (!session?.accessToken || !initialDate) return;
 
-        // flag to only run the effect once
+        // flag to only run the useEffect once
         let didRun = false;
 
         // fetch habits for the selected date
@@ -201,7 +202,7 @@ export default function HabitOverview({
             {/** Habit-List-Container */}
             <div className="border-[2px] border-black rounded-radius w-full max-w-md overflow-hidden min-h-[328px] relative">
 
-                {/* Transition-Wrapper */}
+                {/* Transition-Wrapper - no harsh flash when changing date (or in case loading is slower) */}
                 <div className={`transition-opacity duration-200 ${isLoading ? "opacity-60" : "opacity-100"}`}>
                     {isLoading ? (
                         <p className='text-center p-4'>Loading...</p>

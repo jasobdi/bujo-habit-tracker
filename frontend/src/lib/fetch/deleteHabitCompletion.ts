@@ -1,5 +1,10 @@
 import { fetchApi } from "../api/fetchApi";
 
+/**
+ * Function to delete a habit completion by sending a DELETE request to the API.
+ * deleting a completion means the user has "unchecked" a habit for a specific date.
+ */
+
 interface DeleteHabitCompletionParams {
     habit_id: number;
     date: string; // yyyy-mm-dd

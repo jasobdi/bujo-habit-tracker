@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { habitCommonFrequencies } from "@/types/habit";
 
+/**
+ * Schema for validating habit creation and update forms.
+ */
+
 export const habitEndTypes = ["never", "on", "after"] as const;
 export type HabitEndType = typeof habitEndTypes[number];
 

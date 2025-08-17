@@ -4,6 +4,12 @@ import type { ComponentType } from "react";
 import { CircleCheckBig, Info, TriangleAlert, CircleX } from "lucide-react";
 import { toast } from "sonner";
 
+/**
+ * appToast component is a custom toast notification system for user feedback.
+ * It can return different types of notifications like success, info, warning, and error.
+ * It is based on the sonner component by shadcn UI.
+ */
+
 type Variant = "success" | "info" | "warning" | "error";
 
 const ICONS: Record<Variant, ComponentType<{ className?: string }>> = {
@@ -31,12 +37,6 @@ type ShowArgs = {
     onAction?: () => void;
     id?: string | number; // optional: dedupe-id
 };
-
-/**
- * appToast component is a custom toast notification system for user feedback
- * It can return different types of notifications like success, info, warning, and error.
- * 
- */
 
 export function appToast() {
     function show({

@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useState, useEffect } from "react";
 import { BaseButton } from "@/components/ui/button/base-button/base-button";
@@ -15,6 +15,15 @@ import { habitCommonFrequencies, HabitCommonFrequency, HabitCustomDays } from "@
 import { ConfirmDialog } from "@/components/ui/dialog/confirm-dialog";
 import { appToast } from "@/components/feedback/app-toast";
 import { UnsavedChangesGuard } from "@/components/nav/unsaved-changes-guard";
+
+/**
+ * NewHabit page allows a user to create a new habit
+ * with various frequency options, custom days, and optional ending conditions
+ * Every habit must have at least one category assigned.
+ * 
+ * The UnsavedChangesGuard prevents accidental navigation away from the page with unsaved changes.
+ */
+
 
 const frequencies = [...habitCommonFrequencies, 'custom'] as const;
 type Frequency = typeof frequencies[number];
@@ -90,7 +99,7 @@ export default function NewHabit() {
         router.push('/protected/habits');
     };
 
-    // Kategorien laden
+    // load categories
     async function fetchCategories() {
         if (!session?.accessToken) return;
         try {
@@ -180,7 +189,7 @@ export default function NewHabit() {
             errorToast("Not authenticated", "Please log in and try again.", 3500, "habit-create-unauth");
             return;
         }
-        // 1) reset errors
+        // reset errors
         setTitleError(undefined);
         setStartDateError(undefined);
         setFrequencyError(undefined);
@@ -190,7 +199,7 @@ export default function NewHabit() {
         setCategoriesError(undefined);
         setRepeatIntervalError(undefined);
 
-        // 2) raw data for Zod validation
+        // raw data for Zod validation
         const rawData = {
             title,
             frequency,
@@ -204,7 +213,7 @@ export default function NewHabit() {
             customType,
         };
 
-        // 3) pre-validation checks without a return, only flags
+        // pre-validation checks without a return, only flags
         let hasPreError = false;
 
         if (endType === "on" && !endDate) {
@@ -220,10 +229,10 @@ export default function NewHabit() {
             hasPreError = true; // <— statt return
         }
 
-        // 4) Zod validation
+        // Zod validation
         const result = habitSchema.safeParse(rawData);
 
-        // Helper to get specific error messages for fields
+        // Helper function to get specific error messages for fields
         if (!result.success || hasPreError) {
             if (!result.success) {
                 const err = result.error;
@@ -240,7 +249,7 @@ export default function NewHabit() {
             return; // stop submit if any error
         }
 
-        // 5) Successful validation
+        // Successful validation
         const validated = result.data;
         const apiData: Record<string, any> = {
             title: validated.title,
@@ -255,7 +264,7 @@ export default function NewHabit() {
             apiData.end_date = format(validated.endDate, 'yyyy-MM-dd');
         }
 
-        // 6) Submit the data to API
+        // Submit the data to API
         setIsSubmitting(true);
         try {
             await createHabit(apiData, session.accessToken);
