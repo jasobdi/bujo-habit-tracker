@@ -19,7 +19,7 @@ class HabitTestSeeder extends Seeder
             [
                 'title' => 'Home Workout',
                 'category_ids' => [1, 3],
-                'frequency' => 'custom',
+                'frequency' => 'custom_daily',
                 'repeat_interval' => 3,
                 'start_date' => '2025-06-01',
             ],
@@ -32,7 +32,7 @@ class HabitTestSeeder extends Seeder
             [
                 'title' => 'Yoga',
                 'category_ids' => [2, 3],
-                'frequency' => 'weekly',
+                'frequency' => 'custom_weekly',
                 'custom_days' => ['Monday', 'Tuesday', 'Friday', 'Sunday'],
                 'start_date' => '2025-05-01',
             ],
@@ -63,7 +63,7 @@ class HabitTestSeeder extends Seeder
             [
                 'title' => '2h Programming',
                 'category_ids' => [5],
-                'frequency' => 'weekly',
+                'frequency' => 'custom_weekly',
                 'custom_days' => ['Saturday', 'Sunday'],
                 'start_date' => '2025-04-30',
             ],

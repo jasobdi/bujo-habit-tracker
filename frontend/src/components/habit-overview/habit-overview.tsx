@@ -180,7 +180,7 @@ export default function HabitOverview({
     return (
         <section>
             {/** Mobile: Date-Navigation */}
-            <div className="md:hidden flex items-center justify-center space-x-4 mb-4 w-full max-w-md mx-auto"> {/** HIDE ON DESKTOP AFTER TESTING md:hidden */}
+            <div className="md:hidden flex items-center justify-center space-x-4 mb-4 w-full max-w-md mx-auto">
                 <button onClick={handlePrevious}>
                     <ChevronLeft className="w-10 h-10" />
                 </button>

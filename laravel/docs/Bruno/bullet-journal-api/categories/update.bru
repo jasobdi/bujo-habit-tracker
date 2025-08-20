@@ -1,15 +1,16 @@
 meta {
   name: update
   type: http
-  seq: 3
+  seq: 5
 }
 
 patch {
-  url: http://localhost:8000/api/categories
-  body: none
+  url: http://localhost:8000/api/categories/{id}
+  body: json
   auth: none
 }
 
 headers {
   Authorization: Bearer {{token}}
+  Accept: application/json
 }

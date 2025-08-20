@@ -1,13 +1,18 @@
 meta {
   name: monthly
   type: http
-  seq: 3
+  seq: 2
 }
 
 get {
-  url: http://localhost:8000/api/habit-completions/monthly
+  url: http://localhost:8000/api/habit-completions/monthly?year=2025&month=08
   body: none
   auth: inherit
+}
+
+params:query {
+  year: 2025
+  month: 08
 }
 
 headers {

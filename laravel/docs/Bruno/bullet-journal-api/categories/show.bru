@@ -1,20 +1,20 @@
 meta {
-  name: date
+  name: show
   type: http
-  seq: 4
+  seq: 2
 }
 
 get {
-  url: http://localhost:8000/api/habit-completions/date?date=2025-07-01
+  url: http://localhost:8000/api/categories/{id}
   body: none
   auth: inherit
-}
-
-params:query {
-  date: 2025-07-01
 }
 
 headers {
   Authorization: Bearer{{token}}
   Accept: application/json
+}
+
+settings {
+  encodeUrl: true
 }
